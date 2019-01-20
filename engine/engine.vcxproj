@@ -70,12 +70,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>d:\libs\boost_168\;d:\VulkanSDK\1.1.77.0\Include;d:\libs\Luax64\include;d:\libs\glfw-3.2.1\include;d:\libs\glm;$(IncludePath)</IncludePath>
-    <LibraryPath>d:\libs\boost_168\stage;d:\VulkanSDK\1.1.77.0\lib\;d:\libs\Luax64\lib;d:\libs\glfw-3.2.1\lib-vc2015;$(LibraryPath)</LibraryPath>
+    <IncludePath>d:\libs\boost_1_69_0;d:\VulkanSDK\1.1.77.0\Include;d:\libs\Luax64\include;d:\libs\glfw-3.2.1\include;d:\libs\glm;$(IncludePath)</IncludePath>
+    <LibraryPath>d:\libs\boost_1_69_0\stage\lib;d:\VulkanSDK\1.1.77.0\lib\;d:\libs\Luax64\lib;d:\libs\glfw-3.2.1\lib-vc2015;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>d:\libs\boost_168\;d:\VulkanSDK\1.1.77.0\Include;d:\libs\Luax64\include;d:\libs\glfw-3.2.1\include;d:\libs\glm;$(IncludePath)</IncludePath>
-    <LibraryPath>d:\libs\boost_168\stage;d:\VulkanSDK\1.1.77.0\lib\;d:\libs\Luax64\lib;d:\libs\glfw-3.2.1\lib-vc2015;$(LibraryPath)</LibraryPath>
+    <IncludePath>d:\libs\boost_1_69_0;d:\VulkanSDK\1.1.77.0\Include;d:\libs\Luax64\include;d:\libs\glfw-3.2.1\include;d:\libs\glm;$(IncludePath)</IncludePath>
+    <LibraryPath>d:\libs\boost_1_69_0\stage\lib;d:\VulkanSDK\1.1.77.0\lib\;d:\libs\Luax64\lib;d:\libs\glfw-3.2.1\lib-vc2015;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -91,9 +91,10 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>vulkan-1.lib;lua5.3.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;lua5.3.lib;glfw3.lib;libboost_filesystem-vc141-mt-gd-x64-1_69.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -118,11 +119,12 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>vulkan-1.lib;lua5.3.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;lua5.3.lib;glfw3.lib;libboost_filesystem-vc141-mt-x64-1_69.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -132,6 +134,7 @@
     <ClCompile Include="application.cpp" />
     <ClCompile Include="cvar.cpp" />
     <ClCompile Include="cvarSystem.cpp" />
+    <ClCompile Include="fileSystem.cpp" />
     <ClCompile Include="frameCounter.cpp" />
     <ClCompile Include="loggers.cpp" />
   </ItemGroup>
@@ -139,6 +142,7 @@
     <ClInclude Include="application.hpp" />
     <ClInclude Include="cvar.hpp" />
     <ClInclude Include="cvarSystem.hpp" />
+    <ClInclude Include="fileSystem.hpp" />
     <ClInclude Include="frameCounter.hpp" />
     <ClInclude Include="loggers.hpp" />
   </ItemGroup>

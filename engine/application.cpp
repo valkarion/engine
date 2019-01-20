@@ -6,9 +6,13 @@
 #include "frameCounter.hpp"
 #include "application.hpp"
 #include "cvarSystem.hpp"
+#include "loggers.hpp"
 
-CVar window_width(	"window_width",		"800" );
-CVar window_height( "window_height",	"600" );
+CVar window_width(		"window_width",		"1440" );
+CVar window_height(		"window_height",	"900" );
+CVar window_title(		"window_title",		"No Name Engine" );
+
+#include "fileSystem.hpp"
 
 int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow )
@@ -17,10 +21,9 @@ int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	{
 		return -1;
 	}
-
+	
 	Application::instance()->run();
-
-
+	
 	return 0;
 }
 
@@ -40,6 +43,12 @@ bool Application::initGLFW()
 	window = glfwCreateWindow( window_width.intValue, 
 		window_height.intValue, "Engine", nullptr, nullptr );
 
+	if( window == nullptr )
+	{
+		WriteToErrorLog( "Failed to create window." );
+		return false;
+	}
+
 	// reposition the window to the center of the screen 
 	const GLFWvidmode* videoMode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
 	glfwSetWindowPos( window, videoMode->width / 2 - window_width.intValue / 2,
@@ -57,6 +66,15 @@ bool Application::init()
 	return true;
 }
 
+void SetWindowDebugTitle( GLFWwindow* window, int frameRate )
+{
+	char name[64];
+	sprintf_s( name, 64, "%s | %d", 
+		window_title.value.c_str(), frameRate );
+
+	glfwSetWindowTitle( window, name );
+}
+
 void Application::run()
 {
 	FrameCounter frameCounter;
@@ -65,9 +83,7 @@ void Application::run()
 	{
 		glfwPollEvents();
 
-
-		glfwSetWindowTitle( window, std::to_string( 
-			frameCounter.getFramerate() ).c_str() );
+		SetWindowDebugTitle( window, frameCounter.getFramerate() );
 		frameCounter.update();
 	}
 }
