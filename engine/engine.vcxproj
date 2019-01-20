@@ -130,6 +130,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
+    <ClCompile Include="cvar.cpp" />
+    <ClCompile Include="cvarSystem.cpp" />
+    <ClCompile Include="frameCounter.cpp" />
+    <ClCompile Include="loggers.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="application.hpp" />
+    <ClInclude Include="cvar.hpp" />
+    <ClInclude Include="cvarSystem.hpp" />
+    <ClInclude Include="frameCounter.hpp" />
+    <ClInclude Include="loggers.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
