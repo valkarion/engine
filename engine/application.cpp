@@ -7,12 +7,12 @@
 #include "application.hpp"
 #include "cvarSystem.hpp"
 #include "loggers.hpp"
-
-CVar window_width(		"window_width",		"1440" );
-CVar window_height(		"window_height",	"900" );
-CVar window_title(		"window_title",		"No Name Engine" );
-
 #include "fileSystem.hpp"
+#include "renderer.hpp"
+
+CVar window_width(			"window_width",			"1440" );
+CVar window_height(			"window_height",		"900" );
+CVar window_title(			"window_title",			"No Name Engine" );
 
 int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow )
@@ -63,6 +63,8 @@ bool Application::init()
 
 	initGLFW();
 
+	Renderer::instance()->init();
+
 	return true;
 }
 
@@ -90,6 +92,8 @@ void Application::run()
 
 void Application::shutdown()
 {
+	Renderer::instance()->stutdown();
+
 	glfwDestroyWindow( window );
 	glfwTerminate();
 }
