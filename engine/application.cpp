@@ -14,19 +14,6 @@ CVar window_width(			"window_width",			"1440" );
 CVar window_height(			"window_height",		"900" );
 CVar window_title(			"window_title",			"No Name Engine" );
 
-int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
-	LPSTR lpCmdLine, int nCmdShow )
-{
-	if( !Application::instance()->init() )
-	{
-		return -1;
-	}
-	
-	Application::instance()->run();
-	
-	return 0;
-}
-
 std::unique_ptr<Application> Application::_instance = std::make_unique<Application>();
 
 Application* Application::instance()
