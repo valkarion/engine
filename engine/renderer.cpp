@@ -25,7 +25,8 @@ void Renderer::createVkInstance()
 	createInfo.pApplicationInfo = &appInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 
-	if( VK_SUCCESS != vkCreateInstance( &createInfo, nullptr, &vkInstance ) )
+	VkResult res = vkCreateInstance( &createInfo, nullptr, &vkInstance );
+	if( VK_SUCCESS != res )
 	{
 		WriteToErrorLog( "Failed to create VkInstance" );
 		exit( -1 );

@@ -1,16 +1,9 @@
-#include <Windows.h>
-#include "application.hpp"
+#include "tests.hpp"
+#include <iostream>
 
-
-int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
-	LPSTR lpCmdLine, int nCmdShow )
+int main()
 {
-	if( !Application::instance()->init() )
-	{
-		return -1;
-	}
-
-	Application::instance()->run();
+	T_TaskScheduler();
 
 	return 0;
 }

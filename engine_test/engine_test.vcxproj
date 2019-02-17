@@ -18,6 +18,14 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="t_Renderer.cpp" />
+    <ClCompile Include="t_TaskScheduler.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="tests.hpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{DBE7DA07-F71B-4B79-94B9-1C5A671D92AB}</ProjectGuid>
@@ -84,9 +92,11 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)engine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\engine.lib;vulkan-1.lib;lua5.3.lib;glfw3.lib;libboost_filesystem-vc141-mt-gd-x64-1_69.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -127,9 +137,6 @@
       <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\engine.lib;vulkan-1.lib;lua5.3.lib;glfw3.lib;libboost_filesystem-vc141-mt-x64-1_69.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

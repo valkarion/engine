@@ -9,7 +9,7 @@ class Renderer
 
 	VkInstance			vkInstance;
 	void				createVkInstance();
-
+	   
 public:
 	void init();
 	void stutdown();

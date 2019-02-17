@@ -1,0 +1,4 @@
+- Miért így lett kialakítva a project struktúra? 
+- Nem lehet boost::lockfree::queue-kat listába létrehozni
+- Hogyan kell változó kapacitású queue-t létrehozni, 
+	ha nincs megadva elszál az assertion
