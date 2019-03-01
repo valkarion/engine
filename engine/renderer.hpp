@@ -8,6 +8,7 @@
 
 #include <vulkan/vulkan.hpp>
 
+// indecies of the queues that can handle commands we need
 struct QueueFamilyIndicies
 {
 	// graphical commands 
@@ -17,6 +18,13 @@ struct QueueFamilyIndicies
 	std::optional<uint32_t> presentation;
 
 	bool isValid() const;
+};
+
+struct SwapChainSupportDetails
+{
+	VkSurfaceCapabilitiesKHR surfaceCapabilites;
+	std::vector<VkSurfaceFormatKHR> formats;
+	std::vector<VkPresentModeKHR> presentModes;
 };
 
 class Renderer
@@ -45,9 +53,11 @@ public:
 
 // the videocard 
 	VkPhysicalDevice			physicalDevice;
-	// indecies of the queues that can handle commands we need
 	QueueFamilyIndicies			queueFamilies;
+	SwapChainSupportDetails		swapChainSupportDetails;
 	void						findQueueFamilies( VkPhysicalDevice );
+	bool						checkForSupportedExtensions( VkPhysicalDevice device );
+	void						getSwapChainSupportDetails( VkPhysicalDevice device );
 	bool						isPhysicalDeviceSuitable( VkPhysicalDevice device );
 	void						createVkPhysicalDevice();
 
@@ -55,6 +65,19 @@ public:
 	VkQueue						graphicsQueue;
 	VkDevice					logicalDevice;
 	void						createVkLogicalDevice();
+
+// swapchain 
+	VkSwapchainKHR				swapChain;
+	VkFormat					swapChainFormat;
+	VkExtent2D					swapChainExtent;
+	std::vector<VkImage>		swapChainImages;
+	// the color format 
+	VkSurfaceFormatKHR			chooseSwapChainSurfaceFormat();
+	// image display mode 
+	VkPresentModeKHR			chooseSwapChainPresentMode();
+	// the size of the images we'll draw
+	VkExtent2D					chooseSwapChainExtent();
+	void						createSwapChain();
 
 public:
 	void init();
