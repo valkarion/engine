@@ -13,6 +13,8 @@ extern CVar window_title;
 extern CVar window_width;
 extern CVar window_height;
 
+CVar r_frames_in_flight{ "r_frames_in_flight", "2" };
+
 Renderer* Renderer::instance()
 {
 	return _instance.get();
@@ -112,8 +114,12 @@ void Renderer::setupDebugCallback()
 	VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 
-	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT 
+		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT 
+		| VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT 
+		| VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	createInfo.pfnUserCallback = debugCallback;
 
 	VkResult res = CreateDebugUtilsMessengerEXT( vkInstance, &createInfo, nullptr, &debugMessenger );
@@ -303,7 +309,7 @@ void Renderer::createVkLogicalDevice()
 	VkResult res = vkCreateDevice( physicalDevice, &createInfo, nullptr, &logicalDevice );
 	if( res != VK_SUCCESS )
 	{
-		WriteToErrorLog( "Failed to create logical device: " + res );
+		WriteToErrorLog( "Failed to create logical device: " + std::to_string(res) );
 		exit( -1 );
 	}
 
@@ -316,7 +322,7 @@ void Renderer::createSurface()
 	VkResult res = glfwCreateWindowSurface( vkInstance, window, nullptr, &surface );
 	if( res != VK_SUCCESS )
 	{
-		WriteToErrorLog( "Failed to create GLFW window surface " + res );
+		WriteToErrorLog( "Failed to create GLFW window surface " + std::to_string(res) );
 		exit( -1 );
 	}
 }
@@ -487,7 +493,7 @@ void Renderer::createSwapChain()
 	VkResult res = vkCreateSwapchainKHR( logicalDevice, &createInfo, nullptr, &swapChain );
 	if( res != VK_SUCCESS )
 	{
-		WriteToErrorLog( "Failed to create the swap chain: " + res );
+		WriteToErrorLog( "Failed to create the swap chain: " + std::to_string(res) );
 		exit( -1 );
 	}
 	
@@ -520,7 +526,7 @@ void Renderer::createSwapChainImageViews()
 		VkResult res = vkCreateImageView( logicalDevice, &createInfo, nullptr, &swapChainImageViews[i] );
 		if( res != VK_SUCCESS )
 		{
-			WriteToErrorLog( "Failed to create swap chain image view: " + res );
+			WriteToErrorLog( "Failed to create swap chain image view: " + std::to_string(res) );
 			exit( -1 );
 		}
 	}
@@ -538,7 +544,7 @@ VkShaderModule Renderer::createShaderModule( const std::vector<char>& code )
 	VkResult res = vkCreateShaderModule( logicalDevice, &createInfo, nullptr, &shaderModule );
 	if( res != VK_SUCCESS )
 	{
-		WriteToErrorLog( "Failed to create shader module: " + res );
+		WriteToErrorLog( "Failed to create shader module: " + std::to_string(res) );
 		exit( -1 );
 	}
 
@@ -640,7 +646,7 @@ void Renderer::createGraphicsPipeline()
 	VkResult res = vkCreatePipelineLayout( logicalDevice, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout );
 	if( res != VK_SUCCESS )
 	{
-		WriteToErrorLog( "Failed to create pipeline layout: " + res );
+		WriteToErrorLog( "Failed to create pipeline layout: " + std::to_string(res) );
 		exit( -1 );
 	}
 
@@ -664,7 +670,7 @@ void Renderer::createGraphicsPipeline()
 
 	if( res != VK_SUCCESS )
 	{
-		WriteToErrorLog( "Failed to create pipeline: " + res );
+		WriteToErrorLog( "Failed to create pipeline: " + std::to_string(res) );
 		exit( -1 );
 	}
 
@@ -704,11 +710,183 @@ void Renderer::createRenderPass()
 	createInfo.subpassCount = 1;
 	createInfo.pSubpasses = &subPass;
 
+	// wait for the first image to be available 
+	VkSubpassDependency subpassDependency = {};
+	// pre-pass 
+	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	subpassDependency.dstSubpass = 0;
+	subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+	createInfo.dependencyCount = 1;
+	createInfo.pDependencies = &subpassDependency;
+
 	VkResult res = vkCreateRenderPass( logicalDevice, &createInfo, nullptr, &renderPass );
 	if( res != VK_SUCCESS )
 	{
-		WriteToErrorLog( "Failed to create render pass: " + res );
+		WriteToErrorLog( "Failed to create render pass: " + std::to_string(res) );
 	}
+	
+}
+
+void Renderer::createFrameBuffers()
+{
+	frameBuffers.resize( swapChainImageViews.size() );
+
+	for( size_t i = 0; i < swapChainImageViews.size(); i++ )
+	{
+		VkFramebufferCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		createInfo.renderPass = renderPass;
+		createInfo.attachmentCount = 1;
+		createInfo.pAttachments = &swapChainImageViews[i];
+		createInfo.width = swapChainExtent.width;
+		createInfo.height = swapChainExtent.height;
+		createInfo.layers = 1;
+
+		VkResult res = vkCreateFramebuffer( logicalDevice, &createInfo, nullptr, &frameBuffers[i] );
+		if( res != VK_SUCCESS )
+		{
+			WriteToErrorLog( "Failed to create framebuffer: " + std::to_string(res) );
+			exit( -1 );
+		}
+	}
+}
+
+void Renderer::createCommandPool()
+{
+	VkCommandPoolCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	createInfo.queueFamilyIndex = queueFamilies.graphics.value();
+
+	VkResult res = vkCreateCommandPool( logicalDevice, &createInfo, nullptr, &commandPool );
+	if( res != VK_SUCCESS )
+	{
+		WriteToErrorLog( "Failed to create command pool: " + std::to_string( res ) );
+		exit( -1 );
+	}
+}
+
+void Renderer::createCommandBuffers()
+{
+	commandBuffers.resize( frameBuffers.size() );
+
+	VkCommandBufferAllocateInfo allocateInfo = {};
+	allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocateInfo.commandPool = commandPool;
+	allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocateInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+	   
+	VkResult res = vkAllocateCommandBuffers( logicalDevice, &allocateInfo, commandBuffers.data() );
+	if( res != VK_SUCCESS )
+	{
+		WriteToErrorLog( "Failed to begin recording command buffer: " + std::to_string( res ) );
+		exit( -1 );
+	}
+
+	for( size_t i = 0; i < commandBuffers.size(); i++ )
+	{
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+
+		res = vkBeginCommandBuffer( commandBuffers[i], &beginInfo );
+		if( res != VK_SUCCESS )
+		{
+			WriteToErrorLog( "Failed to begin recording command buffer: " + std::to_string( res ) );
+			exit( -1 );
+		}
+
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.renderPass = renderPass;
+		renderPassBeginInfo.framebuffer = frameBuffers[i];
+		renderPassBeginInfo.renderArea.extent = swapChainExtent;
+		renderPassBeginInfo.renderArea.offset = VkOffset2D{ 0, 0 };
+
+		VkClearValue clearValue = { 0.0f, 0.0f, 0.0f, 0.0f };
+		renderPassBeginInfo.clearValueCount = 1;
+		renderPassBeginInfo.pClearValues = &clearValue;
+
+		vkCmdBeginRenderPass( commandBuffers[i], &renderPassBeginInfo, 
+			VK_SUBPASS_CONTENTS_INLINE );
+
+			vkCmdBindPipeline( commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, 
+				graphicsPipeline );
+
+			vkCmdDraw( commandBuffers[i], 3, 1, 0, 0 );
+
+		vkCmdEndRenderPass( commandBuffers[i] );
+
+		res = vkEndCommandBuffer( commandBuffers[i] );
+		if( res != VK_SUCCESS )
+		{
+			WriteToErrorLog( "Failed to record command buffer: " + std::to_string( res ) );
+			exit( -1 );
+		}
+	}
+}
+
+void Renderer::createSemaphores()
+{
+	VkSemaphoreCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	VkResult r0 = vkCreateSemaphore( logicalDevice, &createInfo, nullptr, &imageAvailableSemaphore );
+	VkResult r1 = vkCreateSemaphore( logicalDevice, &createInfo, nullptr, &renderFinishedSemaphore );
+
+	if( r0 != VK_SUCCESS || r1 != VK_SUCCESS )
+	{
+		WriteToErrorLog( "Failed to setup command semaphores: " + std::to_string( r0 )
+			+ " " + std::to_string( r1 ) );
+		exit( -1 );
+	}
+}
+
+void Renderer::drawFrame()
+{
+	// grab an image from the swapchain 
+	uint32_t imageIndex;
+	vkAcquireNextImageKHR( logicalDevice, swapChain, std::numeric_limits<uint64_t>::max(),
+		imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex );
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkSemaphore wait[] = { imageAvailableSemaphore };
+	VkPipelineStageFlags waitAtStage[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = wait;
+	submitInfo.pWaitDstStageMask = waitAtStage;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+
+	VkSemaphore signal[] = { renderFinishedSemaphore };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signal;
+
+	VkResult res = vkQueueSubmit( graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE );
+	if( res != VK_SUCCESS )
+	{
+		WriteToErrorLog( "Failed to submit draw commands to the queue: " + std::to_string( res ) );
+		exit( -1 );
+	}
+
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signal;
+
+	VkSwapchainKHR swapchains[] = { swapChain };
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapchains;
+	presentInfo.pImageIndices = &imageIndex;
+
+	vkQueuePresentKHR( graphicsQueue, &presentInfo );
+
+	vkQueueWaitIdle( graphicsQueue );
 }
 
 void Renderer::init()
@@ -733,10 +911,24 @@ void Renderer::init()
 	createSwapChainImageViews();
 	createRenderPass();
 	createGraphicsPipeline();
+	createFrameBuffers();
+	createCommandPool();
+	createCommandBuffers();
+	createSemaphores();
 }
 
 void Renderer::shutdown()
 {
+	vkDestroySemaphore( logicalDevice, imageAvailableSemaphore, nullptr );
+	vkDestroySemaphore( logicalDevice, renderFinishedSemaphore, nullptr );
+
+	vkDestroyCommandPool( logicalDevice, commandPool, nullptr );
+
+	for( auto& it : frameBuffers )
+	{
+		vkDestroyFramebuffer( logicalDevice, it, nullptr );
+	}
+
 	vkDestroyPipeline( logicalDevice, graphicsPipeline, nullptr );
 	vkDestroyPipelineLayout( logicalDevice, pipelineLayout, nullptr );
 	vkDestroyRenderPass( logicalDevice, renderPass, nullptr );

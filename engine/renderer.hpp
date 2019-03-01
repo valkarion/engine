@@ -31,67 +31,83 @@ class Renderer
 {
 	static std::unique_ptr<Renderer> _instance;
 public:
-	GLFWwindow*					window;
+	GLFWwindow*						window;
 
 // the following is setup (more-or-less) in order. 
 
-	bool						useValidationLayers;
+	bool							useValidationLayers;
 
 // main vulkan handle
-	VkInstance					vkInstance;
-	std::vector<const char*>	getInstanceExtensions();
-	void						createVkInstance();
+	VkInstance						vkInstance;
+	std::vector<const char*>		getInstanceExtensions();
+	void							createVkInstance();
 
 // debugger is only setup in debug mode 
-	VkDebugUtilsMessengerEXT	debugMessenger;
-	void						setupDebugCallback();
+	VkDebugUtilsMessengerEXT		debugMessenger;
+	void							setupDebugCallback();
 
 // the surface we'll draw to 
-	VkSurfaceKHR				surface;
-	VkQueue						presentQueue;
-	void						createSurface();
+	VkSurfaceKHR					surface;
+	VkQueue							presentQueue;
+	void							createSurface();
 
 // the videocard 
-	VkPhysicalDevice			physicalDevice;
-	QueueFamilyIndicies			queueFamilies;
-	SwapChainSupportDetails		swapChainSupportDetails;
-	void						findQueueFamilies( VkPhysicalDevice );
-	bool						checkForSupportedExtensions( VkPhysicalDevice device );
-	void						getSwapChainSupportDetails( VkPhysicalDevice device );
-	bool						isPhysicalDeviceSuitable( VkPhysicalDevice device );
-	void						createVkPhysicalDevice();
+	VkPhysicalDevice				physicalDevice;
+	QueueFamilyIndicies				queueFamilies;
+	SwapChainSupportDetails			swapChainSupportDetails;
+	void							findQueueFamilies( VkPhysicalDevice );
+	bool							checkForSupportedExtensions( VkPhysicalDevice device );
+	void							getSwapChainSupportDetails( VkPhysicalDevice device );
+	bool							isPhysicalDeviceSuitable( VkPhysicalDevice device );
+	void							createVkPhysicalDevice();
 
 // vulkan handle to the gpu 
-	VkQueue						graphicsQueue;
-	VkDevice					logicalDevice;
-	void						createVkLogicalDevice();
+	VkQueue							graphicsQueue;
+	VkDevice						logicalDevice;
+	void							createVkLogicalDevice();
 
 // swapchain 
-	VkSwapchainKHR				swapChain;
-	VkFormat					swapChainFormat;
-	VkExtent2D					swapChainExtent;
-	std::vector<VkImage>		swapChainImages;
+	VkSwapchainKHR					swapChain;
+	VkFormat						swapChainFormat;
+	VkExtent2D						swapChainExtent;
+	std::vector<VkImage>			swapChainImages;
 	// the color format 
-	VkSurfaceFormatKHR			chooseSwapChainSurfaceFormat();
+	VkSurfaceFormatKHR				chooseSwapChainSurfaceFormat();
 	// image display mode 
-	VkPresentModeKHR			chooseSwapChainPresentMode();
+	VkPresentModeKHR				chooseSwapChainPresentMode();
 	// the size of the images we'll draw
-	VkExtent2D					chooseSwapChainExtent();
-	void						createSwapChain();
+	VkExtent2D						chooseSwapChainExtent();
+	void							createSwapChain();
 
 // imageview for swapchain images 
-	std::vector<VkImageView>	swapChainImageViews;
-	void						createSwapChainImageViews();
+	std::vector<VkImageView>		swapChainImageViews;
+	void							createSwapChainImageViews();
 
 // renderpass
-	VkRenderPass				renderPass;
-	void						createRenderPass();
+	VkRenderPass					renderPass;
+	void							createRenderPass();
 
 // graphics pipeline
-	VkPipeline					graphicsPipeline;
-	VkPipelineLayout			pipelineLayout;
-	VkShaderModule				createShaderModule( const std::vector<char>& code );
-	void						createGraphicsPipeline();
+	VkPipeline						graphicsPipeline;
+	VkPipelineLayout				pipelineLayout;
+	VkShaderModule					createShaderModule( const std::vector<char>& code );
+	void							createGraphicsPipeline();
+
+// framebuffers
+	std::vector<VkFramebuffer>		frameBuffers;
+	void							createFrameBuffers();
+
+// command pools 
+	VkCommandPool					commandPool;
+	std::vector<VkCommandBuffer>	commandBuffers;
+	void							createCommandPool();
+	void							createCommandBuffers();
+
+// drawing
+	VkSemaphore						imageAvailableSemaphore;
+	VkSemaphore						renderFinishedSemaphore;
+	void							createSemaphores();
+	void							drawFrame();
 
 public:
 	void init();
