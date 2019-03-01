@@ -83,6 +83,16 @@ public:
 	std::vector<VkImageView>	swapChainImageViews;
 	void						createSwapChainImageViews();
 
+// renderpass
+	VkRenderPass				renderPass;
+	void						createRenderPass();
+
+// graphics pipeline
+	VkPipeline					graphicsPipeline;
+	VkPipelineLayout			pipelineLayout;
+	VkShaderModule				createShaderModule( const std::vector<char>& code );
+	void						createGraphicsPipeline();
+
 public:
 	void init();
 	void shutdown();
