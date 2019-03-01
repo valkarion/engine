@@ -9,4 +9,6 @@ void T_Renderer()
 	}
 
 	Application::instance()->run();
+
+	Application::instance()->shutdown();
 }

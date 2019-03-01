@@ -1,6 +1,4 @@
 #pragma once
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include <memory>
 
 /*
@@ -10,9 +8,8 @@
 class Application
 {
 	static std::unique_ptr<Application> _instance;
-	GLFWwindow*			window;
-	bool				initGLFW();
 
+	bool				initGLFW();
 public:
 
 	bool				init();

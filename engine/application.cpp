@@ -27,10 +27,12 @@ bool Application::initGLFW()
 	glfwWindowHint( GLFW_CLIENT_API, GLFW_NO_API );
 	glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
 	
-	window = glfwCreateWindow( window_width.intValue, 
+	Renderer* r = Renderer::instance();
+
+	r->window = glfwCreateWindow( window_width.intValue,
 		window_height.intValue, "Engine", nullptr, nullptr );
 
-	if( window == nullptr )
+	if( r->window == nullptr )
 	{
 		WriteToErrorLog( "Failed to create window." );
 		return false;
@@ -38,7 +40,7 @@ bool Application::initGLFW()
 
 	// reposition the window to the center of the screen 
 	const GLFWvidmode* videoMode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
-	glfwSetWindowPos( window, videoMode->width / 2 - window_width.intValue / 2,
+	glfwSetWindowPos( r->window, videoMode->width / 2 - window_width.intValue / 2,
 		videoMode->height / 2 - window_height.intValue / 2 );
 
 	return true;
@@ -68,11 +70,11 @@ void Application::run()
 {
 	FrameCounter frameCounter;
 
-	while( !glfwWindowShouldClose( window ) )
+	while( !glfwWindowShouldClose( Renderer::instance()->window ) )
 	{
 		glfwPollEvents();
 
-		SetWindowDebugTitle( window, frameCounter.getFramerate() );
+		SetWindowDebugTitle( Renderer::instance()->window, frameCounter.getFramerate() );
 		frameCounter.update();
 	}
 }
@@ -81,6 +83,6 @@ void Application::shutdown()
 {
 	Renderer::instance()->stutdown();
 
-	glfwDestroyWindow( window );
+	glfwDestroyWindow( Renderer::instance()->window );
 	glfwTerminate();
 }

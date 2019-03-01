@@ -3,7 +3,7 @@
 
 int main()
 {
-	T_TaskScheduler();
+	T_Renderer();
 
 	return 0;
 }
