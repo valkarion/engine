@@ -79,9 +79,13 @@ public:
 	VkExtent2D					chooseSwapChainExtent();
 	void						createSwapChain();
 
+// imageview for swapchain images 
+	std::vector<VkImageView>	swapChainImageViews;
+	void						createSwapChainImageViews();
+
 public:
 	void init();
-	void stutdown();
+	void shutdown();
 
 	static Renderer*	instance();
 };

@@ -81,7 +81,7 @@ void Application::run()
 
 void Application::shutdown()
 {
-	Renderer::instance()->stutdown();
+	Renderer::instance()->shutdown();
 
 	glfwDestroyWindow( Renderer::instance()->window );
 	glfwTerminate();

@@ -490,11 +490,39 @@ void Renderer::createSwapChain()
 		exit( -1 );
 	}
 	
+	swapChainFormat = surfaceFormat.format;
+	swapChainExtent = extent;
+
 	// get the images 
 	vkGetSwapchainImagesKHR( logicalDevice, swapChain, &imgCount, nullptr );
 	swapChainImages.resize( imgCount );
 	vkGetSwapchainImagesKHR( logicalDevice, swapChain, &imgCount, swapChainImages.data() );
 
+}
+
+void Renderer::createSwapChainImageViews()
+{
+	swapChainImageViews.resize( swapChainImages.size() );
+
+	for( size_t i = 0; i < swapChainImages.size(); i++ )
+	{
+		VkImageViewCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.image = swapChainImages[i];
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = swapChainFormat;
+
+		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		createInfo.subresourceRange.levelCount = 1;
+		createInfo.subresourceRange.layerCount = 1;
+
+		VkResult res = vkCreateImageView( logicalDevice, &createInfo, nullptr, &swapChainImageViews[i] );
+		if( res != VK_SUCCESS )
+		{
+			WriteToErrorLog( "Failed to create swap chain image view: " + res );
+			exit( -1 );
+		}
+	}
 }
 
 void Renderer::init()
@@ -516,16 +544,24 @@ void Renderer::init()
 	createVkPhysicalDevice();
 	createVkLogicalDevice();
 	createSwapChain();
+	createSwapChainImageViews();
 }
 
-void Renderer::stutdown()
+void Renderer::shutdown()
 {
+	for( auto& it : swapChainImageViews )
+	{
+		vkDestroyImageView( logicalDevice, it, nullptr );
+	}
+
+	vkDestroySwapchainKHR( logicalDevice, swapChain, nullptr );
+	vkDestroyDevice( logicalDevice, nullptr );
+
 	if( useValidationLayers )
 	{
 		DestroyDebugUtilsMessengerEXT( vkInstance, debugMessenger, nullptr );
 	}
 
 	vkDestroySurfaceKHR( vkInstance, surface, nullptr );
-	vkDestroyDevice( logicalDevice, nullptr );
 	vkDestroyInstance( vkInstance, nullptr );
 }
