@@ -9,12 +9,14 @@ class Application
 {
 	static std::unique_ptr<Application> _instance;
 
+	bool				exitGame;
 	bool				initGLFW();
-public:
 
+	void				shutdown();
+public:
 	bool				init();
 	void				run();
-	void				shutdown();
+	void				quit();
 
 	static Application* instance();
 };

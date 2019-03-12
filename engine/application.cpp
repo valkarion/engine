@@ -9,6 +9,7 @@
 #include "loggers.hpp"
 #include "fileSystem.hpp"
 #include "renderer.hpp"
+#include "inputSystem.hpp"
 
 CVar window_width(			"window_width",			"1440" );
 CVar window_height(			"window_height",		"900" );
@@ -53,6 +54,7 @@ bool Application::init()
 	initGLFW();
 
 	Renderer::instance()->init();
+	InputSystem::instance()->init( Renderer::instance()->window );
 
 	return true;
 }
@@ -66,11 +68,12 @@ void SetWindowDebugTitle( GLFWwindow* window, int frameRate )
 	glfwSetWindowTitle( window, name );
 }
 
+
 void Application::run()
 {
 	FrameCounter frameCounter;
 
-	while( !glfwWindowShouldClose( Renderer::instance()->window ) )
+	while( !exitGame && !glfwWindowShouldClose( Renderer::instance()->window ) )
 	{
 		glfwPollEvents();
 
@@ -79,7 +82,14 @@ void Application::run()
 		SetWindowDebugTitle( Renderer::instance()->window, frameCounter.getFramerate() );
 		frameCounter.update();
 	}
+
+	shutdown();
 }
+
+void Application::quit()
+{
+	exitGame = true;
+};
 
 void Application::shutdown()
 {

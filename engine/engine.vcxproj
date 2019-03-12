@@ -138,6 +138,7 @@
     <ClCompile Include="cvarSystem.cpp" />
     <ClCompile Include="fileSystem.cpp" />
     <ClCompile Include="frameCounter.cpp" />
+    <ClCompile Include="inputSystem.cpp" />
     <ClCompile Include="loggers.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="taskScheduler.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="cvarSystem.hpp" />
     <ClInclude Include="fileSystem.hpp" />
     <ClInclude Include="frameCounter.hpp" />
+    <ClInclude Include="inputSystem.hpp" />
     <ClInclude Include="loggers.hpp" />
     <ClInclude Include="renderer.hpp" />
     <ClInclude Include="taskScheduler.hpp" />
