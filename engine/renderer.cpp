@@ -7,6 +7,9 @@
 #include <set>
 #include <string>
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <chrono>
+
 std::unique_ptr<Renderer> Renderer::_instance = std::make_unique<Renderer>();
 
 extern CVar window_title;
@@ -37,9 +40,14 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 }
 
 const std::vector<Vertex> testVertecies = {
-	{ { 0.0f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-	{ { 0.5f, 0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-	{ { -0.5f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+	{ { -0.5f, -0.5f, 0.f }, { 1.0f, 0.0f, 0.0f } },
+	{ { 0.5f, -0.5f, 0.f }, { 0.0f, 1.0f, 0.0f } },
+	{ { 0.5f, 0.5f, 0.f }, { 0.0f, 0.0f, 1.0f } },
+	{ { -0.5f, 0.5f, 0.f }, { 1.0f, 1.0f, 1.0f } }
+};
+
+const std::vector<uint32_t> indices = {
+	0, 1, 2, 2, 3, 0
 };
 
 // validation layers we want 
@@ -625,7 +633,7 @@ void Renderer::createGraphicsPipeline()
 	rasterCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterCreateInfo.lineWidth = 1.f;
 	rasterCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterCreateInfo.depthBiasEnable = VK_FALSE;
 
 	VkPipelineMultisampleStateCreateInfo multisampleCreateInfo = {};
@@ -648,6 +656,8 @@ void Renderer::createGraphicsPipeline()
 	
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutCreateInfo.setLayoutCount = 1;
+	pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
 	
 	VkResult res = vkCreatePipelineLayout( logicalDevice, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout );
 	if( res != VK_SUCCESS )
@@ -826,8 +836,13 @@ void Renderer::createCommandBuffers()
 			VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers( commandBuffers[i], 0, 1,
 				vertexBuffers, offsets );
+			
+			vkCmdBindIndexBuffer( commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32 );
 
-			vkCmdDraw( commandBuffers[i], 3, 1, 0, 0 );
+			vkCmdBindDescriptorSets( commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
+				0, 1, &descriptorSets[i], 0, nullptr );
+
+			vkCmdDrawIndexed( commandBuffers[i], (uint32_t)indices.size(), 1, 0, 0, 0 );
 
 		vkCmdEndRenderPass( commandBuffers[i] );
 
@@ -862,6 +877,8 @@ void Renderer::drawFrame()
 	uint32_t imageIndex;
 	vkAcquireNextImageKHR( logicalDevice, swapChain, std::numeric_limits<uint64_t>::max(),
 		imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex );
+
+	updateUniformBuffer( imageIndex );
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1022,6 +1039,152 @@ void Renderer::copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size )
 
 }
 
+void Renderer::createIndexBuffer()
+{
+	VkDeviceSize bufferSize = sizeof( indices[0] ) * indices.size();
+
+	VkBuffer stagingBuffer;
+	
+	VkDeviceMemory stagingBufferMemory;
+	createBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+		stagingBuffer, stagingBufferMemory );
+
+	void* data;
+	vkMapMemory( logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data );
+	memcpy( data, indices.data(), (size_t)bufferSize );
+	vkUnmapMemory( logicalDevice, stagingBufferMemory );
+
+	createBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | 
+		VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+		indexBuffer, indexBufferMemory );
+
+	copyBuffer( stagingBuffer, indexBuffer, bufferSize );
+
+	vkDestroyBuffer( logicalDevice, stagingBuffer, nullptr );
+	vkFreeMemory( logicalDevice, stagingBufferMemory, nullptr );
+}
+
+void Renderer::createDescriptorSetLayout()
+{
+	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+	// the same as in the vertex shader 
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	// will be used in the vertex stage/shader 
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayoutCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	createInfo.bindingCount = 1;
+	createInfo.pBindings = &uboLayoutBinding;
+
+	VkResult res = vkCreateDescriptorSetLayout( logicalDevice, &createInfo, nullptr, &descriptorSetLayout );
+	if( res != VK_SUCCESS )
+	{
+		WriteToErrorLog( "Failed to create descriptor set layout: " + std::to_string( res ) );
+		exit( -1 );
+	}
+}
+
+void Renderer::createUniformBuffers()
+{
+	VkDeviceSize bufferSize = sizeof( UniformBufferObject );
+
+	uniformBuffers.resize( swapChainImages.size() );
+	uniformBuffersMemory.resize( swapChainImages.size() );
+
+	for( size_t i = 0; i < swapChainImages.size(); i++ )
+	{
+		createBuffer( bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+			uniformBuffers[i], uniformBuffersMemory[i] );
+	}
+}
+
+void Renderer::updateUniformBuffer( const uint32_t index )
+{
+	static auto startTime = std::chrono::high_resolution_clock::now();
+
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float delta = std::chrono::duration<float, std::chrono::seconds::period>(
+		currentTime - startTime ).count();
+
+	UniformBufferObject ubo = {};
+	ubo.model = glm::rotate( glm::mat4( 1.0f ), delta * glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+	ubo.view = glm::lookAt( glm::vec3( 2.0f, 2.0f, 2.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+	ubo.projection = glm::perspective( glm::radians( 45.0f ), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f );
+	ubo.projection[1][1] *= -1;// vulkan specific axis flipping
+
+	void* data;
+	vkMapMemory( logicalDevice, uniformBuffersMemory[index], 0, sizeof( UniformBufferObject ), 0, &data );
+	memcpy( data, &ubo, sizeof( UniformBufferObject ) );
+	vkUnmapMemory( logicalDevice, uniformBuffersMemory[index] );
+}
+
+void Renderer::createDescriptorPool()
+{
+	VkDescriptorPoolSize poolSize = {};
+	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSize.descriptorCount = (uint32_t)swapChainImages.size();
+
+	VkDescriptorPoolCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	createInfo.poolSizeCount = 1;
+	createInfo.pPoolSizes = &poolSize;
+	createInfo.maxSets = (uint32_t)swapChainImages.size();
+
+	VkResult res = vkCreateDescriptorPool( logicalDevice, &createInfo, nullptr, &descriptorPool );
+	if( res != VK_SUCCESS )
+	{
+		WriteToErrorLog( "Failed to create descriptor pool: " + std::to_string( res ) );
+		exit( -1 );
+	}
+}
+
+void Renderer::createDescriptorSets()
+{
+	std::vector<VkDescriptorSetLayout> layouts( swapChainImages.size(), descriptorSetLayout );
+	VkDescriptorSetAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = descriptorPool;
+	allocInfo.pSetLayouts = layouts.data();
+	
+	allocInfo.descriptorSetCount = (uint32_t)swapChainImages.size();
+
+	descriptorSets.resize( swapChainImages.size() );
+	VkResult res = vkAllocateDescriptorSets( logicalDevice, &allocInfo, descriptorSets.data() );
+	if( res != VK_SUCCESS )
+	{
+		WriteToErrorLog( "Failed to create descriptor sets: " + std::to_string( res ) );
+		exit( -1 );
+	}
+
+	for( size_t i = 0; i < swapChainImages.size(); i++ )
+	{
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = uniformBuffers[i];
+		bufferInfo.offset = 0;
+		bufferInfo.range = sizeof( UniformBufferObject );
+
+		VkWriteDescriptorSet writeDescriptorSet = {};
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.dstSet = descriptorSets[i];
+		// same as in the shader 
+		writeDescriptorSet.dstBinding = 0;
+		// we only have 1 ubo 
+		writeDescriptorSet.dstArrayElement = 0;
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeDescriptorSet.pBufferInfo = &bufferInfo;
+
+		vkUpdateDescriptorSets( logicalDevice, 1, &writeDescriptorSet, 0, nullptr );
+	}
+
+
+};
+
 void Renderer::init()
 {
 #ifdef _DEBUG
@@ -1043,10 +1206,15 @@ void Renderer::init()
 	createSwapChain();
 	createSwapChainImageViews();
 	createRenderPass();
+	createDescriptorSetLayout();
 	createGraphicsPipeline();
 	createFrameBuffers();
 	createCommandPool();
 	createVertexBuffer();
+	createIndexBuffer();
+	createUniformBuffers();
+	createDescriptorPool();
+	createDescriptorSets();
 	createCommandBuffers();
 	createSemaphores();
 }
@@ -1076,6 +1244,18 @@ void Renderer::shutdown()
 
 	vkDestroyBuffer( logicalDevice, vertexBuffer, nullptr );
 	vkFreeMemory( logicalDevice, vertexBufferMemory, nullptr );
+
+	vkDestroyBuffer( logicalDevice, indexBuffer, nullptr );
+	vkFreeMemory( logicalDevice, indexBufferMemory, nullptr );
+
+	for( size_t i = 0; i < swapChainImages.size(); i++ )
+	{
+		vkDestroyBuffer( logicalDevice, uniformBuffers[i], nullptr );
+		vkFreeMemory( logicalDevice, uniformBuffersMemory[i], nullptr );
+	}
+
+	vkDestroyDescriptorSetLayout( logicalDevice, descriptorSetLayout, nullptr );
+	vkDestroyDescriptorPool( logicalDevice, descriptorPool, nullptr );
 
 	vkDestroyDevice( logicalDevice, nullptr );
 

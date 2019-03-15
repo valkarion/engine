@@ -3,7 +3,6 @@
 #include <memory>
 #include <optional>
 
-#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
@@ -67,6 +66,16 @@ struct Vertex
 
 		return attribs;
 	}
+};
+
+/*
+	UBO is a global variable that will be visible during shader stages
+*/
+struct UniformBufferObject
+{
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 projection;
 };
 
 class Renderer
@@ -156,11 +165,27 @@ public:
 	uint32_t						findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags );
 	VkBuffer						vertexBuffer;
 	VkDeviceMemory					vertexBufferMemory;
+	VkBuffer						indexBuffer;
+	VkDeviceMemory					indexBufferMemory;
+	std::vector<VkBuffer>			uniformBuffers;
+	std::vector<VkDeviceMemory>		uniformBuffersMemory;
+	void							updateUniformBuffer( const uint32_t index );
+	void							copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size );
 	// abstract helper for all buffer creation process
 	void							createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
 										VkMemoryPropertyFlags memFlags, VkBuffer& buffer, VkDeviceMemory& mem );
-	void							copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size );
 	void							createVertexBuffer();
+	void							createIndexBuffer();
+	void							createUniformBuffers();
+
+// descriptor sets
+	// resource descriptors allow shaders to access to vulkan objects
+	VkDescriptorSetLayout			descriptorSetLayout;
+	VkDescriptorPool				descriptorPool;
+	std::vector<VkDescriptorSet>	descriptorSets;
+	void							createDescriptorSetLayout();
+	void							createDescriptorPool();
+	void							createDescriptorSets();
 
 public:
 	void init();
