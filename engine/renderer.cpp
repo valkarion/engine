@@ -13,8 +13,6 @@ extern CVar window_title;
 extern CVar window_width;
 extern CVar window_height;
 
-CVar r_frames_in_flight{ "r_frames_in_flight", "2" };
-
 Renderer* Renderer::instance()
 {
 	return _instance.get();
@@ -161,7 +159,7 @@ void Renderer::createVkInstance()
 	appInfo.applicationVersion = VK_MAKE_VERSION( 1, 0, 0 );
 	appInfo.engineVersion = VK_MAKE_VERSION( 1, 0, 0 );
 	appInfo.pApplicationName = window_title.value.c_str();
-	appInfo.pEngineName = "NoName Engine";
+	appInfo.pEngineName = "No Name Engine";
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 
 	VkInstanceCreateInfo createInfo = {};
@@ -923,47 +921,105 @@ uint32_t Renderer::findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags 
 	exit( -1 );
 }
 
-void Renderer::createVertexBuffer()
+void Renderer::createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
+	VkMemoryPropertyFlags memFlags, VkBuffer& buffer, VkDeviceMemory& mem )
 {
 	VkBufferCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	createInfo.size = sizeof( Vertex ) * testVertecies.size();
-	createInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	createInfo.size = size;
+	createInfo.usage = useFlags;
 	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	
-	VkResult res = vkCreateBuffer( logicalDevice, &createInfo, nullptr, &vertexBuffer );
+
+	VkResult res = vkCreateBuffer( logicalDevice, &createInfo, nullptr, &buffer );
 	if( res != VK_SUCCESS )
 	{
-		WriteToErrorLog( "Failed to create vertex buffer: " + std::to_string( res ) );
+		WriteToErrorLog( "Failed to create buffer: " + std::to_string( res ) );
 		exit( -1 );
 	}
 
+
 	VkMemoryRequirements memReq = {};
-	vkGetBufferMemoryRequirements( logicalDevice, vertexBuffer, &memReq );
-	
+	vkGetBufferMemoryRequirements( logicalDevice, buffer, &memReq );
+
 	VkMemoryAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memReq.size;
-	allocInfo.memoryTypeIndex = findMemoryType( memReq.memoryTypeBits,
-		// visible from the CPU side
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
-		// data is immediately copied from CPU -> GPU
-		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT );
-
-	res = vkAllocateMemory( logicalDevice, &allocInfo, nullptr, &vertexBufferMemory );
+	allocInfo.memoryTypeIndex = findMemoryType( memReq.memoryTypeBits, memFlags );
+	
+	res = vkAllocateMemory( logicalDevice, &allocInfo, nullptr, &mem );
 	if( res != VK_SUCCESS )
 	{
 		WriteToErrorLog( "Failed to allocate memory for the vertex buffer: " + std::to_string( res ) );
 		exit( -1 );
 	}
 
-	vkBindBufferMemory( logicalDevice, vertexBuffer, vertexBufferMemory, 0 );
+	vkBindBufferMemory( logicalDevice, buffer, mem, 0 );
+}
 
+void Renderer::createVertexBuffer()
+{	
+	VkDeviceSize bufferSize = sizeof( testVertecies[0] ) * testVertecies.size();
+	
+	/*
+		Staging buffer loads the vertecies into CPU visible memory then 
+		the data is transferred to GPU-only visible memory for better 
+		performance.	
+	*/
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	
+	createBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+		stagingBuffer, stagingBufferMemory );
+	   
 	// copy the test data into the graphics device
 	void* vertexData;
-	vkMapMemory( logicalDevice, vertexBufferMemory, 0, createInfo.size, 0, &vertexData );
-	std::memcpy( vertexData, testVertecies.data(), createInfo.size );
-	vkUnmapMemory( logicalDevice, vertexBufferMemory );
+	vkMapMemory( logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &vertexData );
+	std::memcpy( vertexData, testVertecies.data(), bufferSize );
+	vkUnmapMemory( logicalDevice, stagingBufferMemory );
+
+	createBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,		 
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory );
+
+	copyBuffer( stagingBuffer, vertexBuffer, bufferSize );
+
+	vkDestroyBuffer( logicalDevice, stagingBuffer, nullptr );
+	vkFreeMemory( logicalDevice, stagingBufferMemory, nullptr );
+}
+
+void Renderer::copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size )
+{
+	VkCommandBufferAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = commandPool;
+	allocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers( logicalDevice, &allocInfo, &commandBuffer );
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	
+	vkBeginCommandBuffer( commandBuffer, &beginInfo );
+
+		VkBufferCopy copy = {};
+		copy.size = size;
+		vkCmdCopyBuffer( commandBuffer, src, dest, 1, &copy );
+
+	vkEndCommandBuffer( commandBuffer );
+
+	VkSubmitInfo submit = {};
+	submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submit.commandBufferCount = 1;
+	submit.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit( graphicsQueue, 1, &submit, VK_NULL_HANDLE );
+	vkQueueWaitIdle( graphicsQueue );
+
+	vkFreeCommandBuffers( logicalDevice, commandPool, 1, &commandBuffer );
+
 }
 
 void Renderer::init()

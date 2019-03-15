@@ -156,6 +156,10 @@ public:
 	uint32_t						findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags );
 	VkBuffer						vertexBuffer;
 	VkDeviceMemory					vertexBufferMemory;
+	// abstract helper for all buffer creation process
+	void							createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
+										VkMemoryPropertyFlags memFlags, VkBuffer& buffer, VkDeviceMemory& mem );
+	void							copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size );
 	void							createVertexBuffer();
 
 public:

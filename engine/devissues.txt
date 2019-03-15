@@ -2,3 +2,5 @@
 - Nem lehet boost::lockfree::queue-kat listába létrehozni
 - Hogyan kell változó kapacitású queue-t létrehozni, 
 	ha nincs megadva elszál az assertion
+- Environment Változó Validation Layer felülírja a program oldali 
+	Validation Layereket
