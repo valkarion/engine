@@ -38,6 +38,12 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	return VK_FALSE;
 }
 
+const std::vector<Vertex> testVertecies = {
+	{ { 0.0f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+	{ { 0.5f, 0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+	{ { -0.5f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+};
+
 // validation layers we want 
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_LUNARG_standard_validation"
@@ -114,11 +120,9 @@ void Renderer::setupDebugCallback()
 	VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 
-	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
-		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT 
+	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT 
 		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT 
-		| VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT 
+	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT 
 		| VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	createInfo.pfnUserCallback = debugCallback;
 
@@ -464,7 +468,7 @@ void Renderer::createSwapChain()
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	// check how to handle queue family interation with the swapchain 
-	bool singleQueueFamily = queueFamilies.graphics.value() != queueFamilies.presentation.value();
+	bool singleQueueFamily = queueFamilies.graphics.value() == queueFamilies.presentation.value();
 	uint32_t queueFamilyIndecies[] = {
 		queueFamilies.graphics.value(),
 		queueFamilies.presentation.value()
@@ -576,10 +580,15 @@ void Renderer::createGraphicsPipeline()
 	};
 
 	// what is the format of the vertex input data? 
-	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
+	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};	
+	auto bindingAttr = Vertex::getAttributes();
+	auto bindingDesc = Vertex::getDescription();
+	
 	vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputCreateInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputCreateInfo.vertexBindingDescriptionCount = 0;
+	vertexInputCreateInfo.vertexBindingDescriptionCount = 1;
+	vertexInputCreateInfo.vertexAttributeDescriptionCount = (uint32_t)bindingAttr.size();
+	vertexInputCreateInfo.pVertexBindingDescriptions = &bindingDesc;
+	vertexInputCreateInfo.pVertexAttributeDescriptions = bindingAttr.data();
 
 	// the kind of geometry will be drawn from the vertecies
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
@@ -607,7 +616,6 @@ void Renderer::createGraphicsPipeline()
 	viewportCreateInfo.scissorCount = 1;
 	viewportCreateInfo.pViewports = &viewport;
 	viewportCreateInfo.viewportCount = 1;
-
 	
 	VkPipelineRasterizationStateCreateInfo rasterCreateInfo = {};
 	rasterCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -816,6 +824,11 @@ void Renderer::createCommandBuffers()
 			vkCmdBindPipeline( commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, 
 				graphicsPipeline );
 
+			VkBuffer vertexBuffers[] = { vertexBuffer };
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers( commandBuffers[i], 0, 1,
+				vertexBuffers, offsets );
+
 			vkCmdDraw( commandBuffers[i], 3, 1, 0, 0 );
 
 		vkCmdEndRenderPass( commandBuffers[i] );
@@ -889,6 +902,70 @@ void Renderer::drawFrame()
 	vkQueueWaitIdle( graphicsQueue );
 }
 
+uint32_t Renderer::findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags )
+{
+	VkPhysicalDeviceMemoryProperties memProps = {};
+	vkGetPhysicalDeviceMemoryProperties( physicalDevice, &memProps );
+
+	for( uint32_t i = 0; i < memProps.memoryTypeCount; i++ )
+	{
+		bool validMemoryType = filter & ( 1 << i );
+		bool validProperties = ( ( memProps.memoryTypes[i].propertyFlags
+			& flags ) == flags );
+
+		if( validMemoryType && validProperties )
+		{
+			return i;
+		}
+	}
+
+	WriteToErrorLog( "Failed to find memory in Renderer::findMemoryType" );
+	exit( -1 );
+}
+
+void Renderer::createVertexBuffer()
+{
+	VkBufferCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	createInfo.size = sizeof( Vertex ) * testVertecies.size();
+	createInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	
+	VkResult res = vkCreateBuffer( logicalDevice, &createInfo, nullptr, &vertexBuffer );
+	if( res != VK_SUCCESS )
+	{
+		WriteToErrorLog( "Failed to create vertex buffer: " + std::to_string( res ) );
+		exit( -1 );
+	}
+
+	VkMemoryRequirements memReq = {};
+	vkGetBufferMemoryRequirements( logicalDevice, vertexBuffer, &memReq );
+	
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memReq.size;
+	allocInfo.memoryTypeIndex = findMemoryType( memReq.memoryTypeBits,
+		// visible from the CPU side
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
+		// data is immediately copied from CPU -> GPU
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT );
+
+	res = vkAllocateMemory( logicalDevice, &allocInfo, nullptr, &vertexBufferMemory );
+	if( res != VK_SUCCESS )
+	{
+		WriteToErrorLog( "Failed to allocate memory for the vertex buffer: " + std::to_string( res ) );
+		exit( -1 );
+	}
+
+	vkBindBufferMemory( logicalDevice, vertexBuffer, vertexBufferMemory, 0 );
+
+	// copy the test data into the graphics device
+	void* vertexData;
+	vkMapMemory( logicalDevice, vertexBufferMemory, 0, createInfo.size, 0, &vertexData );
+	std::memcpy( vertexData, testVertecies.data(), createInfo.size );
+	vkUnmapMemory( logicalDevice, vertexBufferMemory );
+}
+
 void Renderer::init()
 {
 #ifdef _DEBUG
@@ -913,6 +990,7 @@ void Renderer::init()
 	createGraphicsPipeline();
 	createFrameBuffers();
 	createCommandPool();
+	createVertexBuffer();
 	createCommandBuffers();
 	createSemaphores();
 }
@@ -939,6 +1017,10 @@ void Renderer::shutdown()
 	}
 
 	vkDestroySwapchainKHR( logicalDevice, swapChain, nullptr );
+
+	vkDestroyBuffer( logicalDevice, vertexBuffer, nullptr );
+	vkFreeMemory( logicalDevice, vertexBufferMemory, nullptr );
+
 	vkDestroyDevice( logicalDevice, nullptr );
 
 	if( useValidationLayers )

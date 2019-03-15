@@ -5,6 +5,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <vulkan/vulkan.hpp>
 
@@ -25,6 +26,47 @@ struct SwapChainSupportDetails
 	VkSurfaceCapabilitiesKHR surfaceCapabilites;
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentModes;
+};
+
+/*
+	A structure describing a single point and its color 
+	also provides functions for its description to vulkan 
+*/
+struct Vertex
+{
+	glm::vec3 position;
+	glm::vec3 color;
+
+	// how to load these vertecies from memory?
+	static VkVertexInputBindingDescription getDescription()
+	{
+		VkVertexInputBindingDescription desc = {};
+		desc.binding = 0;
+		desc.stride = sizeof( Vertex );
+		desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		
+		return desc;
+	}
+
+	// what is the physical structure of the information?
+	static std::array<VkVertexInputAttributeDescription, 2> getAttributes()
+	{
+		std::array<VkVertexInputAttributeDescription, 2> attribs;
+
+		attribs[0].binding = 0;
+		// the location param in the shader 
+		attribs[0].location = 0;
+		attribs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attribs[0].offset = offsetof( Vertex, position );
+
+		attribs[1].binding = 0;
+		// the location param in the shader 
+		attribs[1].location = 1;
+		attribs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attribs[1].offset = offsetof( Vertex, color );
+
+		return attribs;
+	}
 };
 
 class Renderer
@@ -106,8 +148,15 @@ public:
 // drawing
 	VkSemaphore						imageAvailableSemaphore;
 	VkSemaphore						renderFinishedSemaphore;
-	void							createSemaphores();
+	void							createSemaphores();	
 	void							drawFrame();
+
+//	buffers 
+	// buffers require certain type(s) of memory(s), this will find it 
+	uint32_t						findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags );
+	VkBuffer						vertexBuffer;
+	VkDeviceMemory					vertexBufferMemory;
+	void							createVertexBuffer();
 
 public:
 	void init();
