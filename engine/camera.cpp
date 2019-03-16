@@ -5,33 +5,31 @@
 extern CVar window_width;
 extern CVar window_height;
 
-void Camera::displace( glm::vec3 v ) 
+void Camera::displace( glm::vec3 v )
 {
 	position += v;
 }
 
-void Camera::roll( float angle ) 
+void Camera::turn( glm::vec2 delta )
 {
-}
+	float dx = delta.x * sensitivity;
+	float dy = delta.y * sensitivity;
 
-void Camera::yaw( float angle )
-{
-	
-}
+	glm::mat4 rotx = glm::rotate( glm::mat4( 1.f ), glm::radians( -dy ), glm::vec3( 1.f, 0.f, 0.f ) );
+	glm::mat4 roty = glm::rotate( glm::mat4( 1.f ), glm::radians( dx ), glm::vec3( 0.f, 1.f, 0.f ) );
 
-void Camera::pitch( float angle ) 
-{
-
+	direction = glm::vec4( direction, 1.0f ) * rotx;
+	direction = glm::vec4( direction, 1.0f ) * roty;
 }
 
 void Camera::setAspect( float ratio )
 {
-
+	aspect = ratio;
 }
 
 glm::mat4 Camera::getView()
 {
-	glm::mat4 view = glm::lookAt( position, direction, up );
+	glm::mat4 view = glm::lookAt( position, position + direction, up );
 	return view;
 }
 
@@ -46,9 +44,10 @@ glm::mat4 Camera::getProjection()
 
 Camera::Camera() :
 	position( 0.f, 0.f, 5.f ),
-	direction( 0.f, 0.f, 0.f ),
+	direction( 0.f, 0.f, -1.f ),
 	up( 0.f, 1.f, 0.f ),
 	aspect( window_width.floatValue / window_height.floatValue ),
 	nearClip( 0.1f ),
-	farClip( 10.f )
+	farClip( 1000.f ),
+	sensitivity( 0.05f )
 {}

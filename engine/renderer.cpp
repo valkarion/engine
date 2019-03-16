@@ -920,6 +920,8 @@ void Renderer::drawFrame()
 	vkQueuePresentKHR( graphicsQueue, &presentInfo );
 
 	vkQueueWaitIdle( graphicsQueue );
+
+	renderedFrameCount++;
 }
 
 uint32_t Renderer::findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags )
@@ -1120,9 +1122,18 @@ void Renderer::updateUniformBuffer( const uint32_t index )
 
 	ubo.model = glm::rotate( glm::mat4( 1.f ), 
 		delta * glm::radians( 90.f ), glm::vec3( 0.f, 0.f, 1.f ) );
-
+	
 	ubo.view = camera.getView();
 	ubo.projection = camera.getProjection();
+
+	if( renderedFrameCount % 1'000 == 0 )
+	{
+		char buffer[128];
+		std::snprintf( buffer, 128, "p: %.2f %.2f %.2f\tl: %.2f %.2f %.2f",
+			camera.position.x, camera.position.y, camera.position.z,
+			camera.direction.x, camera.direction.y, camera.direction.z );
+		PrintToOutputWindow( buffer );
+	}
 
 	void* data;
 	vkMapMemory( logicalDevice, uniformBuffersMemory[index], 0, sizeof( UniformBufferObject ), 0, &data );
@@ -1199,6 +1210,8 @@ void Renderer::init()
 #else
 	useValidationLayers = false;
 #endif 
+
+	renderedFrameCount = 0;
 
 	createVkInstance();
 

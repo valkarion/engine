@@ -44,6 +44,13 @@ bool Application::initGLFW()
 	glfwSetWindowPos( r->window, videoMode->width / 2 - window_width.intValue / 2,
 		videoMode->height / 2 - window_height.intValue / 2 );
 
+	// set the cursor to the center of the screen 
+	glfwSetCursorPos( r->window, window_width.floatValue / 2.f, 
+		window_height.floatValue / 2.f );
+
+	// disable cursor 
+	glfwSetInputMode( r->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
+
 	return true;
 }
 

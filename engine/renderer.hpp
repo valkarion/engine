@@ -83,6 +83,7 @@ class Renderer
 	static std::unique_ptr<Renderer> _instance;
 public:
 	GLFWwindow*						window;
+	uint64_t						renderedFrameCount;
 
 // the following is setup (more-or-less) in order. 
 

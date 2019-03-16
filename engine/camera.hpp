@@ -7,21 +7,15 @@ class Camera
 public:
 	glm::vec3 position;
 	glm::vec3 direction;
-	glm::vec3 up;
-	float aspect;
+	glm::vec3 up;	
+	float aspect;	
 	float nearClip;
 	float farClip;
 
+	float sensitivity;
+
 	void displace( glm::vec3 v );
-
-	// X 
-	void roll( float angle );
-
-	// Y
-	void yaw( float angle );
-
-	// Z 
-	void pitch( float angle );
+	void turn( glm::vec2 delta );
 
 	// W/H
 	void setAspect( float ratio );
