@@ -16,6 +16,9 @@ extern CVar window_title;
 extern CVar window_width;
 extern CVar window_height;
 
+#include "camera.hpp"
+Camera camera;
+
 Renderer* Renderer::instance()
 {
 	return _instance.get();
@@ -40,6 +43,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 }
 
 const std::vector<Vertex> testVertecies = {
+	// FRONT FACE 
 	{ { -0.5f, -0.5f, 0.f }, { 1.0f, 0.0f, 0.0f } },
 	{ { 0.5f, -0.5f, 0.f }, { 0.0f, 1.0f, 0.0f } },
 	{ { 0.5f, 0.5f, 0.f }, { 0.0f, 0.0f, 1.0f } },
@@ -633,6 +637,7 @@ void Renderer::createGraphicsPipeline()
 	rasterCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterCreateInfo.lineWidth = 1.f;
 	rasterCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+	// GLM matricies need this to be CCW
 	rasterCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterCreateInfo.depthBiasEnable = VK_FALSE;
 
@@ -1112,10 +1117,12 @@ void Renderer::updateUniformBuffer( const uint32_t index )
 		currentTime - startTime ).count();
 
 	UniformBufferObject ubo = {};
-	ubo.model = glm::rotate( glm::mat4( 1.0f ), delta * glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
-	ubo.view = glm::lookAt( glm::vec3( 2.0f, 2.0f, 2.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
-	ubo.projection = glm::perspective( glm::radians( 45.0f ), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f );
-	ubo.projection[1][1] *= -1;// vulkan specific axis flipping
+
+	ubo.model = glm::rotate( glm::mat4( 1.f ), 
+		delta * glm::radians( 90.f ), glm::vec3( 0.f, 0.f, 1.f ) );
+
+	ubo.view = camera.getView();
+	ubo.projection = camera.getProjection();
 
 	void* data;
 	vkMapMemory( logicalDevice, uniformBuffersMemory[index], 0, sizeof( UniformBufferObject ), 0, &data );

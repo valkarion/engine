@@ -99,8 +99,8 @@
       <AdditionalDependencies>vulkan-1.lib;lua5.3.lib;glfw3.lib;libboost_filesystem-vc141-mt-gd-x64-1_69.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>echo  --- building shaders ---
-$(SolutionDir)shaders\compile.bat</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>
@@ -139,8 +139,8 @@ $(SolutionDir)shaders\compile.bat</Command>
       <AdditionalDependencies>vulkan-1.lib;lua5.3.lib;glfw3.lib;libboost_filesystem-vc141-mt-x64-1_69.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>echo  --- building shaders ---
-$(SolutionDir)shaders\compile.bat</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>
@@ -152,6 +152,7 @@ $(SolutionDir)shaders\compile.bat</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="cvar.cpp" />
     <ClCompile Include="cvarSystem.cpp" />
     <ClCompile Include="fileSystem.cpp" />
@@ -163,6 +164,7 @@ $(SolutionDir)shaders\compile.bat</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.hpp" />
+    <ClInclude Include="camera.hpp" />
     <ClInclude Include="cvar.hpp" />
     <ClInclude Include="cvarSystem.hpp" />
     <ClInclude Include="fileSystem.hpp" />

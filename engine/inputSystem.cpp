@@ -8,7 +8,11 @@ InputSystem* InputSystem::instance()
 	return _instance.get();
 };
 
-void InputSystem::key_callback( GLFWwindow* win, int key, int scancode,
+/*
+	Callbacks are C functions because GLFW is a C lib and cannot demangle 
+	C++ function names, they could be static functions though. 
+*/
+void key_callback( GLFWwindow* win, int key, int scancode,
 	int action, int mods )
 {
 	if( key == GLFW_KEY_SPACE && action == GLFW_RELEASE )
@@ -17,7 +21,13 @@ void InputSystem::key_callback( GLFWwindow* win, int key, int scancode,
 	}
 }
 
+void cursor_callback( GLFWwindow* win, double xpos, double ypos )
+{
+
+}
+
 void InputSystem::init( GLFWwindow* window )
 {
 	glfwSetKeyCallback( window, key_callback );
+	glfwSetCursorPosCallback( window, cursor_callback );
 }
