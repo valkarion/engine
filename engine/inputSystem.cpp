@@ -18,31 +18,15 @@ extern Camera camera;
 void key_callback( GLFWwindow* win, int key, int scancode,
 	int action, int mods )
 {
-	if( key == GLFW_KEY_SPACE && action == GLFW_RELEASE )
-	{
-		Application::instance()->quit();
-	}
+	InputSystem* is = InputSystem::instance();
 
-	if( key == GLFW_KEY_D && action == GLFW_RELEASE )
+	if( action == GLFW_RELEASE )
 	{
-		glm::vec3 right = glm::normalize( glm::cross( camera.position - camera.direction, camera.up ) );
-		camera.displace( right * -0.5f );
+		is->setKeyState( key, enu_KEY_STATE::released );
 	}
-
-	if( key == GLFW_KEY_A && action == GLFW_RELEASE )
+	else if( action == GLFW_PRESS )
 	{
-		glm::vec3 right = glm::normalize( glm::cross( camera.position - camera.direction, camera.up ) );
-		camera.displace( right * 0.5f );
-	}
-
-	if( key == GLFW_KEY_W && action == GLFW_RELEASE )
-	{
-		camera.displace( glm::normalize( camera.position - camera.direction ) * -0.5f );
-	}
-
-	if( key == GLFW_KEY_S && action == GLFW_RELEASE )
-	{
-		camera.displace( glm::normalize( camera.position - camera.direction ) * 0.5f );
+		is->setKeyState( key, enu_KEY_STATE::pressed );
 	}
 }
 
@@ -69,4 +53,53 @@ void InputSystem::init( GLFWwindow* window )
 	double mx, my;
 	glfwGetCursorPos( window, &mx, &my );
 	mouseCurrent = mousePrev = glm::vec2( (float)mx, (float)my );
+
+	for( size_t i = 0; i < keyFunctions.size(); i++ )
+	{
+		keyFunctions[i] = nullptr;
+	}
 }
+
+void InputSystem::setKeyState( const int key, const enu_KEY_STATE state )
+{
+	if( key != GLFW_KEY_UNKNOWN )
+	{
+		keyStates[key] = state;
+	}
+}
+
+void InputSystem::update()
+{
+	for( uint32_t i = 0; i < (uint32_t)keyStates.size(); i++ )
+	{
+		if( !hasCommandBound( i ) )
+		{
+			continue;
+		}
+
+		switch ( keyStates[i] )
+		{
+			case enu_KEY_STATE::pressed:
+				keyFunctions[i]();
+				keyStates[i] = enu_KEY_STATE::held;
+				break;
+			case enu_KEY_STATE::held:
+				keyFunctions[i]();
+				break;
+			case enu_KEY_STATE::released:
+				keyStates[i] = enu_KEY_STATE::not_pressed;
+				break;
+			default: break;
+		}
+	}
+}
+
+bool InputSystem::hasCommandBound( const uint32_t keyCode )
+{
+	return keyFunctions[keyCode] != false;
+}
+
+void InputSystem::addKeyboardFunction( uint32_t keyCode, std::function<void()>&& fn )
+{
+	keyFunctions[keyCode] = fn;
+};

@@ -17,7 +17,6 @@ public:
 	void displace( glm::vec3 v );
 	void turn( glm::vec2 delta );
 
-	// W/H
 	void setAspect( float ratio );
 
 	glm::mat4 getView();

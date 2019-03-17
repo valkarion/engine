@@ -84,6 +84,8 @@ void Application::run()
 	{
 		glfwPollEvents();
 
+		InputSystem::instance()->update();
+
 		Renderer::instance()->drawFrame();
 
 		SetWindowDebugTitle( Renderer::instance()->window, frameCounter.getFramerate() );

@@ -15,7 +15,7 @@ void Camera::turn( glm::vec2 delta )
 	float dx = delta.x * sensitivity;
 	float dy = delta.y * sensitivity;
 
-	glm::mat4 rotx = glm::rotate( glm::mat4( 1.f ), glm::radians( -dy ), glm::vec3( 1.f, 0.f, 0.f ) );
+	glm::mat4 rotx = glm::rotate( glm::mat4( 1.f ), glm::radians( dy ), glm::vec3( 1.f, 0.f, 0.f ) );
 	glm::mat4 roty = glm::rotate( glm::mat4( 1.f ), glm::radians( dx ), glm::vec3( 0.f, 1.f, 0.f ) );
 
 	direction = glm::vec4( direction, 1.0f ) * rotx;
