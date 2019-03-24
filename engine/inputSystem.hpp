@@ -17,6 +17,16 @@ enum class enu_KEY_STATE
 	released
 };
 
+/*
+	InputKeys are buffered into a queue, these structs 
+	get into that queue
+*/
+struct InputKeyState
+{
+	int				key;
+	enu_KEY_STATE	state;
+};
+
 class InputSystem
 {	
 	static std::unique_ptr<InputSystem> _instance;	

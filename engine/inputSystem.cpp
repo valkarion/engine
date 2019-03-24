@@ -53,11 +53,6 @@ void InputSystem::init( GLFWwindow* window )
 	double mx, my;
 	glfwGetCursorPos( window, &mx, &my );
 	mouseCurrent = mousePrev = glm::vec2( (float)mx, (float)my );
-
-	for( size_t i = 0; i < keyFunctions.size(); i++ )
-	{
-		keyFunctions[i] = nullptr;
-	}
 }
 
 void InputSystem::setKeyState( const int key, const enu_KEY_STATE state )

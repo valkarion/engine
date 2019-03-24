@@ -10,6 +10,7 @@
 #include "fileSystem.hpp"
 #include "renderer.hpp"
 #include "inputSystem.hpp"
+#include "resourceManager.hpp"
 
 CVar window_width(			"window_width",			"1440" );
 CVar window_height(			"window_height",		"900" );
@@ -103,6 +104,8 @@ void Application::quit()
 void Application::shutdown()
 {
 	Renderer::instance()->shutdown();
+
+	ResourceManager::instance()->shutdown();
 
 	glfwDestroyWindow( Renderer::instance()->window );
 	glfwTerminate();
