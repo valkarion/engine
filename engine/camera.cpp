@@ -35,7 +35,7 @@ glm::mat4 Camera::getView()
 
 glm::mat4 Camera::getProjection()
 {
-	glm::mat4 proj = glm::perspective( glm::radians( 45.f ),
+	glm::mat4 proj = glm::perspective( glm::radians( 90.f ),
 		aspect, nearClip, farClip );
 	proj[1][1] *= -1; // vulkan specific flip 
 

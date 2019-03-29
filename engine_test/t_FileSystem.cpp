@@ -8,7 +8,7 @@ void TestBMP()
 	uint32_t width = 1'440;
 	uint32_t height = 900;
 
-	BMPInfo fileInfo = LoadBMP( "valid.bmp" );
+	ImageInfo fileInfo = LoadBMP32( "valid.bmp" );
 
 	assert( width == fileInfo.width );
 	assert( height == fileInfo.height );

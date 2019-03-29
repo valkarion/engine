@@ -35,6 +35,7 @@ struct Vertex
 {
 	glm::vec3 position;
 	glm::vec3 color;
+	glm::vec2 textureCoordinates;
 
 	// how to load these vertecies from memory?
 	static VkVertexInputBindingDescription getDescription()
@@ -48,9 +49,9 @@ struct Vertex
 	}
 
 	// what is the physical structure of the information?
-	static std::array<VkVertexInputAttributeDescription, 2> getAttributes()
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributes()
 	{
-		std::array<VkVertexInputAttributeDescription, 2> attribs;
+		std::array<VkVertexInputAttributeDescription, 3> attribs;
 
 		attribs[0].binding = 0;
 		// the location param in the shader 
@@ -63,6 +64,12 @@ struct Vertex
 		attribs[1].location = 1;
 		attribs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attribs[1].offset = offsetof( Vertex, color );
+
+		attribs[2].binding = 0;
+		// the location param in the shader 
+		attribs[2].location = 2;
+		attribs[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attribs[2].offset = offsetof( Vertex, textureCoordinates );
 
 		return attribs;
 	}
@@ -133,6 +140,7 @@ public:
 
 // imageview for swapchain images 
 	std::vector<VkImageView>		swapChainImageViews;
+	VkImageView						createImageView( VkImage image, VkFormat format );
 	void							createSwapChainImageViews();
 
 // renderpass
@@ -152,6 +160,8 @@ public:
 // command pools 
 	VkCommandPool					commandPool;
 	std::vector<VkCommandBuffer>	commandBuffers;
+	VkCommandBuffer 				beginOneTimeCommands();
+	void							endOneTimeCommands( VkCommandBuffer cmdBuffer );
 	void							createCommandPool();
 	void							createCommandBuffers();
 
@@ -187,6 +197,33 @@ public:
 	void							createDescriptorSetLayout();
 	void							createDescriptorPool();
 	void							createDescriptorSets();
+
+// image helper 
+	struct CreateImageProperties
+	{
+		uint32_t width; 
+		uint32_t height;
+		VkFormat format; 
+		VkImageTiling tiling;
+		VkImageUsageFlags usage;
+		VkMemoryPropertyFlags memProps;		
+	};
+
+	void							createImage( CreateImageProperties& props, VkImage& image,
+										VkDeviceMemory& imgMemory );
+
+// texture loading 
+	VkImage							textureImage;
+	VkImageView						textureImageView;
+	VkDeviceMemory					textureImageMemory;
+	VkSampler						textureSampler;
+	void							loadTexture( const std::string& path );
+	void							transitionImageLayout( VkImage image, VkFormat format,
+										VkImageLayout oldLayout, VkImageLayout newLayout );
+	void							copyBufferToImage( VkBuffer buffer, VkImage image,
+										uint32_t width,	uint32_t height );
+	void							createTextureImageView();
+	void							createTextureSampler();
 
 public:
 	void init();

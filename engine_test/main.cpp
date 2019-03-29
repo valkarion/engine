@@ -3,7 +3,7 @@
 
 int main()
 {
-	T_FileSystem();
+	T_Renderer();
 
 	return 0;
 }

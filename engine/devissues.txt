@@ -4,3 +4,5 @@
 	ha nincs megadva elszál az assertion
 - Environment Változó Validation Layer felülírja a program oldali 
 	Validation Layereket
+- Olyan képformátum kell amit a videókártya támogat (pl.:VK_FORMAT_R8G8B8A8_UNORM)
+	Valamiért nem nagyon vannak támogatva az olyan formátumok amikben nincs alpha channel
