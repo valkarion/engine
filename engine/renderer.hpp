@@ -140,7 +140,7 @@ public:
 
 // imageview for swapchain images 
 	std::vector<VkImageView>		swapChainImageViews;
-	VkImageView						createImageView( VkImage image, VkFormat format );
+	VkImageView						createImageView( VkImage image, VkFormat format, VkImageAspectFlags aspectFlags );
 	void							createSwapChainImageViews();
 
 // renderpass
@@ -224,6 +224,17 @@ public:
 										uint32_t width,	uint32_t height );
 	void							createTextureImageView();
 	void							createTextureSampler();
+
+// depth buffering
+	VkImage							depthImage;
+	VkDeviceMemory					depthImageMemory;
+	VkImageView						depthImageView;
+	VkFormat						findDepthFormat();
+	VkFormat						findSupportedImageFormat( const std::vector<VkFormat>& candidates,
+										VkImageTiling tiling, VkFormatFeatureFlags features );
+	void							createDepthResources();
+
+
 
 public:
 	void init();
