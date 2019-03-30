@@ -1,8 +1,13 @@
-- Mi�rt �gy lett kialak�tva a project strukt�ra? 
-- Nem lehet boost::lockfree::queue-kat list�ba l�trehozni
-- Hogyan kell v�ltoz� kapacit�s� queue-t l�trehozni, 
-	ha nincs megadva elsz�l az assertion
-- Environment V�ltoz� Validation Layer fel�l�rja a program oldali 
+﻿- Miért így lett kialakítva a project struktúra?	
+	ha az engine egy lib, akkor kívülről könnyebben használható az applikációk által
+	és könnyebben lehet egy teszt frameworköt köréhúzni.
+- Nem lehet boost::lockfree::queue-kat listába létrehozni
+- Hogyan kell változó kapacitású queue-t létrehozni, 
+	ha nincs megadva elszál az assertion
+- Environment Változó Validation Layer felülírja a program oldali 
 	Validation Layereket
-- Olyan k�pform�tum kell amit a vide�k�rtya t�mogat (pl.:VK_FORMAT_R8G8B8A8_UNORM)
-	Valami�rt nem nagyon vannak t�mogatva az olyan form�tumok amikben nincs alpha channel
+- Olyan képformátum kell amit a videókártya támogat (pl.:VK_FORMAT_R8G8B8A8_UNORM)
+	Valamiért nem nagyon vannak támogatva az olyan formátumok amikben nincs alpha channel
+- Képbetöltés: van Boost.GIL de ő csak egy absztrakciót ad képfileok betöltésére, különböző 
+	típusú fileokhoz további .libek kellenek amiket lehet a gil-en keresztül használni. A GIL 
+	magától csak jpeg-et tud nyitni.
