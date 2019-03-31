@@ -10,6 +10,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
+
 std::unique_ptr<Renderer> Renderer::_instance = std::make_unique<Renderer>();
 
 extern CVar window_title;
@@ -42,6 +45,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	return VK_FALSE;
 }
 
+/*
 const std::vector<Vertex> testVertecies = {
 	// FRONT 
 	{ { -0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.f, 0.f } },		// 0
@@ -95,6 +99,8 @@ const std::vector<uint32_t> indices = {
 	21, 20, 23, 23, 22, 21
 	
 };
+*/
+
 
 // validation layers we want 
 const std::vector<const char*> validationLayers = {
@@ -937,7 +943,7 @@ void Renderer::createCommandBuffers()
 			vkCmdBindDescriptorSets( commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
 				0, 1, &descriptorSets[i], 0, nullptr );
 
-			vkCmdDrawIndexed( commandBuffers[i], (uint32_t)indices.size(), 1, 0, 0, 0 );
+			vkCmdDrawIndexed( commandBuffers[i], (uint32_t)meshInfo.vertecies.size(), 1, 0, 0, 0 );
 
 		vkCmdEndRenderPass( commandBuffers[i] );
 
@@ -1063,7 +1069,7 @@ void Renderer::createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
 	res = vkAllocateMemory( logicalDevice, &allocInfo, nullptr, &mem );
 	if( res != VK_SUCCESS )
 	{
-		WriteToErrorLog( "Failed to allocate memory for the vertex buffer: " + std::to_string( res ) );
+		WriteToErrorLog( "Failed to allocate memory for the buffer: " + std::to_string( res ) );
 		exit( -1 );
 	}
 
@@ -1072,7 +1078,7 @@ void Renderer::createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
 
 void Renderer::createVertexBuffer()
 {	
-	VkDeviceSize bufferSize = sizeof( testVertecies[0] ) * testVertecies.size();
+	VkDeviceSize bufferSize = sizeof( Vertex ) * meshInfo.vertecies.size();
 	
 	/*
 		Staging buffer loads the vertecies into CPU visible memory then 
@@ -1089,7 +1095,7 @@ void Renderer::createVertexBuffer()
 	// copy the test data into the graphics device
 	void* vertexData;
 	vkMapMemory( logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &vertexData );
-	std::memcpy( vertexData, testVertecies.data(), bufferSize );
+	std::memcpy( vertexData, meshInfo.vertecies.data(), bufferSize );
 	vkUnmapMemory( logicalDevice, stagingBufferMemory );
 
 	createBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,		 
@@ -1114,7 +1120,7 @@ void Renderer::copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size )
 
 void Renderer::createIndexBuffer()
 {
-	VkDeviceSize bufferSize = sizeof( indices[0] ) * indices.size();
+	VkDeviceSize bufferSize = sizeof( meshInfo.indicies[0] ) * meshInfo.indicies.size();
 
 	VkBuffer stagingBuffer;
 	
@@ -1125,7 +1131,7 @@ void Renderer::createIndexBuffer()
 
 	void* data;
 	vkMapMemory( logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data );
-	memcpy( data, indices.data(), (size_t)bufferSize );
+	memcpy( data, meshInfo.indicies.data(), (size_t)bufferSize );
 	vkUnmapMemory( logicalDevice, stagingBufferMemory );
 
 	createBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | 
@@ -1194,12 +1200,17 @@ void Renderer::updateUniformBuffer( const uint32_t index )
 
 	UniformBufferObject ubo = {};
 
-	ubo.model = glm::rotate( glm::mat4( 1.f ), 
-		delta * glm::radians( 90.f ), glm::vec3( 0.f, 1.f, 1.f ) );
-	// ubo.model = glm::mat4( 1.f );
+	//ubo.model = glm::rotate( glm::mat4( 1.f ), 
+	//	delta * glm::radians( 90.f ), glm::vec3( 0.f, 1.f, 1.f ) );
+	//ubo.model = glm::mat4( 1.f );
+	//
+	//ubo.view = camera.getView();
+	//ubo.projection = camera.getProjection();
 
-	ubo.view = camera.getView();
-	ubo.projection = camera.getProjection();
+	ubo.model = glm::rotate( glm::mat4( 1.0f ), delta * glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+	ubo.view = glm::lookAt( glm::vec3( 2.0f, 2.0f, 2.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+	ubo.projection = glm::perspective( glm::radians( 45.0f ), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f );
+	ubo.projection[1][1] *= -1;
 
 	//if( renderedFrameCount % 1'000 == 0 )
 	//{
@@ -1606,6 +1617,46 @@ void Renderer::createDepthResources()
 		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
 }
 
+void Renderer::loadModel( const std::string& path )
+{
+	tinyobj::attrib_t attribute;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	std::string warning, error;
+
+	if( !tinyobj::LoadObj( &attribute, &shapes, &materials, 
+		&warning, &error, path.c_str() ) )
+	{
+		WriteToErrorLog( "Failed to load model: " + path + ". " +
+			warning + " " + error );
+		exit( -1 );
+	}
+
+	for( auto& shape : shapes )
+	{
+		for( auto& index : shape.mesh.indices )
+		{
+			Vertex v;
+
+			v.position = {
+				attribute.vertices[3 * index.vertex_index],
+				attribute.vertices[3 * index.vertex_index + 1],
+				attribute.vertices[3 * index.vertex_index + 2]
+			};
+
+			v.textureCoordinates = {
+				attribute.texcoords[2 * index.texcoord_index],
+				attribute.texcoords[2 * index.texcoord_index + 1]
+			};
+
+			v.color = { 1.f, 1.f, 1.f };
+
+			meshInfo.vertecies.push_back( v );
+			meshInfo.indicies.push_back( meshInfo.indicies.size() );
+		}
+	}
+}
+
 void Renderer::init()
 {
 #ifdef _DEBUG
@@ -1634,7 +1685,9 @@ void Renderer::init()
 	createCommandPool();
 	createDepthResources();
 	createFrameBuffers();
-	loadTexture( "D:\\engine\\textures\\graphicscat.bmp" );
+	loadModel( "D:\\engine\\models\\chalet.obj" );
+	//loadTexture( "D:\\engine\\textures\\graphicscat.bmp" );
+	loadTexture( "D:\\engine\\textures\\chalet.bmp" );
 	createTextureImageView();
 	createTextureSampler();
 	createVertexBuffer();
@@ -1644,6 +1697,7 @@ void Renderer::init()
 	createDescriptorSets();
 	createCommandBuffers();
 	createSemaphores();
+
 }
 
 void Renderer::shutdown()

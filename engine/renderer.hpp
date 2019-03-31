@@ -75,6 +75,17 @@ struct Vertex
 	}
 };
 
+
+/*
+	Holds .obj data and vulkan handlers that the renderer uses 
+	to display meshes. 
+*/
+struct RendererMeshInfo
+{
+	std::vector<Vertex>		vertecies;
+	std::vector<uint32_t>	indicies;
+};
+
 /*
 	UBO is a global variable that will be visible during shader stages
 */
@@ -234,7 +245,9 @@ public:
 										VkImageTiling tiling, VkFormatFeatureFlags features );
 	void							createDepthResources();
 
-
+// models
+	RendererMeshInfo				meshInfo;
+	void							loadModel( const std::string& path );
 
 public:
 	void init();
