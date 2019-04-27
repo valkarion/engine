@@ -1164,7 +1164,7 @@ void Renderer::createDescriptorSetLayout()
 
 	VkDescriptorSetLayoutCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	createInfo.bindingCount = bindings.size();
+	createInfo.bindingCount = (uint32_t)bindings.size();
 	createInfo.pBindings = bindings.data();
 		
 	VkResult res = vkCreateDescriptorSetLayout( logicalDevice, &createInfo, nullptr, &descriptorSetLayout );
@@ -1200,12 +1200,12 @@ void Renderer::updateUniformBuffer( const uint32_t index )
 
 	UniformBufferObject ubo = {};
 
-	//ubo.model = glm::rotate( glm::mat4( 1.f ), 
-	//	delta * glm::radians( 90.f ), glm::vec3( 0.f, 1.f, 1.f ) );
-	//ubo.model = glm::mat4( 1.f );
-	//
-	//ubo.view = camera.getView();
-	//ubo.projection = camera.getProjection();
+	ubo.model = glm::rotate( glm::mat4( 1.f ), 
+		delta * glm::radians( 90.f ), glm::vec3( 0.f, 1.f, 1.f ) );
+	ubo.model = glm::mat4( 1.f );
+	
+	ubo.view = camera.getView();
+	ubo.projection = camera.getProjection();
 
 	ubo.model = glm::rotate( glm::mat4( 1.0f ), delta * glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
 	ubo.view = glm::lookAt( glm::vec3( 2.0f, 2.0f, 2.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
@@ -1238,7 +1238,7 @@ void Renderer::createDescriptorPool()
 
 	VkDescriptorPoolCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	createInfo.poolSizeCount = poolSizes.size();
+	createInfo.poolSizeCount = (uint32_t)poolSizes.size();
 	createInfo.pPoolSizes = poolSizes.data();
 	createInfo.maxSets = (uint32_t)swapChainImages.size();
 
@@ -1573,10 +1573,10 @@ VkFormat Renderer::findSupportedImageFormat( const std::vector<VkFormat>& candid
 		{
 			return it;
 		}
-
-		WriteToErrorLog( "Could not find proper format for depth buffer." );
-		exit( -1 );
 	}
+
+	WriteToErrorLog( "Could not find proper format for depth buffer." );
+	exit( -1 );
 }
 
 VkFormat Renderer::findDepthFormat()
@@ -1652,7 +1652,7 @@ void Renderer::loadModel( const std::string& path )
 			v.color = { 1.f, 1.f, 1.f };
 
 			meshInfo.vertecies.push_back( v );
-			meshInfo.indicies.push_back( meshInfo.indicies.size() );
+			meshInfo.indicies.push_back( (uint32_t)meshInfo.indicies.size() );
 		}
 	}
 }
@@ -1686,7 +1686,6 @@ void Renderer::init()
 	createDepthResources();
 	createFrameBuffers();
 	loadModel( "D:\\engine\\models\\chalet.obj" );
-	//loadTexture( "D:\\engine\\textures\\graphicscat.bmp" );
 	loadTexture( "D:\\engine\\textures\\chalet.bmp" );
 	createTextureImageView();
 	createTextureSampler();
@@ -1697,7 +1696,6 @@ void Renderer::init()
 	createDescriptorSets();
 	createCommandBuffers();
 	createSemaphores();
-
 }
 
 void Renderer::shutdown()

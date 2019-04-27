@@ -1,5 +1,3 @@
-#define NOMINMAX				// supress windows.h min and max macros
-#define WIN32_LEAN_AND_MEAN		// don't include unnecessary stuff 
 #include <Windows.h>
 
 #include "cvar.hpp"
