@@ -1200,26 +1200,17 @@ void Renderer::updateUniformBuffer( const uint32_t index )
 
 	UniformBufferObject ubo = {};
 
-	ubo.model = glm::rotate( glm::mat4( 1.f ), 
-		delta * glm::radians( 90.f ), glm::vec3( 0.f, 1.f, 1.f ) );
-	ubo.model = glm::mat4( 1.f );
+	//ubo.model = glm::rotate( glm::mat4( 1.f ), 
+	//	delta * glm::radians( 90.f ), glm::vec3( 0.f, 1.f, 1.f ) );
+	//ubo.model = glm::mat4( 1.f );
 	
 	ubo.view = camera.getView();
 	ubo.projection = camera.getProjection();
 
-	ubo.model = glm::rotate( glm::mat4( 1.0f ), delta * glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
-	ubo.view = glm::lookAt( glm::vec3( 2.0f, 2.0f, 2.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
-	ubo.projection = glm::perspective( glm::radians( 45.0f ), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f );
-	ubo.projection[1][1] *= -1;
-
-	//if( renderedFrameCount % 1'000 == 0 )
-	//{
-	//	char buffer[128];
-	//	std::snprintf( buffer, 128, "p: %.2f %.2f %.2f\tl: %.2f %.2f %.2f",
-	//		camera.position.x, camera.position.y, camera.position.z,
-	//		camera.direction.x, camera.direction.y, camera.direction.z );
-	//	PrintToOutputWindow( buffer );
-	//}
+	//ubo.model = glm::rotate( glm::mat4( 1.0f ), delta * glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+	//ubo.view = glm::lookAt( glm::vec3( 2.0f, 2.0f, 2.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+	//ubo.projection = glm::perspective( glm::radians( 45.0f ), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f );
+	//ubo.projection[1][1] *= -1;
 
 	void* data;
 	vkMapMemory( logicalDevice, uniformBuffersMemory[index], 0, sizeof( UniformBufferObject ), 0, &data );

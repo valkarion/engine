@@ -42,12 +42,15 @@ glm::mat4 Camera::getProjection()
 	return proj;
 }
 
-Camera::Camera() :
-	position( 0.f, 0.f, 5.f ),
-	direction( 0.f, 0.f, -1.f ),
-	up( 0.f, 1.f, 0.f ),
-	aspect( window_width.floatValue / window_height.floatValue ),
-	nearClip( 0.1f ),
-	farClip( 1000.f ),
-	sensitivity( 0.05f )
-{}
+void Camera::initCamera()
+{
+	position = glm::vec3( 0.f, 0.f, 5.f );
+	direction = glm::vec3( 0.f, 0.f, -1.f );
+	up = glm::vec3( 0.f, 1.f, 0.f );
+	aspect = window_width.floatValue / window_height.floatValue;
+	nearClip = 0.1f;
+	farClip = 1000.f;
+	sensitivity = 0.05f;
+}
+
+Camera::Camera() {}

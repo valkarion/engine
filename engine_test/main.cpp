@@ -3,8 +3,8 @@
 
 int main()
 {
-	//T_Renderer();
-	T_LuaController();
+	T_Renderer();
+	//T_LuaController();
 
 	return 0;
 }

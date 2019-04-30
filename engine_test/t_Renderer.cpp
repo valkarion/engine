@@ -37,10 +37,11 @@ void AddInputCommands()
 void T_Renderer()
 {
 	if( !Application::instance()->init() )
-	{
+	{		
 		exit( -1 );
 	}
 
+	camera.initCamera();
 	AddInputCommands();
 
 	Application::instance()->run();
