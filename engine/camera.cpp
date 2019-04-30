@@ -1,6 +1,9 @@
 #include "camera.hpp"
 #include "cvar.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+
+#include <iostream>
 
 extern CVar window_width;
 extern CVar window_height;
@@ -12,14 +15,16 @@ void Camera::displace( glm::vec3 v )
 
 void Camera::turn( glm::vec2 delta )
 {
-	float dx = delta.x * sensitivity;
-	float dy = delta.y * sensitivity;
+	glm::vec3 strafe =glm::cross( direction, up );
+	glm::mat4 rotation = glm::mat4( glm::rotate( -delta.x * sensitivity, up ) *
+		glm::rotate( -delta.y * sensitivity, strafe ) );
 
-	glm::mat4 rotx = glm::rotate( glm::mat4( 1.f ), glm::radians( dy ), glm::vec3( 1.f, 0.f, 0.f ) );
-	glm::mat4 roty = glm::rotate( glm::mat4( 1.f ), glm::radians( dx ), glm::vec3( 0.f, 1.f, 0.f ) );
+	direction = glm::mat3( rotation ) * direction;
 
-	direction = glm::vec4( direction, 1.0f ) * rotx;
-	direction = glm::vec4( direction, 1.0f ) * roty;
+	up = glm::cross( strafe, direction );
+
+	std::cout	<< "x: " << direction.x << '\t\t'
+				<< "y: " << direction.y << '\n';
 }
 
 void Camera::setAspect( float ratio )
@@ -50,7 +55,9 @@ void Camera::initCamera()
 	aspect = window_width.floatValue / window_height.floatValue;
 	nearClip = 0.1f;
 	farClip = 1000.f;
-	sensitivity = 0.05f;
+	sensitivity = 0.005f;
+
+	
 }
 
 Camera::Camera() {}
