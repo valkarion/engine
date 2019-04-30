@@ -1,9 +1,11 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <memory>
 
 class Camera
 {
+	static std::unique_ptr<Camera> _instance;
 public:
 	glm::vec3 position;
 	glm::vec3 direction;
@@ -24,5 +26,5 @@ public:
 
 	void initCamera();
 
-	Camera();
+	static Camera* instance();
 };

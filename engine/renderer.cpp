@@ -2,11 +2,12 @@
 #include "cvar.hpp"
 #include "loggers.hpp"
 #include "fileSystem.hpp"
-#include <GLFW/glfw3.h>
+#include "camera.hpp"
 
 #include <set>
 #include <string>
 
+#include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
 
@@ -18,9 +19,6 @@ std::unique_ptr<Renderer> Renderer::_instance = std::make_unique<Renderer>();
 extern CVar window_title;
 extern CVar window_width;
 extern CVar window_height;
-
-#include "camera.hpp"
-Camera camera;
 
 Renderer* Renderer::instance()
 {
@@ -1204,8 +1202,8 @@ void Renderer::updateUniformBuffer( const uint32_t index )
 	//	delta * glm::radians( 90.f ), glm::vec3( 0.f, 1.f, 1.f ) );
 	//ubo.model = glm::mat4( 1.f );
 	
-	ubo.view = camera.getView();
-	ubo.projection = camera.getProjection();
+	ubo.view = Camera::instance()->getView();
+	ubo.projection = Camera::instance()->getProjection();
 
 	//ubo.model = glm::rotate( glm::mat4( 1.0f ), delta * glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
 	//ubo.view = glm::lookAt( glm::vec3( 2.0f, 2.0f, 2.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );

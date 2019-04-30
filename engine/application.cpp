@@ -57,9 +57,12 @@ bool Application::init()
 {
 	CVarSystem::instance()->registerStaticCVars();
 
+	
+
 	initGLFW();
 
 	Renderer::instance()->init();
+	
 	InputSystem::instance()->init( Renderer::instance()->window );
 
 	return true;

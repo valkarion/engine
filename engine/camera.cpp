@@ -8,6 +8,12 @@
 extern CVar window_width;
 extern CVar window_height;
 
+std::unique_ptr<Camera> Camera::_instance = std::make_unique<Camera>();
+Camera* Camera::instance()
+{
+	return _instance.get();
+}
+
 void Camera::displace( glm::vec3 v )
 {
 	position += v;
@@ -22,9 +28,6 @@ void Camera::turn( glm::vec2 delta )
 	direction = glm::mat3( rotation ) * direction;
 
 	up = glm::cross( strafe, direction );
-
-	std::cout	<< "x: " << direction.x << '\t\t'
-				<< "y: " << direction.y << '\n';
 }
 
 void Camera::setAspect( float ratio )
@@ -55,9 +58,5 @@ void Camera::initCamera()
 	aspect = window_width.floatValue / window_height.floatValue;
 	nearClip = 0.1f;
 	farClip = 1000.f;
-	sensitivity = 0.005f;
-
-	
+	sensitivity = 0.005f;	
 }
-
-Camera::Camera() {}

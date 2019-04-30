@@ -1,6 +1,10 @@
 #include "luaStateController.hpp"
 
-std::unique_ptr<LuaStateController> luaStateController = std::make_unique<LuaStateController>();
+std::unique_ptr<LuaStateController> LuaStateController::_instance = std::make_unique<LuaStateController>();
+LuaStateController* LuaStateController::instance()
+{
+	return _instance.get();
+}
 
 sol::protected_function_result LuaStateController::safeRunScript( const std::string& script )
 {

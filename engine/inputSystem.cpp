@@ -91,10 +91,10 @@ void InputSystem::update()
 
 bool InputSystem::hasCommandBound( const uint32_t keyCode )
 {
-	return keyFunctions[keyCode] != false;
+	return keyFunctions[keyCode].valid();
 }
 
-void InputSystem::addKeyboardFunction( uint32_t keyCode, std::function<void()>&& fn )
+void InputSystem::addKeyboardFunction( uint32_t keyCode, sol::function&& fn )
 {
-	keyFunctions[keyCode] = fn;
+	keyFunctions[keyCode] = std::move( fn );
 };

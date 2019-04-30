@@ -57,6 +57,12 @@
     <ClCompile Include="luaStateController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="luaFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="luaClasses.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.hpp">

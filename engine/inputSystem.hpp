@@ -1,11 +1,13 @@
 #pragma once
 
-#include <memory>
-#include <glm/glm.hpp>
-#include <array>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+
+#include "libs/sol.hpp"
+
+#include <memory>
+#include <array>
 #include <unordered_map>
-#include <functional>
 
 struct GLFWwindow;
 
@@ -32,7 +34,7 @@ class InputSystem
 	static std::unique_ptr<InputSystem> _instance;	
 
 	std::array<enu_KEY_STATE, GLFW_KEY_LAST> keyStates;
-	std::array<std::function<void()>, GLFW_KEY_LAST> keyFunctions;
+	std::array<sol::function, GLFW_KEY_LAST> keyFunctions;
 public:	
 	glm::vec2 mousePrev;
 	glm::vec2 mouseCurrent;
@@ -41,7 +43,7 @@ public:
 	void setKeyState( const int key, const enu_KEY_STATE state );
 	void update();
 	bool hasCommandBound( const uint32_t keyCode );
-	void addKeyboardFunction( uint32_t keyCode, std::function<void()>&& fn );
+	void addKeyboardFunction( uint32_t keyCode, sol::function&& fn );
 
 	static InputSystem* instance();
 };

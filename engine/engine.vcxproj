@@ -235,6 +235,8 @@
     <ClCompile Include="frameCounter.cpp" />
     <ClCompile Include="inputSystem.cpp" />
     <ClCompile Include="loggers.cpp" />
+    <ClCompile Include="luaClasses.cpp" />
+    <ClCompile Include="luaFunctions.cpp" />
     <ClCompile Include="luaStateController.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="resourceManager.cpp" />
