@@ -1,4 +1,5 @@
 #include "luaStateController.hpp"
+#include "loggers.hpp"
 
 std::unique_ptr<LuaStateController> LuaStateController::_instance = std::make_unique<LuaStateController>();
 LuaStateController* LuaStateController::instance()
@@ -24,4 +25,20 @@ sol::protected_function_result LuaStateController::safeRunScriptFile( const std:
 			sol::error err = pfr;
 			return pfr;
 		} );
+}
+
+sol::table LuaStateController::getDataTable( const std::string& accessor ) const
+{
+	sol::table d = state["data"];
+	if ( d != sol::nil )
+	{
+		if ( d[accessor] != sol::nil )
+		{
+			return d[accessor];
+		}
+
+		WriteToErrorLog( "Failed to get datatable with name: %s", accessor.c_str() );
+	}
+
+	return sol::nil;
 }

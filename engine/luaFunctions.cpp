@@ -6,7 +6,7 @@ Camera* GetCamera()
 	return Camera::instance();
 }
 
-void LuaStateController::luaRegisterFunctions()
+void LuaStateController::registerFunctions()
 {
 	state["GetCamera"] = GetCamera;
 }

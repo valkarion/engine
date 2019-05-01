@@ -1,17 +1,17 @@
 -- dump stuff here
-Data = {}
+data = {}
 
 -- via this function
-function vData:extend(name, data)
-	local row = Data[name]
+function vdata:extend(name, data)
+	local row = data[name]
 
 	-- if we have no data create empty subtable 
 	if( row == nil ) then 
-		Data[name] = {}
+		data[name] = {}
 	end
 		
 	-- insert the data into the subtable 
 	for i,v in pairs(data) do 
-		Data[name][i] = v
+		data[name][i] = v
 	end
 end

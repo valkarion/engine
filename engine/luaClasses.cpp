@@ -24,7 +24,7 @@ void LCamera( sol::state& l )
 		"up", &Camera::up );
 }
 
-void LuaStateController::luaRegisterClasses()
+void LuaStateController::registerClasses()
 {
 	LVector( state );
 	LCamera( state );

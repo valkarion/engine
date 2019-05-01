@@ -116,7 +116,7 @@ public:
 	VkDebugUtilsMessengerEXT		debugMessenger;
 	void							setupDebugCallback();
 
-// the surface we'll draw to 
+	// the surface we'll draw to 
 	VkSurfaceKHR					surface;
 	VkQueue							presentQueue;
 	void							createSurface();

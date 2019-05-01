@@ -9,6 +9,7 @@
 #include "renderer.hpp"
 #include "inputSystem.hpp"
 #include "resourceManager.hpp"
+#include "luaStateController.hpp"
 
 CVar window_width(			"window_width",			"1440" );
 CVar window_height(			"window_height",		"900" );
@@ -57,7 +58,8 @@ bool Application::init()
 {
 	CVarSystem::instance()->registerStaticCVars();
 
-	
+	LuaStateController::instance()->registerFunctions();
+	LuaStateController::instance()->registerClasses();
 
 	initGLFW();
 

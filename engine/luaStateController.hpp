@@ -13,8 +13,10 @@ public:
 	sol::protected_function_result safeRunScript( const std::string& script );
 	sol::protected_function_result safeRunScriptFile( const std::string& file );
 
-	void luaRegisterClasses(); // @luaClasses.cpp
-	void luaRegisterFunctions(); // @luaFunctions.cpp 
+	void registerClasses(); // @luaClasses.cpp
+	void registerFunctions(); // @luaFunctions.cpp 
+
+	sol::table getDataTable( const std::string& accessor ) const;
 
 	static LuaStateController* instance();
 };

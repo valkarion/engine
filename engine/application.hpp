@@ -11,7 +11,7 @@ class Application
 
 	bool				exitGame;
 	bool				initGLFW();
-
+	
 	void				shutdown();
 public:
 	bool				init();

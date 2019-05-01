@@ -7,9 +7,10 @@
 
 void AddInputCommands()
 {
-	const float cameraSens = 0.01f;	
-	InputSystem* is = InputSystem::instance();
-	sol::state& l = LuaStateController::instance()->state;
+	LuaStateController::instance()->safeRunScriptFile( "scripts\\data.lua" );
+	LuaStateController::instance()->safeRunScriptFile( "scripts\\input.lua" );
+	
+	
 }
 
 void T_Renderer()

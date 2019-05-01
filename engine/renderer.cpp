@@ -20,6 +20,9 @@ extern CVar window_title;
 extern CVar window_width;
 extern CVar window_height;
 
+// this will allow to set human friendly names to objects not just memory addresses
+PFN_vkDebugMarkerSetObjectNameEXT fpDebugMarkerSetObjectNameEXT = nullptr;
+
 Renderer* Renderer::instance()
 {
 	return _instance.get();
@@ -107,7 +110,7 @@ const std::vector<const char*> validationLayers = {
 
 // non-core stuff that we need 
 const std::vector<const char*> deviceExtensions = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME	
 };
 
 // checks if the current vulkan implementation supports
@@ -1604,6 +1607,7 @@ void Renderer::createDepthResources()
 
 	transitionImageLayout( depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
+
 }
 
 void Renderer::loadModel( const std::string& path )
@@ -1666,6 +1670,7 @@ void Renderer::init()
 	createSurface();
 	createVkPhysicalDevice();
 	createVkLogicalDevice();
+
 	createSwapChain();
 	createSwapChainImageViews();
 	createRenderPass();
