@@ -1,6 +1,8 @@
 #include "inputSystem.hpp"
 #include "application.hpp"
 #include "camera.hpp"
+#include "loggers.hpp"
+#include "utils.hpp"
 #include <GLFW/glfw3.h>
 
 std::unique_ptr<InputSystem> InputSystem::_instance = std::make_unique<InputSystem>();
@@ -46,7 +48,9 @@ void cursor_callback( GLFWwindow* win, double xpos, double ypos )
 }
 
 void InputSystem::init( GLFWwindow* window )
-{
+{	
+	mappedKeyboardFunction.fill( UNSET_S );
+
 	glfwSetKeyCallback( window, key_callback );
 	glfwSetCursorPosCallback( window, cursor_callback );
 
@@ -75,11 +79,11 @@ void InputSystem::update()
 		switch ( keyStates[i] )
 		{
 			case enu_KEY_STATE::pressed:
-				keyFunctions[i]();
+				inputFunctions[mappedKeyboardFunction[i]]();
 				keyStates[i] = enu_KEY_STATE::held;
 				break;
 			case enu_KEY_STATE::held:
-				keyFunctions[i]();
+				inputFunctions[mappedKeyboardFunction[i]]();
 				break;
 			case enu_KEY_STATE::released:
 				keyStates[i] = enu_KEY_STATE::not_pressed;
@@ -91,10 +95,115 @@ void InputSystem::update()
 
 bool InputSystem::hasCommandBound( const uint32_t keyCode )
 {
-	return keyFunctions[keyCode].valid();
+	return mappedKeyboardFunction[keyCode] != UNSET_S;
 }
 
-void InputSystem::addKeyboardFunction( uint32_t keyCode, sol::function&& fn )
+int StringToGLFWKeyCode( const std::string& key )
 {
-	keyFunctions[keyCode] = std::move( fn );
-};
+	int result = GLFW_KEY_UNKNOWN;
+
+	// handle single char keys 
+	if ( key.size() == 1 )
+	{
+		char k = key[0];
+		int offset = 0;
+
+		// letters 
+		if ( k >= 'a' && k <= 'z' )
+		{
+			offset = k - 'a';
+			result = GLFW_KEY_A + offset;
+		}
+		// numbers 
+		else if ( k >= '0' && k <= '9' )
+		{
+			offset = k - '0';
+			result = GLFW_KEY_0 + offset;
+		}
+		// specials
+		else
+		{
+			switch ( k )
+			{
+			case '+': result = GLFW_KEY_KP_ADD;			break;
+			case '-': result = GLFW_KEY_KP_SUBTRACT;	break;
+			case '/': result = GLFW_KEY_KP_DIVIDE;		break;
+			case '*': result = GLFW_KEY_KP_MULTIPLY;	break;
+			}
+		}
+	}
+
+	// handle complex keys 
+	if ( result == GLFW_KEY_UNKNOWN )
+	{
+		// F-keys 
+		if ( key[0] == 'f' || key[0] == 'F' )
+		{
+			std::string keynum = key.substr( 1, key.size() );
+			int num = std::stoi( keynum ) - 1;
+			result = GLFW_KEY_F1 + num;
+		}
+		else
+		{
+			if ( key == "escape" )		result = GLFW_KEY_ESCAPE;
+			if ( key == "tab" )			result = GLFW_KEY_TAB;
+			if ( key == "lshift" )		result = GLFW_KEY_LEFT_SHIFT;
+			if ( key == "rshift" )		result = GLFW_KEY_RIGHT_SHIFT;
+			if ( key == "lctrl" )		result = GLFW_KEY_LEFT_CONTROL;
+			if ( key == "rctrl" )		result = GLFW_KEY_RIGHT_CONTROL;
+			if ( key == "lalt" )		result = GLFW_KEY_LEFT_ALT;
+			if ( key == "ralt" )		result = GLFW_KEY_RIGHT_ALT;
+			if ( key == "space" )		result = GLFW_KEY_SPACE;
+			if ( key == "left" )		result = GLFW_KEY_LEFT;
+			if ( key == "right" )		result = GLFW_KEY_RIGHT;
+			if ( key == "up" )			result = GLFW_KEY_UP;
+			if ( key == "down" )		result = GLFW_KEY_DOWN;
+			if ( key == "pgup" )		result = GLFW_KEY_PAGE_UP;
+			if ( key == "pgdown" )		result = GLFW_KEY_PAGE_DOWN;
+			if ( key == "backspace" )	result = GLFW_KEY_BACKSPACE;
+		}
+	}
+
+	return result;
+}
+
+void InputSystem::setupInputFunctions( sol::table& inputTable )
+{
+	for ( const auto& fn : inputTable )
+	{
+		std::string fnName = fn.first.as<std::string>();
+		sol::function inputFn = fn.second.as<sol::function>();
+
+		if ( inputFunctions.count( fnName ) != 0 )
+		{
+			WriteToErrorLog( "Input function with the same name already exists: %s", 
+				fnName.c_str() );
+		}
+		else
+		{
+			inputFunctions[fnName] = inputFn;
+		}
+	}
+}
+
+void InputSystem::setupKeyboardCommands( sol::table& keymapTable )
+{
+	for ( const auto& input : keymapTable )
+	{
+		sol::table row = input.second;
+
+		std::string key = row[1];
+		std::string fnName = row[2];
+
+		int keyCode = StringToGLFWKeyCode( key );
+		if ( keyCode == GLFW_KEY_UNKNOWN )
+		{
+			WriteToErrorLog( "Unrecognised input key: %s", 
+				key.c_str() );
+		}
+		else
+		{
+			mappedKeyboardFunction[keyCode] = fnName;
+		}
+	}
+}

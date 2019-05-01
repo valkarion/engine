@@ -11,8 +11,8 @@
 #include "resourceManager.hpp"
 #include "luaStateController.hpp"
 
-CVar window_width(			"window_width",			"1440" );
-CVar window_height(			"window_height",		"900" );
+CVar window_width(			"window_width",			"1280" );
+CVar window_height(			"window_height",		"800" );
 CVar window_title(			"window_title",			"No Name Engine" );
 
 std::unique_ptr<Application> Application::_instance = std::make_unique<Application>();
@@ -58,6 +58,9 @@ bool Application::init()
 {
 	CVarSystem::instance()->registerStaticCVars();
 
+	LuaStateController::instance()->state.open_libraries(
+		sol::lib::base,	sol::lib::package, sol::lib::string,
+		sol::lib::table, sol::lib::math );
 	LuaStateController::instance()->registerFunctions();
 	LuaStateController::instance()->registerClasses();
 

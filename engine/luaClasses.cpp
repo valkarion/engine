@@ -8,6 +8,20 @@ void LVector( sol::state& l )
 		"x", &glm::vec3::x,
 		"y", &glm::vec3::y,
 		"z", &glm::vec3::z,
+		"length", glm::vec3::length,
+
+		sol::meta_function::addition, [&]( const glm::vec3& lhs, const glm::vec3& rhs ) -> glm::vec3
+		{
+			return lhs + rhs;
+		},
+		sol::meta_function::subtraction, [&]( const glm::vec3& lhs, const glm::vec3& rhs ) -> glm::vec3
+		{
+			return glm::vec3( lhs - rhs );
+		},
+		sol::meta_function::multiplication, [&]( const glm::vec3& lhs, float rhs ) -> glm::vec3
+		{
+			return lhs * rhs;
+		},
 
 		"new", sol::constructors<
 			glm::vec3(),
@@ -19,9 +33,20 @@ void LVector( sol::state& l )
 void LCamera( sol::state& l )
 {
 	l.new_usertype<Camera>("Camera", 
-		"postion", &Camera::position, 
-		"direction", &Camera::direction, 
-		"up", &Camera::up );
+		"displace", &Camera::displace, 
+		"turn", &Camera::turn,
+		"getPosition", [&]() -> glm::vec3 
+		{
+			return Camera::instance()->position;
+		},
+		"getDirection", [&]() -> glm::vec3
+		{
+			return Camera::instance()->direction;
+		},
+		"getUp", [&]() -> glm::vec3
+		{
+			return Camera::instance()->up;
+		} );
 }
 
 void LuaStateController::registerClasses()

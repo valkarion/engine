@@ -13,6 +13,7 @@ sol::protected_function_result LuaStateController::safeRunScript( const std::str
 		[this]( lua_State*, sol::protected_function_result pfr )
 		{
 			sol::error err = pfr;
+			PrintToOutputWindow( err.what() );
 			return pfr;
 		} );
 }
@@ -23,6 +24,7 @@ sol::protected_function_result LuaStateController::safeRunScriptFile( const std:
 		[this]( lua_State*, sol::protected_function_result pfr )
 		{
 			sol::error err = pfr;
+			PrintToOutputWindow( err.what() );
 			return pfr;
 		} );
 }
@@ -31,13 +33,14 @@ sol::table LuaStateController::getDataTable( const std::string& accessor ) const
 {
 	sol::table d = state["data"];
 	if ( d != sol::nil )
-	{
+	{		
 		if ( d[accessor] != sol::nil )
 		{
 			return d[accessor];
 		}
 
 		WriteToErrorLog( "Failed to get datatable with name: %s", accessor.c_str() );
+		return sol::nil;
 	}
 
 	return sol::nil;

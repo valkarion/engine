@@ -16,7 +16,10 @@ Camera* Camera::instance()
 
 void Camera::displace( glm::vec3 v )
 {
-	position += v;
+	if ( !isnan( v.x ) && !isnan( v.y ) )
+	{
+		position += v;
+	}
 }
 
 void Camera::turn( glm::vec2 delta )

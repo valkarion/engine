@@ -10,7 +10,11 @@ void AddInputCommands()
 	LuaStateController::instance()->safeRunScriptFile( "scripts\\data.lua" );
 	LuaStateController::instance()->safeRunScriptFile( "scripts\\input.lua" );
 	
-	
+	sol::table input = LuaStateController::instance()->getDataTable( "input" );
+	sol::table keymap = LuaStateController::instance()->getDataTable( "keymap" );
+
+	InputSystem::instance()->setupInputFunctions( input );
+	InputSystem::instance()->setupKeyboardCommands( keymap );
 }
 
 void T_Renderer()

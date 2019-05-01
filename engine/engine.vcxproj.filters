@@ -104,5 +104,8 @@
     <ClInclude Include="libs\sol.hpp">
       <Filter>libs</Filter>
     </ClInclude>
+    <ClInclude Include="utils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

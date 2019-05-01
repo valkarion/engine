@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <array>
-#include <unordered_map>
+#include <map>
 
 struct GLFWwindow;
 
@@ -33,8 +33,9 @@ class InputSystem
 {	
 	static std::unique_ptr<InputSystem> _instance;	
 
+	std::map<std::string, sol::function> inputFunctions;
+	std::array<std::string, GLFW_KEY_LAST> mappedKeyboardFunction;
 	std::array<enu_KEY_STATE, GLFW_KEY_LAST> keyStates;
-	std::array<sol::function, GLFW_KEY_LAST> keyFunctions;
 
 	bool hasCommandBound( const uint32_t keyCode );
 public:	
@@ -43,8 +44,10 @@ public:
 
 	void init( GLFWwindow* window );
 	void setKeyState( const int key, const enu_KEY_STATE state );
-	void addKeyboardFunction( uint32_t keyCode, sol::function&& fn );
 	void update();	
+
+	void setupInputFunctions( sol::table& inputTable );
+	void setupKeyboardCommands( sol::table& keymapTable );
 
 	static InputSystem* instance();
 };
