@@ -51,6 +51,8 @@ public:
 
 void T_LuaController()
 {	
+	LuaStateController* luaStateController = LuaStateController::instance();
+
 // check valid script run 
 	auto res = luaStateController->safeRunScript( "return 2 + 2" );	
 	assert( res.status() == sol::call_status::ok );

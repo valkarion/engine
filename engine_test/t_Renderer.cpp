@@ -5,8 +5,6 @@
 #include "camera.hpp"
 #include <glm/glm.hpp>
 
-extern Camera camera;
-
 void AddInputCommands()
 {
 	const float cameraSens = 0.01f;	
@@ -21,7 +19,7 @@ void T_Renderer()
 		exit( -1 );
 	}
 
-	camera.initCamera();
+	Camera::instance()->initCamera();
 	AddInputCommands();
 
 	Application::instance()->run();
