@@ -1,3 +1,4 @@
 #pragma once
 
-#define UNSET_S "__unset"
+#define UNSET_ID	-1
+#define UNSET_S		"__unset"
