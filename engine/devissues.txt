@@ -11,3 +11,4 @@
 - Képbetöltés: van Boost.GIL de ő csak egy absztrakciót ad képfileok betöltésére, különböző 
 	típusú fileokhoz további .libek kellenek amiket lehet a gil-en keresztül használni. A GIL 
 	magától csak jpeg-et tud nyitni.
+- Boost.StrongTypeDef alapokon működik az egyedi azonosító kezelés

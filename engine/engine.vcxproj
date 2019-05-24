@@ -247,8 +247,10 @@
     <ClInclude Include="camera.hpp" />
     <ClInclude Include="cvar.hpp" />
     <ClInclude Include="cvarSystem.hpp" />
+    <ClInclude Include="entityManager.hpp" />
     <ClInclude Include="fileSystem.hpp" />
     <ClInclude Include="frameCounter.hpp" />
+    <ClInclude Include="idManager.hpp" />
     <ClInclude Include="inputSystem.hpp" />
     <ClInclude Include="libs\sol.hpp" />
     <ClInclude Include="loggers.hpp" />
