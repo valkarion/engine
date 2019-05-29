@@ -53,20 +53,21 @@ struct Vertex
 	{
 		std::array<VkVertexInputAttributeDescription, 3> attribs;
 
+	// VERTEX POSITION
 		attribs[0].binding = 0;
 		// the location param in the shader 
 		attribs[0].location = 0;
 		attribs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attribs[0].offset = offsetof( Vertex, position );
 
+	// VERTEX COLOR
 		attribs[1].binding = 0;
-		// the location param in the shader 
 		attribs[1].location = 1;
 		attribs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attribs[1].offset = offsetof( Vertex, color );
 
-		attribs[2].binding = 0;
-		// the location param in the shader 
+	// VERTEX TEXTURE COORDINATE
+		attribs[2].binding = 0; 
 		attribs[2].location = 2;
 		attribs[2].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attribs[2].offset = offsetof( Vertex, textureCoordinates );
@@ -110,16 +111,16 @@ public:
 // main vulkan handle
 	VkInstance						vkInstance;
 	std::vector<const char*>		getInstanceExtensions();
-	void							createVkInstance();
+	VkResult						createVkInstance();
 
 // debugger is only setup in debug mode 
 	VkDebugUtilsMessengerEXT		debugMessenger;
-	void							setupDebugCallback();
+	VkResult						setupDebugCallback();
 
 	// the surface we'll draw to 
 	VkSurfaceKHR					surface;
 	VkQueue							presentQueue;
-	void							createSurface();
+	VkResult						createSurface();
 
 // the videocard 
 	VkPhysicalDevice				physicalDevice;
@@ -129,12 +130,12 @@ public:
 	bool							checkForSupportedExtensions( VkPhysicalDevice device );
 	void							getSwapChainSupportDetails( VkPhysicalDevice device );
 	bool							isPhysicalDeviceSuitable( VkPhysicalDevice device );
-	void							createVkPhysicalDevice();
+	VkResult						createVkPhysicalDevice();
 
 // vulkan handle to the gpu 
 	VkQueue							graphicsQueue;
 	VkDevice						logicalDevice;
-	void							createVkLogicalDevice();
+	VkResult						createVkLogicalDevice();
 
 // swapchain 
 	VkSwapchainKHR					swapChain;
@@ -147,39 +148,41 @@ public:
 	VkPresentModeKHR				chooseSwapChainPresentMode();
 	// the size of the images we'll draw
 	VkExtent2D						chooseSwapChainExtent();
-	void							createSwapChain();
+	VkResult						createSwapChain();
 
 // imageview for swapchain images 
 	std::vector<VkImageView>		swapChainImageViews;
-	VkImageView						createImageView( VkImage image, VkFormat format, VkImageAspectFlags aspectFlags );
-	void							createSwapChainImageViews();
+	VkResult						createImageView( const VkImage image,
+		const VkFormat format, const VkImageAspectFlags aspectFlags, VkImageView* view );
+	VkResult						createSwapChainImageViews();
 
 // renderpass
 	VkRenderPass					renderPass;
-	void							createRenderPass();
+	VkResult						createRenderPass();
 
 // graphics pipeline
 	VkPipeline						graphicsPipeline;
 	VkPipelineLayout				pipelineLayout;
-	VkShaderModule					createShaderModule( const std::vector<char>& code );
-	void							createGraphicsPipeline();
+	VkResult						createShaderModule(
+		const std::vector<char>& code, VkShaderModule* module );
+	VkResult						createGraphicsPipeline();
 
 // framebuffers
 	std::vector<VkFramebuffer>		frameBuffers;
-	void							createFrameBuffers();
+	VkResult						createFrameBuffers();
 
 // command pools 
 	VkCommandPool					commandPool;
 	std::vector<VkCommandBuffer>	commandBuffers;
 	VkCommandBuffer 				beginOneTimeCommands();
 	void							endOneTimeCommands( VkCommandBuffer cmdBuffer );
-	void							createCommandPool();
-	void							createCommandBuffers();
+	VkResult						createCommandPool();
+	VkResult						createCommandBuffers();
 
 // drawing
 	VkSemaphore						imageAvailableSemaphore;
 	VkSemaphore						renderFinishedSemaphore;
-	void							createSemaphores();	
+	VkResult						createSemaphores();	
 	void							drawFrame();
 
 //	buffers 
@@ -194,20 +197,20 @@ public:
 	void							updateUniformBuffer( const uint32_t index );
 	void							copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size );
 	// abstract helper for all buffer creation process
-	void							createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
+	VkResult						createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
 										VkMemoryPropertyFlags memFlags, VkBuffer& buffer, VkDeviceMemory& mem );
-	void							createVertexBuffer();
-	void							createIndexBuffer();
-	void							createUniformBuffers();
+	VkResult						createVertexBuffer();
+	VkResult						createIndexBuffer();
+	VkResult						createUniformBuffers();
 
 // descriptor sets
 	// resource descriptors allow shaders to access to vulkan objects
 	VkDescriptorSetLayout			descriptorSetLayout;
 	VkDescriptorPool				descriptorPool;
 	std::vector<VkDescriptorSet>	descriptorSets;
-	void							createDescriptorSetLayout();
-	void							createDescriptorPool();
-	void							createDescriptorSets();
+	VkResult						createDescriptorSetLayout();
+	VkResult						createDescriptorPool();
+	VkResult						createDescriptorSets();
 
 // image helper 
 	struct CreateImageProperties
@@ -220,8 +223,8 @@ public:
 		VkMemoryPropertyFlags memProps;		
 	};
 
-	void							createImage( CreateImageProperties& props, VkImage& image,
-										VkDeviceMemory& imgMemory );
+	VkResult						createImage( CreateImageProperties& props, 
+		VkImage& image,	VkDeviceMemory& imgMemory );
 
 // texture loading 
 	VkImage							textureImage;
@@ -233,8 +236,8 @@ public:
 										VkImageLayout oldLayout, VkImageLayout newLayout );
 	void							copyBufferToImage( VkBuffer buffer, VkImage image,
 										uint32_t width,	uint32_t height );
-	void							createTextureImageView();
-	void							createTextureSampler();
+	VkResult						createTextureImageView();
+	VkResult						createTextureSampler();
 
 // depth buffering
 	VkImage							depthImage;
@@ -243,7 +246,7 @@ public:
 	VkFormat						findDepthFormat();
 	VkFormat						findSupportedImageFormat( const std::vector<VkFormat>& candidates,
 										VkImageTiling tiling, VkFormatFeatureFlags features );
-	void							createDepthResources();
+	VkResult						createDepthResources();
 
 // models
 	RendererMeshInfo				meshInfo;
