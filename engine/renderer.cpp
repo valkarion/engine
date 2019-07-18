@@ -40,19 +40,6 @@ bool QueueFamilyIndicies::isValid() const
 	return graphics.has_value() && presentation.has_value();
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-	VkDebugUtilsMessageTypeFlagsEXT messageType,
-	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-	void* pUserData )
-{
-	std::string msg = "validation layer: ";
-	msg += pCallbackData->pMessage;
-	PrintToOutputWindow( msg );
-
-	return VK_FALSE;
-}
-
 // validation layers we want 
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_LUNARG_standard_validation"
@@ -63,80 +50,6 @@ const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME	
 };
 
-// checks if the current vulkan implementation supports
-// all the validation layers above 
-bool CheckValidationLayerSupport()
-{
-	bool allLayersSupported = true;
-
-	// no. vulkan supported layers 
-	uint32_t layerCount;
-	vkEnumerateInstanceLayerProperties( &layerCount, nullptr );
-
-	// the vulkan supported layers 
-	std::vector<VkLayerProperties> availableLayers( layerCount );
-	vkEnumerateInstanceLayerProperties( &layerCount, availableLayers.data() );
-	
-	// check if every requested validation layer is supported 
-	for( auto& it : validationLayers )
-	{
-		bool layerFound = false;
-		for( auto& layer : availableLayers )
-		{			
-			if( std::strcmp( layer.layerName, it ) == 0 )
-			{
-				layerFound = true;
-				break;
-			}
-		}
-
-		if( !layerFound )
-		{
-			char buffer[256];
-			sprintf_s( buffer, 256, "Missing validation layer: %s", it );
-			PrintToOutputWindow( buffer );
-			allLayersSupported = false;
-		}
-	}
-
-	return allLayersSupported;
-}
-
-VkResult CreateDebugUtilsMessengerEXT( VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger )
-{
-	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr( instance, "vkCreateDebugUtilsMessengerEXT" );
-	if( func != nullptr )
-	{
-		return func( instance, pCreateInfo, pAllocator, pDebugMessenger );
-	}
-	else
-	{
-		return VK_ERROR_EXTENSION_NOT_PRESENT;
-	}
-}
-
-void DestroyDebugUtilsMessengerEXT( VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator )
-{
-	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr( instance, "vkDestroyDebugUtilsMessengerEXT" );
-	if( func != nullptr )
-	{
-		func( instance, debugMessenger, pAllocator );
-	}
-}
-
-VkResult Renderer::setupDebugCallback()
-{
-	VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-
-	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT 
-		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT 
-		| VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	createInfo.pfnUserCallback = debugCallback;
-
-	return CreateDebugUtilsMessengerEXT( vkInstance, &createInfo, nullptr, &debugMessenger );
-}
 
 std::vector<const char*> Renderer::getInstanceExtensions()
 {	
@@ -1493,21 +1406,13 @@ void Renderer::init()
 	#else
 	useValidationLayers = false;
 	#endif 
-	
+		
 	renderedFrameCount = 0;
-
-	if ( useValidationLayers && !CheckValidationLayerSupport() )
-	{
-		WriteToErrorLog( "Failed to find requested validation layers." );
-		exit( -1 );
-	}
 
 	VKCHECK( createVkInstance() );
 
-	if( useValidationLayers )
-	{
-		VKCHECK( setupDebugCallback() );
-	}
+	debugger.instance = vkInstance;
+	VKCHECK( debugger.initialize( useValidationLayers ) );
 
 	VKCHECK( createSurface() );
 	VKCHECK( createVkPhysicalDevice() );
@@ -1579,10 +1484,7 @@ void Renderer::shutdown()
 
 	vkDestroyDevice( logicalDevice, nullptr );
 
-	if( useValidationLayers )
-	{
-		DestroyDebugUtilsMessengerEXT( vkInstance, debugMessenger, nullptr );
-	}
+	debugger.shutdown();
 
 	vkDestroySurfaceKHR( vkInstance, surface, nullptr );
 	vkDestroyInstance( vkInstance, nullptr );

@@ -243,6 +243,7 @@
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="resourceManager.cpp" />
     <ClCompile Include="taskScheduler.cpp" />
+    <ClCompile Include="vulkanDebugger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.hpp" />
@@ -262,6 +263,7 @@
     <ClInclude Include="resourceManager.hpp" />
     <ClInclude Include="taskScheduler.hpp" />
     <ClInclude Include="utils.hpp" />
+    <ClInclude Include="vulkanDebugger.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

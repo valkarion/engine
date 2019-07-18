@@ -8,6 +8,8 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include "vulkanDebugger.hpp"
+
 // indecies of the queues that can handle commands we need
 struct QueueFamilyIndicies
 {
@@ -105,7 +107,6 @@ public:
 	uint64_t						renderedFrameCount;
 
 // the following is setup (more-or-less) in order. 
-
 	bool							useValidationLayers;
 
 // main vulkan handle
@@ -114,8 +115,7 @@ public:
 	VkResult						createVkInstance();
 
 // debugger is only setup in debug mode 
-	VkDebugUtilsMessengerEXT		debugMessenger;
-	VkResult						setupDebugCallback();
+	VulkanDebugger					debugger;
 
 	// the surface we'll draw to 
 	VkSurfaceKHR					surface;
