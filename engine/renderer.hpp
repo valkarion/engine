@@ -9,6 +9,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "vulkanDebugger.hpp"
+#include "vulkanBuffer.hpp"
 
 // indecies of the queues that can handle commands we need
 struct QueueFamilyIndicies
@@ -188,19 +189,18 @@ public:
 //	buffers 
 	// buffers require certain type(s) of memory(s), this will find it 
 	uint32_t						findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags );
-	VkBuffer						vertexBuffer;
-	VkDeviceMemory					vertexBufferMemory;
-	VkBuffer						indexBuffer;
-	VkDeviceMemory					indexBufferMemory;
-	std::vector<VkBuffer>			uniformBuffers;
-	std::vector<VkDeviceMemory>		uniformBuffersMemory;
+	VulkanBuffer					vertexBuffer;
+	VulkanBuffer					indexBuffer;
+	std::vector<VulkanBuffer>		uniformBuffers;
+
 	void							updateUniformBuffer( const uint32_t index );
 	void							copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size );
 	// abstract helper for all buffer creation process
 	VkResult						createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
-										VkMemoryPropertyFlags memFlags, VkBuffer& buffer, VkDeviceMemory& mem );
+										VkMemoryPropertyFlags memFlags, VulkanBuffer& buffer );
 	VkResult						createVertexBuffer();
 	VkResult						createIndexBuffer();
+	void							TestBindModel();
 	VkResult						createUniformBuffers();
 
 // descriptor sets
