@@ -10,6 +10,8 @@
 
 #include "vulkanDebugger.hpp"
 #include "vulkanBuffer.hpp"
+#include "vulkanVertex.hpp"
+#include "vulkanSwapchain.hpp"
 
 // indecies of the queues that can handle commands we need
 struct QueueFamilyIndicies
@@ -22,63 +24,6 @@ struct QueueFamilyIndicies
 
 	bool isValid() const;
 };
-
-struct SwapChainSupportDetails
-{
-	VkSurfaceCapabilitiesKHR surfaceCapabilites;
-	std::vector<VkSurfaceFormatKHR> formats;
-	std::vector<VkPresentModeKHR> presentModes;
-};
-
-/*
-	A structure describing a single point and its color 
-	also provides functions for its description to vulkan 
-*/
-struct Vertex
-{
-	glm::vec3 position;
-	glm::vec3 color;
-	glm::vec2 textureCoordinates;
-
-	// how to load these vertecies from memory?
-	static VkVertexInputBindingDescription getDescription()
-	{
-		VkVertexInputBindingDescription desc = {};
-		desc.binding = 0;
-		desc.stride = sizeof( Vertex );
-		desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-		
-		return desc;
-	}
-
-	// what is the physical structure of the information?
-	static std::array<VkVertexInputAttributeDescription, 3> getAttributes()
-	{
-		std::array<VkVertexInputAttributeDescription, 3> attribs;
-
-	// VERTEX POSITION
-		attribs[0].binding = 0;
-		// the location param in the shader 
-		attribs[0].location = 0;
-		attribs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attribs[0].offset = offsetof( Vertex, position );
-
-	// VERTEX COLOR
-		attribs[1].binding = 0;
-		attribs[1].location = 1;
-		attribs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attribs[1].offset = offsetof( Vertex, color );
-
-	// VERTEX TEXTURE COORDINATE
-		attribs[2].binding = 0; 
-		attribs[2].location = 2;
-		attribs[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attribs[2].offset = offsetof( Vertex, textureCoordinates );
-
-		return attribs;
-	}
-};
-
 
 /*
 	Holds .obj data and vulkan handlers that the renderer uses 
@@ -126,10 +71,8 @@ public:
 // the videocard 
 	VkPhysicalDevice				physicalDevice;
 	QueueFamilyIndicies				queueFamilies;
-	SwapChainSupportDetails			swapChainSupportDetails;
 	void							findQueueFamilies( VkPhysicalDevice );
 	bool							checkForSupportedExtensions( VkPhysicalDevice device );
-	void							getSwapChainSupportDetails( VkPhysicalDevice device );
 	bool							isPhysicalDeviceSuitable( VkPhysicalDevice device );
 	VkResult						createVkPhysicalDevice();
 
@@ -139,23 +82,7 @@ public:
 	VkResult						createVkLogicalDevice();
 
 // swapchain 
-	VkSwapchainKHR					swapChain;
-	VkFormat						swapChainFormat;
-	VkExtent2D						swapChainExtent;
-	std::vector<VkImage>			swapChainImages;
-	// the color format 
-	VkSurfaceFormatKHR				chooseSwapChainSurfaceFormat();
-	// image display mode 
-	VkPresentModeKHR				chooseSwapChainPresentMode();
-	// the size of the images we'll draw
-	VkExtent2D						chooseSwapChainExtent();
-	VkResult						createSwapChain();
-
-// imageview for swapchain images 
-	std::vector<VkImageView>		swapChainImageViews;
-	VkResult						createImageView( const VkImage image,
-		const VkFormat format, const VkImageAspectFlags aspectFlags, VkImageView* view );
-	VkResult						createSwapChainImageViews();
+	VulkanSwapchain					swapchain;
 
 // renderpass
 	VkRenderPass					renderPass;
