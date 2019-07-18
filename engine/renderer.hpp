@@ -48,6 +48,11 @@ struct UniformBufferObject
 class Renderer
 {
 	static std::unique_ptr<Renderer> _instance;
+
+	uint32_t						currentImageIndex;
+	void							beginDraw();
+	void							draw();
+	void							endDraw();
 public:
 	GLFWwindow*						window;
 	uint64_t						renderedFrameCount;
@@ -110,7 +115,7 @@ public:
 // drawing
 	VkSemaphore						imageAvailableSemaphore;
 	VkSemaphore						renderFinishedSemaphore;
-	VkResult						createSemaphores();	
+	VkResult						createSemaphores();		
 	void							drawFrame();
 
 //	buffers 
@@ -174,7 +179,7 @@ public:
 	VkFormat						findSupportedImageFormat( const std::vector<VkFormat>& candidates,
 										VkImageTiling tiling, VkFormatFeatureFlags features );
 	VkResult						createDepthResources();
-
+	
 // models
 	RendererMeshInfo				meshInfo;
 	void							loadModel( const std::string& path );

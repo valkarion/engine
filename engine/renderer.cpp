@@ -485,6 +485,7 @@ VkResult Renderer::createCommandPool()
 	VkCommandPoolCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	createInfo.queueFamilyIndex = queueFamilies.graphics.value();
+	createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	return vkCreateCommandPool( logicalDevice, &createInfo, nullptr, &commandPool );
 }
@@ -502,54 +503,6 @@ VkResult Renderer::createCommandBuffers()
 	VKCHECK( vkAllocateCommandBuffers( logicalDevice, &allocateInfo, 
 		commandBuffers.data() ) );
 	
-	for( size_t i = 0; i < commandBuffers.size(); i++ )
-	{
-		VkCommandBufferBeginInfo beginInfo = {};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-
-		VKCHECK( vkBeginCommandBuffer( commandBuffers[i], &beginInfo ) );
-
-		VkRenderPassBeginInfo renderPassBeginInfo = {};
-		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassBeginInfo.renderPass = renderPass;
-		renderPassBeginInfo.framebuffer = frameBuffers[i];
-		renderPassBeginInfo.renderArea.extent = swapchain.extent;
-		renderPassBeginInfo.renderArea.offset = VkOffset2D{ 0, 0 };
-
-		VkClearValue colorClearValue = { 0.0f, 0.0f, 0.0f, 0.0f };
-		VkClearValue depthClearValue = { 1.f, 0.f };
-
-		std::array<VkClearValue, 2> clearValues = {
-			colorClearValue, depthClearValue
-		};
-
-		renderPassBeginInfo.clearValueCount = (uint32_t)clearValues.size();
-		renderPassBeginInfo.pClearValues = clearValues.data();
-
-		vkCmdBeginRenderPass( commandBuffers[i], &renderPassBeginInfo, 
-			VK_SUBPASS_CONTENTS_INLINE );
-
-			vkCmdBindPipeline( commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, 
-				graphicsPipeline );
-
-			VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
-			VkDeviceSize offsets[] = { 0 };
-			vkCmdBindVertexBuffers( commandBuffers[i], 0, 1,
-				vertexBuffers, offsets );
-			
-			vkCmdBindIndexBuffer( commandBuffers[i], indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
-
-			vkCmdBindDescriptorSets( commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
-				0, 1, &descriptorSets[i], 0, nullptr );
-
-			vkCmdDrawIndexed( commandBuffers[i], (uint32_t)meshInfo.vertecies.size(), 1, 0, 0, 0 );
-
-		vkCmdEndRenderPass( commandBuffers[i] );
-
-		VKCHECK( vkEndCommandBuffer( commandBuffers[i] ) );
-	}
-
 	return VK_SUCCESS;
 }
 
@@ -564,14 +517,65 @@ VkResult Renderer::createSemaphores()
 	return VK_SUCCESS;
 }
 
-void Renderer::drawFrame()
+void Renderer::beginDraw()
 {
 	// grab an image from the swapchain 
-	uint32_t imageIndex;
 	vkAcquireNextImageKHR( logicalDevice, swapchain.swapChain, std::numeric_limits<uint64_t>::max(),
-		imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex );
+		imageAvailableSemaphore, VK_NULL_HANDLE, &currentImageIndex );
 
-	updateUniformBuffer( imageIndex );
+	updateUniformBuffer( currentImageIndex );
+	
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+
+	VKCHECK( vkBeginCommandBuffer( commandBuffers[currentImageIndex], &beginInfo ) );
+
+	VkRenderPassBeginInfo renderPassBeginInfo = {};
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBeginInfo.renderPass = renderPass;
+	renderPassBeginInfo.framebuffer = frameBuffers[currentImageIndex];
+	renderPassBeginInfo.renderArea.extent = swapchain.extent;
+	renderPassBeginInfo.renderArea.offset = VkOffset2D{ 0, 0 };
+
+	VkClearValue colorClearValue = { 0.0f, 0.0f, 0.0f, 0.0f };
+	VkClearValue depthClearValue = { 1.f, 0.f };
+
+	std::array<VkClearValue, 2> clearValues = {
+		colorClearValue, depthClearValue
+	};
+
+	renderPassBeginInfo.clearValueCount = (uint32_t)clearValues.size();
+	renderPassBeginInfo.pClearValues = clearValues.data();
+
+	vkCmdBeginRenderPass( commandBuffers[currentImageIndex], &renderPassBeginInfo,
+		VK_SUBPASS_CONTENTS_INLINE );
+}
+
+void Renderer::draw()
+{
+	VkCommandBuffer cmdBuf = commandBuffers[currentImageIndex];
+
+	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		graphicsPipeline );
+
+	VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
+	VkDeviceSize offsets[] = { 0 };
+	vkCmdBindVertexBuffers( cmdBuf, 0, 1,
+		vertexBuffers, offsets );
+
+	vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
+
+	vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
+		0, 1, &descriptorSets[currentImageIndex], 0, nullptr );
+
+	vkCmdDrawIndexed( cmdBuf, (uint32_t)meshInfo.vertecies.size(), 1, 0, 0, 0 );
+
+}
+
+void Renderer::endDraw()
+{
+	VkCommandBuffer cmdBuf = commandBuffers[currentImageIndex];
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -582,14 +586,18 @@ void Renderer::drawFrame()
 	submitInfo.pWaitSemaphores = wait;
 	submitInfo.pWaitDstStageMask = waitAtStage;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+	submitInfo.pCommandBuffers = &commandBuffers[currentImageIndex];
 
 	VkSemaphore signal[] = { renderFinishedSemaphore };
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signal;
 
+	vkCmdEndRenderPass( cmdBuf );
+
+	VKCHECK( vkEndCommandBuffer( cmdBuf ) );
+
 	VkResult res = vkQueueSubmit( graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE );
-	if( res != VK_SUCCESS )
+	if ( res != VK_SUCCESS )
 	{
 		WriteToErrorLog( "Failed to submit draw commands to the queue: " + std::to_string( res ) );
 		exit( -1 );
@@ -603,13 +611,20 @@ void Renderer::drawFrame()
 	VkSwapchainKHR swapchains[] = { swapchain.swapChain };
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapchains;
-	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pImageIndices = &currentImageIndex;
 
 	vkQueuePresentKHR( graphicsQueue, &presentInfo );
 
 	vkQueueWaitIdle( graphicsQueue );
 
 	renderedFrameCount++;
+}
+
+void Renderer::drawFrame()
+{
+	beginDraw();
+	draw();
+	endDraw();
 }
 
 uint32_t Renderer::findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags )
@@ -875,19 +890,14 @@ void Renderer::loadTexture( const std::string& path )
 	ImageInfo			bmpInfo = LoadBMP32( path );
 
 	VkDeviceSize	imageMemorySize = bmpInfo.bytes.size();
-	//VkBuffer		stagingBuffer;
-	//VkDeviceMemory	stagingBufferMemory;
 	VulkanBuffer	stagingBuffer;
 
 	createBuffer( imageMemorySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
 		stagingBuffer );
 
-	//void* data;
-	//vkMapMemory( logicalDevice, stagingBufferMemory, 0, imageMemorySize, 0, &data );
 	stagingBuffer.map();
 	std::memcpy( stagingBuffer.data, bmpInfo.bytes.data(), bmpInfo.bytes.size() );
-	//vkUnmapMemory( logicalDevice, stagingBufferMemory );
 	stagingBuffer.unmap();
 	
 	CreateImageProperties imageProps = {};
