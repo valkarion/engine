@@ -16,6 +16,10 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#define UNIFORM_BUFFER_SIZE_MB	32
+#define VERTEX_BUFFER_SIZE_MB	128
+#define INDEX_BUFFER_SIZE_MB	128
+
 std::unique_ptr<Renderer> Renderer::_instance = std::make_unique<Renderer>();
 
 Renderer* Renderer::instance()
@@ -522,9 +526,7 @@ void Renderer::beginDraw()
 	// grab an image from the swapchain 
 	vkAcquireNextImageKHR( logicalDevice, swapchain.swapChain, std::numeric_limits<uint64_t>::max(),
 		imageAvailableSemaphore, VK_NULL_HANDLE, &currentImageIndex );
-
-	updateUniformBuffer( currentImageIndex );
-	
+		
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
@@ -555,22 +557,32 @@ void Renderer::beginDraw()
 void Renderer::draw()
 {
 	VkCommandBuffer cmdBuf = commandBuffers[currentImageIndex];
+	uniformBuffers[currentImageIndex].offset = 0;
 
-	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		graphicsPipeline );
+	for ( int i = 0; i < 2; ++i )
+	{
+		const int angle = ( renderedFrameCount % 360 ) + ( i * 90 );
 
-	VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
-	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers( cmdBuf, 0, 1,
-		vertexBuffers, offsets );
+		uint32_t offset = uniformBuffers[currentImageIndex].offset;
+		UniformBufferObject* ubo = (UniformBufferObject*)uniformBuffers[currentImageIndex].allocate( sizeof( UniformBufferObject ) );
+		ubo->model = glm::rotate( glm::mat4x4( 1.f ), 
+			glm::radians( (float)angle ), glm::vec3( 1.f, 1.f, 0.f ) );
+		ubo->view = Camera::instance()->getView();
+		ubo->projection = Camera::instance()->getProjection();
 
-	vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
+		vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
 
-	vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
-		0, 1, &descriptorSets[currentImageIndex], 0, nullptr );
+		VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
 
-	vkCmdDrawIndexed( cmdBuf, (uint32_t)meshInfo.vertecies.size(), 1, 0, 0, 0 );
+		vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
+		vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
+			0, 1, &descriptorSets[currentImageIndex], 1, &offset );
+
+		vkCmdDrawIndexed( cmdBuf, (uint32_t)meshInfo.vertecies.size(), 1, 0, 0, 0 );
+	}
 }
 
 void Renderer::endDraw()
@@ -690,7 +702,7 @@ void Renderer::copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size )
 
 VkResult Renderer::createVertexBuffer()
 {	
-	VkDeviceSize bufferSize = sizeof( Vertex ) * meshInfo.vertecies.size();
+	VkDeviceSize bufferSize = VERTEX_BUFFER_SIZE_MB * 1024 * 1024;
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
@@ -700,7 +712,7 @@ VkResult Renderer::createVertexBuffer()
 
 VkResult Renderer::createIndexBuffer()
 {
-	VkDeviceSize bufferSize = sizeof( meshInfo.indicies[0] ) * meshInfo.indicies.size();
+	VkDeviceSize bufferSize = INDEX_BUFFER_SIZE_MB * 1024 * 1024;
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
@@ -729,7 +741,7 @@ VkResult Renderer::createDescriptorSetLayout()
 	// the same as in the vertex shader 
 	uboLayoutBinding.binding = 0;
 	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 	// will be used in the vertex stage/shader 
 	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
@@ -753,13 +765,16 @@ VkResult Renderer::createUniformBuffers()
 {
 	uniformBuffers.resize( swapchain.images.size() );
 
-	VkDeviceSize bufferSize = sizeof( UniformBufferObject );
+	VkDeviceSize bufferSize = UNIFORM_BUFFER_SIZE_MB * 1024 * 1024;
 	VkBufferUsageFlags useFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
 	for( size_t i = 0; i < swapchain.images.size(); i++ )
 	{
 		VKCHECK( createBuffer( bufferSize, useFlags, memProps, uniformBuffers[i] ) );
+
+		// required NVIDIA alignment
+		uniformBuffers[i].alignment = 256;
 		uniformBuffers[i].map();
 	}
 
@@ -780,7 +795,7 @@ void Renderer::updateUniformBuffer( const uint32_t index )
 VkResult Renderer::createDescriptorPool()
 {
 	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 	poolSizes[0].descriptorCount = (uint32_t)swapchain.images.size();
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizes[1].descriptorCount = (uint32_t)swapchain.images.size();
@@ -833,7 +848,7 @@ VkResult Renderer::createDescriptorSets()
 		// we only have 1 ubo 
 		writeDescriptorSets[0].dstArrayElement = 0;
 		writeDescriptorSets[0].descriptorCount = 1;
-		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 		writeDescriptorSets[0].pBufferInfo = &bufferInfo;
 
 		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
