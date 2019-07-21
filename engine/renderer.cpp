@@ -4,6 +4,9 @@
 #include "fileSystem.hpp"
 #include "camera.hpp"
 
+#include "entityManager.hpp"
+#include "sceneManager.hpp"
+
 #include <set>
 #include <string>
 
@@ -556,32 +559,17 @@ void Renderer::beginDraw()
 
 void Renderer::draw()
 {
-	VkCommandBuffer cmdBuf = commandBuffers[currentImageIndex];
+	VkCommandBuffer cmdBuf		= commandBuffers[currentImageIndex];
+	VulkanBuffer& uniformBuffer = uniformBuffers[currentImageIndex];
+
 	uniformBuffers[currentImageIndex].offset = 0;
 
-	for ( int i = 0; i < 2; ++i )
+	uint32_t nThEntity = 0;
+	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
-		const int angle = ( renderedFrameCount % 360 ) + ( i * 90 );
-
-		uint32_t offset = uniformBuffers[currentImageIndex].offset;
-		UniformBufferObject* ubo = (UniformBufferObject*)uniformBuffers[currentImageIndex].allocate( sizeof( UniformBufferObject ) );
-		ubo->model = glm::rotate( glm::mat4x4( 1.f ), 
-			glm::radians( (float)angle ), glm::vec3( 1.f, 1.f, 0.f ) );
-		ubo->view = Camera::instance()->getView();
-		ubo->projection = Camera::instance()->getProjection();
-
-		vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
-
-		VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
-		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
-
-		vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
-
-		vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
-			0, 1, &descriptorSets[currentImageIndex], 1, &offset );
-
-		vkCmdDrawIndexed( cmdBuf, (uint32_t)meshInfo.vertecies.size(), 1, 0, 0, 0 );
+		UniformBufferObject* ubo = (UniformBufferObject*)uniformBuffer.allocate( sizeof( UniformBufferObject ) );
+		
+		nThEntity++;
 	}
 }
 
@@ -781,17 +769,6 @@ VkResult Renderer::createUniformBuffers()
 	return VK_SUCCESS;
 }
 
-void Renderer::updateUniformBuffer( const uint32_t index )
-{
-	UniformBufferObject ubo = {};
-
-	ubo.model = glm::mat4x4( 1.f );
-	ubo.view = Camera::instance()->getView();
-	ubo.projection = Camera::instance()->getProjection();
-
-	memcpy( uniformBuffers[index].data, &ubo, sizeof( UniformBufferObject ) );
-}
-
 VkResult Renderer::createDescriptorPool()
 {
 	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
@@ -930,10 +907,7 @@ void Renderer::loadTexture( const std::string& path )
 
 	copyBufferToImage( stagingBuffer.buffer, textureImage, bmpInfo.width, bmpInfo.height );
 
-	//vkDestroyBuffer( logicalDevice, stagingBuffer, nullptr );
 	stagingBuffer.destroy();
-	vkFreeMemory( logicalDevice, textureImageMemory, nullptr );
-
 }
 
 VkCommandBuffer Renderer::beginOneTimeCommands()

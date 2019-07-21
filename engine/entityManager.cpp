@@ -1,5 +1,6 @@
 #include "entityManager.hpp"
 #include "component.hpp"
+#include <algorithm>
 
 std::unique_ptr<EntityManager> EntityManager::_instance = std::make_unique<EntityManager>();
 EntityManager* EntityManager::instance()
@@ -55,8 +56,22 @@ E_ID EntityManager::createCopyOf( const std::string& prototypeName, E_ID copyInt
 	for ( auto& it : componentMap )
 	{
 		if ( it.second[protoId.v] != nullptr )
-			it.second[vi.v] = it.second[protoId.v]->Clone();
+			it.second[vi.v] = it.second[protoId.v]->clone();
 	}
 
 	return copy;
+}
+
+void EntityManager::initialize()
+{
+	componentMap[&typeid( TransformComponent )] = std::vector<std::unique_ptr<Component>>();
+	componentMap[&typeid( MeshComponent )] = std::vector<std::unique_ptr<Component>>();
+}
+
+void EntityManager::shutdown()
+{
+	prototypes.clear();
+	virtualIds.clear();
+	componentMap.clear();
+	IDRESET( E_ID );
 }

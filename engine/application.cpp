@@ -10,6 +10,7 @@
 #include "inputSystem.hpp"
 #include "resourceManager.hpp"
 #include "luaStateController.hpp"
+#include "entityManager.hpp"
 
 CVar window_width(			"window_width",			"1280" );
 CVar window_height(			"window_height",		"800" );
@@ -66,6 +67,8 @@ bool Application::init()
 
 	initGLFW();
 
+	EntityManager::instance()->initialize();
+
 	Renderer::instance()->init();
 	
 	InputSystem::instance()->init( Renderer::instance()->window );
@@ -110,8 +113,10 @@ void Application::quit()
 void Application::shutdown()
 {
 	Renderer::instance()->shutdown();
-
+	   
 	ResourceManager::instance()->shutdown();
+
+	EntityManager::instance()->shutdown();
 
 	glfwDestroyWindow( Renderer::instance()->window );
 	glfwTerminate();

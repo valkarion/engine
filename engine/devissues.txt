@@ -5,10 +5,22 @@
 - Hogyan kell változó kapacitású queue-t létrehozni, 
 	ha nincs megadva elszál az assertion
 - Environment Változó Validation Layer felülírja a program oldali 
-	Validation Layereket
+	Validation Layereket (egyszer fordult elő lib updatenél)
 - Olyan képformátum kell amit a videókártya támogat (pl.:VK_FORMAT_R8G8B8A8_UNORM)
 	Valamiért nem nagyon vannak támogatva az olyan formátumok amikben nincs alpha channel
+	A videokártya csak 32 bites képeket eszik meg, amik nem azok azokat magasabb libek 
+	átlakítják olyanra
 - Képbetöltés: van Boost.GIL de ő csak egy absztrakciót ad képfileok betöltésére, különböző 
 	típusú fileokhoz további .libek kellenek amiket lehet a gil-en keresztül használni. A GIL 
 	magától csak jpeg-et tud nyitni.
 - Boost.StrongTypeDef alapokon működik az egyedi azonosító kezelés
+- Több objektum megjelenítése? 
+	- Dinimus UBO objektumok. 
+		descriptor: VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC 
+		Buffer oszályok méretének tágítása sok objektum elfogadására
+		256 bites offset NVIDIA kártya miatt
+		amikor rajzolára kerül az objektum újra kell bindolni a descriptorsetet és megadni 
+			a jelenlegi UBO offsetet 
+- Hogyan kell teljesen szeparálni a textúrákat a descriptor setektől inicializálás időben?
+	A descriptor set írja le hogy milyen VkImage osztályon dolgozik jelenleg, inicializálás időben 
+	viszont még nincsenek textúrák amiknek lennének képei. 

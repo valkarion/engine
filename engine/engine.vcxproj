@@ -242,6 +242,7 @@
     <ClCompile Include="luaStateController.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="resourceManager.cpp" />
+    <ClCompile Include="sceneManager.cpp" />
     <ClCompile Include="taskScheduler.cpp" />
     <ClCompile Include="vulkanBuffer.cpp" />
     <ClCompile Include="vulkanCommon.cpp" />
@@ -264,6 +265,8 @@
     <ClInclude Include="luaStateController.hpp" />
     <ClInclude Include="renderer.hpp" />
     <ClInclude Include="resourceManager.hpp" />
+    <ClInclude Include="scene.hpp" />
+    <ClInclude Include="sceneManager.hpp" />
     <ClInclude Include="taskScheduler.hpp" />
     <ClInclude Include="utils.hpp" />
     <ClInclude Include="vulkanBuffer.hpp" />

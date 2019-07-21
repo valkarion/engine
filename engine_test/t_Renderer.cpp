@@ -17,6 +17,11 @@ void AddInputCommands()
 	InputSystem::instance()->setupKeyboardCommands( keymap );
 }
 
+void SetupScene()
+{
+	
+};
+
 void T_Renderer()
 {
 	if( !Application::instance()->init() )
@@ -26,6 +31,7 @@ void T_Renderer()
 
 	Camera::instance()->initCamera();
 	AddInputCommands();
+	SetupScene();
 
 	Application::instance()->run();
 }

@@ -5,13 +5,14 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-
 #include <vulkan/vulkan.hpp>
 
 #include "vulkanDebugger.hpp"
 #include "vulkanBuffer.hpp"
 #include "vulkanVertex.hpp"
 #include "vulkanSwapchain.hpp"
+
+#include "idManager.hpp"
 
 // indecies of the queues that can handle commands we need
 struct QueueFamilyIndicies
@@ -40,6 +41,7 @@ struct RendererMeshInfo
 */
 struct UniformBufferObject
 {
+	// MVP matricies
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 projection;
@@ -124,8 +126,8 @@ public:
 	VulkanBuffer					vertexBuffer;
 	VulkanBuffer					indexBuffer;
 	std::vector<VulkanBuffer>		uniformBuffers;
+	void							writeUBO( UniformBufferObject* ubo, E_ID entity );
 
-	void							updateUniformBuffer( const uint32_t index );
 	void							copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size );
 	// abstract helper for all buffer creation process
 	VkResult						createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,

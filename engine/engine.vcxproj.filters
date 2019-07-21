@@ -81,6 +81,9 @@
     <ClCompile Include="vulkanCommon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sceneManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.hpp">
@@ -147,6 +150,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vulkanCommon.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sceneManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
