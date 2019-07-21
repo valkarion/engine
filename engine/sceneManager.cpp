@@ -30,6 +30,16 @@ Scene* SceneManager::getActiveScene()
 	return scene;
 }
 
+Scene* SceneManager::setActiveScene( SC_ID id )
+{	
+	if ( scenes.count( id ) != 0 )
+	{
+		activeScene = id;
+	}
+
+	return getActiveScene();
+}
+
 void SceneManager::shutdown()
 {
 	activeScene = UNSET_ID;

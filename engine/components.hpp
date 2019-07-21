@@ -23,6 +23,8 @@ public:
 	glm::vec3 position;
 	glm::vec3 facing;
 	glm::vec3 scale;
+
+	TransformComponent();
 };
 
 class MeshComponent : public Component
@@ -31,4 +33,6 @@ class MeshComponent : public Component
 public:
 	// meshes themselves are stored in ResourceManager 
 	std::string meshName;
+
+	MeshComponent();
 };

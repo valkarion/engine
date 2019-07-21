@@ -229,7 +229,7 @@
   <ItemGroup>
     <ClCompile Include="application.cpp" />
     <ClCompile Include="camera.cpp" />
-    <ClCompile Include="component.cpp" />
+    <ClCompile Include="components.cpp" />
     <ClCompile Include="cvar.cpp" />
     <ClCompile Include="cvarSystem.cpp" />
     <ClCompile Include="entityManager.cpp" />
@@ -252,7 +252,7 @@
   <ItemGroup>
     <ClInclude Include="application.hpp" />
     <ClInclude Include="camera.hpp" />
-    <ClInclude Include="component.hpp" />
+    <ClInclude Include="components.hpp" />
     <ClInclude Include="cvar.hpp" />
     <ClInclude Include="cvarSystem.hpp" />
     <ClInclude Include="entityManager.hpp" />

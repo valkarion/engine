@@ -17,6 +17,7 @@ public:
 	SC_ID addScene();
 	void destroyScene( SC_ID id );
 	Scene* getActiveScene();
+	Scene* setActiveScene( SC_ID id );
 
 	void shutdown();
 

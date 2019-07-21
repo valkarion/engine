@@ -1,5 +1,5 @@
 #include "entityManager.hpp"
-#include "component.hpp"
+#include "components.hpp"
 #include <algorithm>
 
 std::unique_ptr<EntityManager> EntityManager::_instance = std::make_unique<EntityManager>();

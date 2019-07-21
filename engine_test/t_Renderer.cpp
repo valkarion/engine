@@ -2,6 +2,9 @@
 #include "application.hpp"
 #include "inputSystem.hpp"
 #include "luaStateController.hpp"
+#include "entityManager.hpp"
+#include "components.hpp"
+#include "sceneManager.hpp"
 #include "camera.hpp"
 #include <glm/glm.hpp>
 
@@ -19,7 +22,17 @@ void AddInputCommands()
 
 void SetupScene()
 {
+	SceneManager*	sm = SceneManager::instance();
+	EntityManager*	em = EntityManager::instance();
+
+// Set scene
+	SC_ID sceneId = sm->addScene();
+	Scene* currentScene = sm->setActiveScene( sceneId );
 	
+// Setup one entity for test 
+	E_ID ent = em->addEntity();
+	TransformComponent* tc = em->add<TransformComponent>( ent );
+	currentScene->entities.push_back( ent );
 };
 
 void T_Renderer()

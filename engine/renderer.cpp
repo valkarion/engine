@@ -5,6 +5,7 @@
 #include "camera.hpp"
 
 #include "entityManager.hpp"
+#include "components.hpp"
 #include "sceneManager.hpp"
 
 #include <set>
@@ -557,6 +558,14 @@ void Renderer::beginDraw()
 		VK_SUBPASS_CONTENTS_INLINE );
 }
 
+glm::mat4x4 GetModelMatrix( TransformComponent* transform )
+{
+	glm::mat4x4 base( 1.f );
+	glm::mat4x4 model = glm::translate( base, transform->position );	
+
+	return model;
+}
+
 void Renderer::draw()
 {
 	VkCommandBuffer cmdBuf		= commandBuffers[currentImageIndex];
@@ -564,12 +573,26 @@ void Renderer::draw()
 
 	uniformBuffers[currentImageIndex].offset = 0;
 
-	uint32_t nThEntity = 0;
 	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
-		UniformBufferObject* ubo = (UniformBufferObject*)uniformBuffer.allocate( sizeof( UniformBufferObject ) );
-		
-		nThEntity++;
+		uint32_t offset = uniformBuffers[currentImageIndex].offset;
+		UniformBufferObject* ubo = (UniformBufferObject*)uniformBuffer.allocate( sizeof( UniformBufferObject ) );		
+		ubo->model = GetModelMatrix( EntityManager::instance()->get<TransformComponent>( ent ) );
+		ubo->view = Camera::instance()->getView();
+		ubo->projection = Camera::instance()->getProjection();
+
+		vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
+
+		VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
+
+		vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
+
+		vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
+			0, 1, &descriptorSets[currentImageIndex], 1, &offset );
+
+		vkCmdDrawIndexed( cmdBuf, (uint32_t)meshInfo.vertecies.size(), 1, 0, 0, 0 );
 	}
 }
 

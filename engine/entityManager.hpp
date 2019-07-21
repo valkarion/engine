@@ -38,8 +38,23 @@ public:
 
 		return (T*)componentMap[&typeid( T )][virtualIds[id].v].get();
 	}
+	template<typename T> T* add( Vi_ID vid )
+	{
+		T* cmp = (T*)componentMap[&typeid( T )][vid.v].get();
+
+		if ( cmp )
+			return cmp;
+
+		componentMap[&typeid( T )][vid.v] = std::make_unique<T>();
+
+		return (T*)componentMap[&typeid( T )][vid.v].get();
+	}
 
 	// get component 
+	template<typename T> T* get( Vi_ID vid )
+	{
+		return (T*)componentMap.at( &typeid( T ) ).at( vid.v ).get();
+	}
 	template<typename T> T*	get( E_ID id )
 	{
 		return get<T>( virtualIds.at( id ) );
