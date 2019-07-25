@@ -321,11 +321,18 @@ VkResult Renderer::createGraphicsPipeline()
 	attributes = {
 		createAttributeDescription( 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof( Vertex, Vertex::position ) ),
 		createAttributeDescription( 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof( Vertex, Vertex::color ) ),
-		createAttributeDescription( 0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof( Vertex, Vertex::textureCoordinates ) )
+		createAttributeDescription( 0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof( Vertex, Vertex::textureCoordinates ) ),
+
+		// These four create a matrix on the shader side, but there is no valid matrix format on the C++ side
+		createAttributeDescription( 1, 3, VK_FORMAT_R32G32B32A32_SFLOAT, 0 ),
+		createAttributeDescription( 1, 4, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof( glm::vec4 ) ),
+		createAttributeDescription( 1, 5, VK_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof( glm::vec4 ) ),
+		createAttributeDescription( 1, 6, VK_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof( glm::vec4 ) )
 	};
 
 	bindings = {
-		createBindingDescription( 0, sizeof( Vertex ), VK_VERTEX_INPUT_RATE_VERTEX )
+		createBindingDescription( 0, sizeof( Vertex ), VK_VERTEX_INPUT_RATE_VERTEX ),
+		createBindingDescription( 1, sizeof( glm::mat4x4 ), VK_VERTEX_INPUT_RATE_INSTANCE )
 	};
 
 	vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -406,6 +413,14 @@ VkResult Renderer::createGraphicsPipeline()
 	pipelineLayoutCreateInfo.setLayoutCount = 1;
 	pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
 	
+	// Push Constant description
+	VkPushConstantRange range = {};
+	range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	range.offset = 0;
+	range.size = sizeof( glm::mat4x4 );
+	pipelineLayoutCreateInfo.pPushConstantRanges = &range;
+	pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+
 	VKCHECK( vkCreatePipelineLayout( logicalDevice, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout ) );
 	
 	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {};
@@ -628,25 +643,26 @@ void Renderer::draw()
 	Camera*	cam					= Camera::instance();
 
 	uniformBuffers[currentImageIndex].offset = 0;
+	transformBuffer.offset = 0;
 
-	// push constant 
-	PushConstant pc;
-	pc.vp = cam->getProjection() * cam->getView();
+	glm::mat4x4 pushConstant = cam->getProjection() * cam->getView();
+	vkCmdPushConstants( cmdBuf, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
+		0, sizeof( glm::mat4x4 ), &pushConstant );
 
 	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
 		uint32_t offset = uniformBuffers[currentImageIndex].offset;
-		UniformBufferObject* ubo = (UniformBufferObject*)uniformBuffer.allocate( sizeof( UniformBufferObject ) );		
-		ubo->model = GetModelMatrix( EntityManager::instance()->get<TransformComponent>( ent ) );
-
-		vkCmdPushConstants( cmdBuf, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
-			0, sizeof( PushConstant ), &pc );
+		
+		glm::mat4x4* model = ( glm::mat4x4* )transformBuffer.allocate( sizeof( glm::mat4x4 ) );
+		*model = GetModelMatrix( EntityManager::instance()->get<TransformComponent>( ent ) );
 
 		vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
 
 		VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
+
+		vkCmdBindVertexBuffers( cmdBuf, 1, 1, &transformBuffer.buffer, offsets );
 
 		vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
@@ -779,6 +795,15 @@ VkResult Renderer::createVertexBuffer()
 	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
 
 	return createBuffer( bufferSize, flags, memProps, vertexBuffer );
+}
+
+VkResult Renderer::createTransformBuffer()
+{
+	VkDeviceSize bufferSize = VERTEX_BUFFER_SIZE_MB * 1024 * 1024;
+	VkBufferUsageFlags flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+
+	return createBuffer( bufferSize, flags, memProps, transformBuffer );
 }
 
 VkResult Renderer::createIndexBuffer()
@@ -1243,11 +1268,12 @@ void Renderer::loadModel( const std::string& path )
 
 void Renderer::init()
 {
-	#ifdef _DEBUG
 	useValidationLayers = true;
-	#else
-	useValidationLayers = false;
-	#endif 	
+	//#ifdef _DEBUG
+	//useValidationLayers = true;
+	//#else
+	//useValidationLayers = false;
+	//#endif 	
 	
 	renderedFrameCount = 0;
 
@@ -1280,6 +1306,8 @@ void Renderer::init()
 	VKCHECK( createTextureSampler() );
 	VKCHECK( createVertexBuffer() );
 	VKCHECK( createIndexBuffer() );
+	VKCHECK( createTransformBuffer() );
+	transformBuffer.map();
 	TestBindModel();
 	VKCHECK( createUniformBuffers() );
 	VKCHECK( createDescriptorPool() );
@@ -1310,6 +1338,7 @@ void Renderer::shutdown()
 
 	vertexBuffer.destroy();
 	indexBuffer.destroy();
+	transformBuffer.destroy();
 
 	for( size_t i = 0; i < uniformBuffers.size(); i++ )
 	{

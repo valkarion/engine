@@ -45,12 +45,6 @@ struct UniformBufferObject
 	glm::mat4 model;
 };
 
-struct PushConstant
-{
-	// Camera::projection * Camera::view matrix
-	glm::mat4 vp;
-};
-
 class Renderer
 {
 	static std::unique_ptr<Renderer> _instance;
@@ -140,8 +134,11 @@ public:
 	// buffers require certain type(s) of memory(s), this will find it 
 	uint32_t						findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags );
 	VulkanBuffer					vertexBuffer;
-	VulkanBuffer					indexBuffer;
+	VulkanBuffer					indexBuffer;	
 	std::vector<VulkanBuffer>		uniformBuffers;
+
+	VulkanBuffer					transformBuffer;
+	VkResult						createTransformBuffer();
 	
 	void							copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size );
 	// abstract helper for all buffer creation process

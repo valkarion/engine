@@ -24,3 +24,8 @@
 - Hogyan kell teljesen szeparálni a textúrákat a descriptor setektől inicializálás időben?
 	A descriptor set írja le hogy milyen VkImage osztályon dolgozik jelenleg, inicializálás időben 
 	viszont még nincsenek textúrák amiknek lennének képei. 
+- UBO globális konstans és egy darab van belőle a renderpass alatt, hogyan kell a model 
+	mátrixot kiszámolni C++ oldalon és instance szinten átadni?
+- Push Constants:
+	Ha kevés mennyiségű globális konstans kell akkor lehet használni, 
+	gyorsabb mint az UBO viszotn csak 128 byte: Kamera mátrixokra tökéletes
