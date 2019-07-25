@@ -29,10 +29,21 @@ void SetupScene()
 	SC_ID sceneId = sm->addScene();
 	Scene* currentScene = sm->setActiveScene( sceneId );
 	
-// Setup one entity for test 
-	E_ID ent = em->addEntity();
-	TransformComponent* tc = em->add<TransformComponent>( ent );
-	currentScene->entities.push_back( ent );
+// Setup test Entities 
+	//E_ID ent = em->addEntity();
+	//TransformComponent* tc = em->add<TransformComponent>( ent );
+	//currentScene->entities.push_back( ent );
+	
+	for ( size_t i = 0; i < 9; i++ )
+	{
+		E_ID ent = em->addEntity();
+		currentScene->entities.push_back( ent );
+		TransformComponent* tc = em->add<TransformComponent>( ent );
+		
+		int px = -5 + ( ( i % 3 ) * 5 );
+		int py = -5 + ( ( i / 3 ) * 5 );
+		tc->position = glm::vec3( float( px ), float( py ), 0.f );
+	}
 };
 
 void T_Renderer()

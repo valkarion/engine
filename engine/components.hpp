@@ -21,7 +21,7 @@ class TransformComponent : public Component
 	std::unique_ptr<Component> cloneImp() const;
 public:
 	glm::vec3 position;
-	glm::vec3 facing;
+	glm::vec3 rotation;
 	glm::vec3 scale;
 
 	TransformComponent();

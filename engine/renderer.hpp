@@ -100,6 +100,18 @@ public:
 	VkPipelineLayout				pipelineLayout;
 	VkResult						createShaderModule(
 		const std::vector<char>& code, VkShaderModule* module );
+
+	// describes the size and input location of data for the shader 
+	VkVertexInputAttributeDescription createAttributeDescription(
+		uint32_t bindingNumber, uint32_t location,
+		VkFormat typeFormat, uint32_t offset );
+
+	// describes the rate of when information is given to the shader
+	// eg.: for every single vertex or for instances 
+	VkVertexInputBindingDescription	createBindingDescription(
+		uint32_t bindingNumber, uint32_t stride, VkVertexInputRate rate
+	);
+
 	VkResult						createGraphicsPipeline();
 
 // framebuffers
@@ -126,8 +138,7 @@ public:
 	VulkanBuffer					vertexBuffer;
 	VulkanBuffer					indexBuffer;
 	std::vector<VulkanBuffer>		uniformBuffers;
-	void							writeUBO( UniformBufferObject* ubo, E_ID entity );
-
+	
 	void							copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size );
 	// abstract helper for all buffer creation process
 	VkResult						createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,

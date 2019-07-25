@@ -13,6 +13,7 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/vector_angle.hpp>
 #include <chrono>
 
 #include "vulkanCommon.hpp"
@@ -257,6 +258,33 @@ VkResult Renderer::createShaderModule( const std::vector<char>& code,
 		nullptr, module );
 }
 
+VkVertexInputAttributeDescription Renderer::createAttributeDescription( 
+	uint32_t bindingNumber, uint32_t location, VkFormat typeFormat, 
+	uint32_t offset )
+{
+	VkVertexInputAttributeDescription desc = {};
+	
+	desc.binding = bindingNumber;
+	desc.location = location;
+	desc.format = typeFormat;
+	desc.offset = offset;
+
+	return desc;
+}
+
+VkVertexInputBindingDescription	Renderer::createBindingDescription(
+	uint32_t bindingNumber, uint32_t stride, VkVertexInputRate rate
+)
+{
+	VkVertexInputBindingDescription desc = {};
+
+	desc.binding = bindingNumber;
+	desc.stride = stride;
+	desc.inputRate = rate;
+
+	return desc;
+}
+
 VkResult Renderer::createGraphicsPipeline()
 {	
 	std::vector<char> vertexShaderCode = ReadBinaryFile( "D:\\engine\\shaders\\vert.spv" );
@@ -286,14 +314,25 @@ VkResult Renderer::createGraphicsPipeline()
 
 	// what is the format of the vertex input data? 
 	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};	
-	auto bindingAttr = Vertex::getAttributes();
-	auto bindingDesc = Vertex::getDescription();
-		
+
+	std::vector<VkVertexInputAttributeDescription> attributes;
+	std::vector<VkVertexInputBindingDescription> bindings;
+
+	attributes = {
+		createAttributeDescription( 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof( Vertex, Vertex::position ) ),
+		createAttributeDescription( 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof( Vertex, Vertex::color ) ),
+		createAttributeDescription( 0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof( Vertex, Vertex::textureCoordinates ) )
+	};
+
+	bindings = {
+		createBindingDescription( 0, sizeof( Vertex ), VK_VERTEX_INPUT_RATE_VERTEX )
+	};
+
 	vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputCreateInfo.vertexBindingDescriptionCount = 1;
-	vertexInputCreateInfo.vertexAttributeDescriptionCount = (uint32_t)bindingAttr.size();
-	vertexInputCreateInfo.pVertexBindingDescriptions = &bindingDesc;
-	vertexInputCreateInfo.pVertexAttributeDescriptions = bindingAttr.data();
+	vertexInputCreateInfo.vertexAttributeDescriptionCount = (uint32_t)attributes.size();
+	vertexInputCreateInfo.pVertexAttributeDescriptions = attributes.data();
+	vertexInputCreateInfo.vertexBindingDescriptionCount = (uint32_t)bindings.size();
+	vertexInputCreateInfo.pVertexBindingDescriptions = bindings.data();
 
 	// the kind of geometry will be drawn from the vertecies
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
@@ -560,9 +599,25 @@ void Renderer::beginDraw()
 
 glm::mat4x4 GetModelMatrix( TransformComponent* transform )
 {
-	glm::mat4x4 base( 1.f );
-	glm::mat4x4 model = glm::translate( base, transform->position );	
+	transform->rotation.x += 1.f;
+	if ( transform->rotation.x > 360.f )
+	{
+		transform->rotation.x -= 360.f;
+	}
 
+	glm::mat4x4 model( 1.f );
+	
+	// rotate 
+	model = glm::rotate( model, transform->rotation.x, glm::vec3( 1.f, 0.f, 0.f ) );
+	model = glm::rotate( model, transform->rotation.y, glm::vec3( 0.f, 1.f, 0.f ) );
+	model = glm::rotate( model, transform->rotation.z, glm::vec3( 0.f, 0.f, 1.f ) );
+	
+	// displacement
+	model = glm::translate( model, transform->position );
+
+	// scaling 
+	model = glm::scale( model, transform->scale );
+	
 	return model;
 }
 
@@ -715,8 +770,7 @@ VkResult Renderer::createVertexBuffer()
 {	
 	VkDeviceSize bufferSize = VERTEX_BUFFER_SIZE_MB * 1024 * 1024;
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
 
 	return createBuffer( bufferSize, flags, memProps, vertexBuffer );
 }
@@ -725,8 +779,7 @@ VkResult Renderer::createIndexBuffer()
 {
 	VkDeviceSize bufferSize = INDEX_BUFFER_SIZE_MB * 1024 * 1024;
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
 
 	return createBuffer( bufferSize, flags, memProps, indexBuffer );
 }
