@@ -43,8 +43,12 @@ struct UniformBufferObject
 {
 	// MVP matricies
 	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 projection;
+};
+
+struct PushConstant
+{
+	// Camera::projection * Camera::view matrix
+	glm::mat4 vp;
 };
 
 class Renderer

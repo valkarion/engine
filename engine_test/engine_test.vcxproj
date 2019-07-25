@@ -36,6 +36,10 @@
   <ItemGroup>
     <ClInclude Include="tests.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\shader.frag" />
+    <None Include="..\shaders\shader.vert" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{DBE7DA07-F71B-4B79-94B9-1C5A671D92AB}</ProjectGuid>

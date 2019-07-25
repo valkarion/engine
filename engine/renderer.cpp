@@ -311,7 +311,7 @@ VkResult Renderer::createGraphicsPipeline()
 	VkPipelineShaderStageCreateInfo shaderStages[] = {
 		vStageCreateInfo, fStageCreateInfo
 	};
-
+	
 	// what is the format of the vertex input data? 
 	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};	
 
@@ -625,16 +625,22 @@ void Renderer::draw()
 {
 	VkCommandBuffer cmdBuf		= commandBuffers[currentImageIndex];
 	VulkanBuffer& uniformBuffer = uniformBuffers[currentImageIndex];
+	Camera*	cam					= Camera::instance();
 
 	uniformBuffers[currentImageIndex].offset = 0;
+
+	// push constant 
+	PushConstant pc;
+	pc.vp = cam->getProjection() * cam->getView();
 
 	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
 		uint32_t offset = uniformBuffers[currentImageIndex].offset;
 		UniformBufferObject* ubo = (UniformBufferObject*)uniformBuffer.allocate( sizeof( UniformBufferObject ) );		
 		ubo->model = GetModelMatrix( EntityManager::instance()->get<TransformComponent>( ent ) );
-		ubo->view = Camera::instance()->getView();
-		ubo->projection = Camera::instance()->getProjection();
+
+		vkCmdPushConstants( cmdBuf, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
+			0, sizeof( PushConstant ), &pc );
 
 		vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
 
