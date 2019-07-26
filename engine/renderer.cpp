@@ -622,14 +622,14 @@ glm::mat4x4 GetModelMatrix( TransformComponent* transform )
 
 	glm::mat4x4 model( 1.f );
 	
+	// displacement
+	model = glm::translate( model, transform->position );
+
 	// rotate 
 	model = glm::rotate( model, transform->rotation.x, glm::vec3( 1.f, 0.f, 0.f ) );
 	model = glm::rotate( model, transform->rotation.y, glm::vec3( 0.f, 1.f, 0.f ) );
 	model = glm::rotate( model, transform->rotation.z, glm::vec3( 0.f, 0.f, 1.f ) );
 	
-	// displacement
-	model = glm::translate( model, transform->position );
-
 	// scaling 
 	model = glm::scale( model, transform->scale );
 	
@@ -649,10 +649,12 @@ void Renderer::draw()
 	vkCmdPushConstants( cmdBuf, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 		0, sizeof( glm::mat4x4 ), &pushConstant );
 
+	VkDeviceSize transformOffset = 0;
 	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
 		uint32_t offset = uniformBuffers[currentImageIndex].offset;
-		
+		transformOffset = transformBuffer.offset;
+
 		glm::mat4x4* model = ( glm::mat4x4* )transformBuffer.allocate( sizeof( glm::mat4x4 ) );
 		*model = GetModelMatrix( EntityManager::instance()->get<TransformComponent>( ent ) );
 
@@ -662,7 +664,7 @@ void Renderer::draw()
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
 
-		vkCmdBindVertexBuffers( cmdBuf, 1, 1, &transformBuffer.buffer, offsets );
+		vkCmdBindVertexBuffers( cmdBuf, 1, 1, &transformBuffer.buffer, &transformOffset );
 
 		vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
