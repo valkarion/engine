@@ -26,6 +26,7 @@ std::unique_ptr<Component> MeshComponent::cloneImp() const
 	return std::make_unique<MeshComponent>( *this );
 }
 
-MeshComponent::MeshComponent() : 
-	meshName( UNSET_S )
+MeshComponent::MeshComponent() :
+	meshName( UNSET_S ),
+	textureName( UNSET_S )
 {}

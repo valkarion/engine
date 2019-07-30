@@ -7,6 +7,7 @@
 #include "entityManager.hpp"
 #include "components.hpp"
 #include "sceneManager.hpp"
+#include "resourceManager.hpp"
 
 #include <set>
 #include <string>
@@ -17,9 +18,6 @@
 #include <chrono>
 
 #include "vulkanCommon.hpp"
-
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
 
 #define UNIFORM_BUFFER_SIZE_KB	2048
 #define VERTEX_BUFFER_SIZE_MB	128
@@ -640,39 +638,50 @@ glm::mat4x4 GetModelMatrix( TransformComponent* transform )
 void Renderer::draw()
 {
 	VkCommandBuffer cmdBuf		= commandBuffers[currentImageIndex];
-	VulkanBuffer& uniformBuffer = uniformBuffers[currentImageIndex];
+
 	Camera*	cam					= Camera::instance();
-
-	uniformBuffers[currentImageIndex].offset = 0;
+	EntityManager* em			= EntityManager::instance();
+	ResourceManager* rm			= ResourceManager::instance();
+	
+	// no ubo so dynamic offset is always zero 
+	uint32_t dynamicOffset = 0;
+	// insted of clearing the buffer we overwrite from the beginning 
 	transformBuffer.offset = 0;
-
+	// where to read transform data from the buffer for the current entity
+	VkDeviceSize transformOffset = 0;
+	// we have one vertex buffer so this is always the same
+	VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
+	
+	VkDeviceSize offsets[] = { 0 };
+	
+	// push the static camera data into the shader data.
 	glm::mat4x4 pushConstant = cam->getProjection() * cam->getView();
 	vkCmdPushConstants( cmdBuf, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 		0, sizeof( glm::mat4x4 ), &pushConstant );
 
-	VkDeviceSize transformOffset = 0;
 	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
-		uint32_t offset = uniformBuffers[currentImageIndex].offset;
+		MeshComponent* meshComponent = em->get<MeshComponent>( ent );
+
 		transformOffset = transformBuffer.offset;
 
 		glm::mat4x4* model = ( glm::mat4x4* )transformBuffer.allocate( sizeof( glm::mat4x4 ) );
-		*model = GetModelMatrix( EntityManager::instance()->get<TransformComponent>( ent ) );
-
+		*model = GetModelMatrix( em->get<TransformComponent>( ent ) );
+		
 		vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
-
-		VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
-		VkDeviceSize offsets[] = { 0 };
+				
 		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
-
 		vkCmdBindVertexBuffers( cmdBuf, 1, 1, &transformBuffer.buffer, &transformOffset );
 
 		vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
-		vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
-			0, 1, &textureDescriptor, 0, &offset );
+		const Mesh* mesh = rm->getMesh( meshComponent->meshName );
+		VulkanTexture& texture = textures.at( meshComponent->textureName );
 
-		vkCmdDrawIndexed( cmdBuf, (uint32_t)meshInfo.vertecies.size(), 1, 0, 0, 0 );
+		vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
+			0, 1, &texture.descriptor, 0, &dynamicOffset );
+
+		vkCmdDrawIndexed( cmdBuf, (uint32_t)mesh->vertecies.size(), 1, 0, 0, 0 );
 	}
 }
 
@@ -838,21 +847,6 @@ VkResult Renderer::createIndexBuffer()
 	return createBuffer( bufferSize, flags, memProps, indexBuffer );
 }
 
-void Renderer::TestBindModel()
-{
-	vertexBuffer.map();
-	indexBuffer.map();
-
-	std::memcpy( vertexBuffer.data, meshInfo.vertecies.data(),
-		sizeof( Vertex ) * meshInfo.vertecies.size() );
-
-	std::memcpy( indexBuffer.data, meshInfo.indicies.data(),
-		sizeof( meshInfo.indicies[0] ) * meshInfo.indicies.size() );
-
-	vertexBuffer.unmap();
-	indexBuffer.unmap();
-}
-
 VkResult Renderer::createDescriptorPool()
 {
 	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
@@ -886,8 +880,6 @@ VkResult Renderer::createDescriptorSetLayout()
 	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	//std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
-
 	VkDescriptorSetLayoutCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	createInfo.bindingCount = 1;
@@ -901,7 +893,7 @@ VkResult Renderer::createDescriptorSetLayout()
 	return VK_SUCCESS;
 }
 
-VkResult Renderer::createDescriptorSets()
+VkResult Renderer::createUBODescritptorSet()
 {
 // UBO descriptor
 	std::vector<VkDescriptorSetLayout> layouts( swapchain.images.size(), uboLayout );
@@ -935,31 +927,6 @@ VkResult Renderer::createDescriptorSets()
 
 		vkUpdateDescriptorSets( logicalDevice, 1, &uboWrite, 0, nullptr );
 	}
-
-// Texture Descriptor
-	VkDescriptorSetAllocateInfo texAllocInfo = {};
-	texAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	texAllocInfo.descriptorPool = descriptorPool;
-	texAllocInfo.pSetLayouts = &textureLayout;
-	texAllocInfo.descriptorSetCount = 1;
-	
-	vkAllocateDescriptorSets( logicalDevice, &texAllocInfo, &textureDescriptor );
-
-	VkDescriptorImageInfo imageInfo = {};
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageInfo.imageView = textureImageView;
-	imageInfo.sampler = textureSampler;
-	
-	VkWriteDescriptorSet textureWrite = {};
-	textureWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	textureWrite.dstSet = textureDescriptor;
-	textureWrite.dstBinding = 1;
-	textureWrite.dstArrayElement = 0;
-	textureWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	textureWrite.descriptorCount = 1;
-	textureWrite.pImageInfo = &imageInfo;
-
-	vkUpdateDescriptorSets( logicalDevice, 1, &textureWrite, 0, nullptr );
 
 	return VK_SUCCESS;
 };
@@ -998,35 +965,69 @@ VkResult Renderer::createImage( CreateImageProperties& props, VkImage& image,
 	return VK_SUCCESS;
 }
 
-void Renderer::loadTexture( const std::string& path )
+void Renderer::loadTexture( const std::string& name )
 {
-	ImageInfo			bmpInfo = LoadBMP32( path );
+	ResourceManager* rm = ResourceManager::instance();
+	const Image* img	= rm->getImage( name );
 
-	VkDeviceSize	imageMemorySize = bmpInfo.bytes.size();
-	VulkanBuffer	stagingBuffer;
+	VkDeviceSize size	= img->colorData.size();
 
-	createBuffer( imageMemorySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+// staging buffer will hold the image memory in host visible memory
+	VulkanBuffer stagingBuffer;
+	createBuffer( size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
 		stagingBuffer );
 
 	stagingBuffer.map();
-	std::memcpy( stagingBuffer.data, bmpInfo.bytes.data(), bmpInfo.bytes.size() );
+	std::memcpy( stagingBuffer.data, img->colorData.data(), img->colorData.size() );
 	stagingBuffer.unmap();
-	
+
+	VulkanTexture& texture = textures[name];
+
 	CreateImageProperties imageProps = {};
-	imageProps.format = VK_FORMAT_R8G8B8A8_UNORM;
-	imageProps.height = bmpInfo.height;
+	imageProps.format	= VK_FORMAT_R8G8B8A8_UNORM;
+	imageProps.height	= img->height;
+	imageProps.width	= img->width;
 	imageProps.memProps = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-	imageProps.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageProps.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-	imageProps.width = bmpInfo.width;
+	imageProps.tiling	= VK_IMAGE_TILING_OPTIMAL;
+	imageProps.usage	= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
-	createImage( imageProps, textureImage, textureImageMemory );
+	createImage( imageProps, texture.image, texture.memory );
 
-	transitionImageLayout( textureImage, VK_FORMAT_R8G8B8A8_UNORM,
-		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
+	transitionImageLayout( texture.image, imageProps.format, VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
 
-	copyBufferToImage( stagingBuffer.buffer, textureImage, bmpInfo.width, bmpInfo.height );
+// copy the host visible memory data into device-only visible memory for better performance
+	copyBufferToImage( stagingBuffer.buffer, texture.image, img->width, img->height );
+
+// create image view
+	CreateImageView( logicalDevice, texture.image, VK_FORMAT_R8G8B8A8_UNORM,
+		VK_IMAGE_ASPECT_COLOR_BIT, &texture.view );
+
+// create descriptor
+	VkDescriptorSetAllocateInfo texAllocInfo = {};
+	texAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	texAllocInfo.descriptorPool = descriptorPool;
+	texAllocInfo.pSetLayouts = &textureLayout;
+	texAllocInfo.descriptorSetCount = 1;
+
+	vkAllocateDescriptorSets( logicalDevice, &texAllocInfo, &texture.descriptor );
+
+	VkDescriptorImageInfo imageInfo = {};
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfo.imageView = texture.view;
+	imageInfo.sampler = textureSampler;
+	VkWriteDescriptorSet textureWrite = {};
+
+	textureWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	textureWrite.dstSet = texture.descriptor;
+	textureWrite.dstBinding = 1;
+	textureWrite.dstArrayElement = 0;
+	textureWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	textureWrite.descriptorCount = 1;
+	textureWrite.pImageInfo = &imageInfo;
+
+	vkUpdateDescriptorSets( logicalDevice, 1, &textureWrite, 0, nullptr );
 
 	stagingBuffer.destroy();
 }
@@ -1146,12 +1147,6 @@ void Renderer::copyBufferToImage( VkBuffer buffer, VkImage image, uint32_t width
 	endOneTimeCommands( cmdBuffer );
 }
 
-VkResult Renderer::createTextureImageView()
-{
-	return CreateImageView( logicalDevice, textureImage, VK_FORMAT_R8G8B8A8_UNORM,
-		VK_IMAGE_ASPECT_COLOR_BIT, &textureImageView );
-}
-
 VkResult Renderer::createTextureSampler()
 {
 	VkSamplerCreateInfo createInfo = {};
@@ -1240,44 +1235,23 @@ VkResult Renderer::createDepthResources()
 	return VK_SUCCESS;
 }
 
-void Renderer::loadModel( const std::string& path )
+void Renderer::loadModel( const std::string& objName )
 {
-	tinyobj::attrib_t attribute;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-	std::string warning, error;
+	const Mesh* mesh = ResourceManager::instance()->getMesh( objName );
 
-	if( !tinyobj::LoadObj( &attribute, &shapes, &materials, 
-		&warning, &error, path.c_str() ) )
-	{
-		WriteToErrorLog( "Failed to load model: " + path + ". " +
-			warning + " " + error );
-		exit( -1 );
-	}
+	RenderModel renderModel = {};
 
-	for( auto& shape : shapes )
-	{
-		for( auto& index : shape.mesh.indices )
-		{
-			Vertex v;
+// vertex data 
+	uint32_t vertexOffset	= vertexBuffer.offset;
+	size_t vAllocSize = mesh->vertecies.size() * sizeof( Vertex );
+	void* vMemory = vertexBuffer.allocate( vAllocSize );
+	std::memcpy( vMemory, mesh->vertecies.data(), vAllocSize );
 
-			v.position = {
-				attribute.vertices[3 * index.vertex_index],
-				attribute.vertices[3 * index.vertex_index + 1],
-				attribute.vertices[3 * index.vertex_index + 2]
-			};
-
-			v.textureCoordinates = {
-				attribute.texcoords[2 * index.texcoord_index],
-				attribute.texcoords[2 * index.texcoord_index + 1]
-			};
-
-			v.color = { 1.f, 1.f, 1.f };
-
-			meshInfo.vertecies.push_back( v );
-			meshInfo.indicies.push_back( (uint32_t)meshInfo.indicies.size() );
-		}
-	}
+// index data 
+	uint32_t indexOffset	= indexBuffer.offset;	
+	size_t iAllocSize = mesh->indicies.size() * sizeof( mesh->indicies[0] );
+	void* iMemory = indexBuffer.allocate( iAllocSize );
+	std::memcpy( iMemory, mesh->indicies.data(), iAllocSize );
 }
 
 void Renderer::init()
@@ -1314,18 +1288,18 @@ void Renderer::init()
 	VKCHECK( createCommandPool() );
 	VKCHECK( createDepthResources() );
 	VKCHECK( createFrameBuffers() );
-	loadModel( "D:\\engine\\models\\chalet.obj" );
-	loadTexture( "D:\\engine\\textures\\chalet.bmp" );
-	VKCHECK( createTextureImageView() );
 	VKCHECK( createTextureSampler() );
+		
 	VKCHECK( createVertexBuffer() );
 	VKCHECK( createIndexBuffer() );
 	VKCHECK( createTransformBuffer() );
-	transformBuffer.map();
-	TestBindModel();
 	VKCHECK( createUniformBuffers() );
+	vertexBuffer.map();
+	indexBuffer.map();
+	transformBuffer.map();
+	
 	VKCHECK( createDescriptorPool() );
-	VKCHECK( createDescriptorSets() );
+	VKCHECK( createUBODescritptorSet() );
 	VKCHECK( createCommandBuffers() );
 	VKCHECK( createSemaphores() );
 }
@@ -1347,9 +1321,7 @@ void Renderer::shutdown()
 	vkDestroyRenderPass( logicalDevice, renderPass, nullptr );
 
 	vkDestroySampler( logicalDevice, textureSampler, nullptr );
-	vkDestroyImageView( logicalDevice, textureImageView, nullptr );
-
-
+	
 	vertexBuffer.destroy();
 	indexBuffer.destroy();
 	transformBuffer.destroy();

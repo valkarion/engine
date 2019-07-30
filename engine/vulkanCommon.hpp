@@ -28,5 +28,6 @@ extern CVar window_height;
 extern const std::vector<const char*> validationLayers;
 extern const std::vector<const char*> deviceExtensions;
 
+// imageviews are used by the renderer and swapchain so its here not in either class
 VkResult CreateImageView( const VkDevice logicalDevice, const VkImage image, 
 	const VkFormat format, const VkImageAspectFlags aspectFlags, VkImageView* view );

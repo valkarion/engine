@@ -33,6 +33,7 @@ class MeshComponent : public Component
 public:
 	// meshes themselves are stored in ResourceManager 
 	std::string meshName;
+	std::string textureName;
 
 	MeshComponent();
 };

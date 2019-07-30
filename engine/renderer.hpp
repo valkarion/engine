@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <map>
 #include <optional>
 
 #include <GLFW/glfw3.h>
@@ -27,22 +28,32 @@ struct QueueFamilyIndicies
 };
 
 /*
-	Holds .obj data and vulkan handlers that the renderer uses 
-	to display meshes. 
-*/
-struct RendererMeshInfo
-{
-	std::vector<Vertex>		vertecies;
-	std::vector<uint32_t>	indicies;
-};
-
-/*
 	UBO is a global variable that will be visible during shader stages
 */
 struct UniformBufferObject
 {
-	// MVP matricies
-	glm::mat4 model;
+	// this is now a dummy.
+	glm::mat4 dummy;
+};
+
+// holds handles to texture and a descriptor used during rendering
+struct VulkanTexture
+{
+	VkImage							image;
+	VkImageView						view;
+	VkDeviceMemory					memory;
+
+	VkDescriptorSet					descriptor;
+};
+
+// contains information about a Mesh that is used during drawing
+struct RenderModel
+{
+	uint32_t vertexCount;
+	uint32_t vertexOffset;
+
+	uint32_t indexCount;
+	uint32_t indexOffset;
 };
 
 class Renderer
@@ -146,7 +157,6 @@ public:
 										VkMemoryPropertyFlags memFlags, VulkanBuffer& buffer );
 	VkResult						createVertexBuffer();
 	VkResult						createIndexBuffer();
-	void							TestBindModel();
 	VkResult						createUniformBuffers();
 
 // descriptor sets
@@ -156,11 +166,10 @@ public:
 	VkDescriptorSetLayout			textureLayout;
 
 	std::vector<VkDescriptorSet>	uboDescriptors;
-	VkDescriptorSet					textureDescriptor;
 
 	VkResult						createDescriptorSetLayout();
 	VkResult						createDescriptorPool();
-	VkResult						createDescriptorSets();
+	VkResult						createUBODescritptorSet();
 
 // image helper 
 	struct CreateImageProperties
@@ -176,18 +185,17 @@ public:
 	VkResult						createImage( CreateImageProperties& props, 
 		VkImage& image,	VkDeviceMemory& imgMemory );
 
-// texture loading 
-	VkImage							textureImage;
-	VkImageView						textureImageView;
-	VkDeviceMemory					textureImageMemory;
+// texture loading
+	std::map<std::string, VulkanTexture> textures;
+
 	VkSampler						textureSampler;
-	void							loadTexture( const std::string& path );
+	VkResult						createTextureSampler();
+
+	void							loadTexture( const std::string& name );
 	void							transitionImageLayout( VkImage image, VkFormat format,
 										VkImageLayout oldLayout, VkImageLayout newLayout );
 	void							copyBufferToImage( VkBuffer buffer, VkImage image,
 										uint32_t width,	uint32_t height );
-	VkResult						createTextureImageView();
-	VkResult						createTextureSampler();
 
 // depth buffering
 	VkImage							depthImage;
@@ -197,10 +205,10 @@ public:
 	VkFormat						findSupportedImageFormat( const std::vector<VkFormat>& candidates,
 										VkImageTiling tiling, VkFormatFeatureFlags features );
 	VkResult						createDepthResources();
-	
-// models
-	RendererMeshInfo				meshInfo;
-	void							loadModel( const std::string& path );
+
+// models 
+	std::map<std::string, RenderModel>	models;
+	void loadModel( const std::string& objName );
 
 public:
 	void init();
