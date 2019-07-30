@@ -412,7 +412,7 @@ VkResult Renderer::createGraphicsPipeline()
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutCreateInfo.setLayoutCount = 1;
-	pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+	pipelineLayoutCreateInfo.pSetLayouts = &textureLayout;
 	
 	// Push Constant description
 	VkPushConstantRange range = {};
@@ -670,7 +670,7 @@ void Renderer::draw()
 		vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
 		vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
-			0, 1, &descriptorSets[currentImageIndex], 1, &offset );
+			0, 1, &textureDescriptor, 0, &offset );
 
 		vkCmdDrawIndexed( cmdBuf, (uint32_t)meshInfo.vertecies.size(), 1, 0, 0, 0 );
 	}
@@ -791,6 +791,26 @@ void Renderer::copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size )
 	endOneTimeCommands( cmdBuffer );
 }
 
+VkResult Renderer::createUniformBuffers()
+{
+	uniformBuffers.resize( swapchain.images.size() );
+
+	VkDeviceSize bufferSize = UNIFORM_BUFFER_SIZE_KB * 1024;
+	VkBufferUsageFlags useFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+	for ( size_t i = 0; i < swapchain.images.size(); i++ )
+	{
+		VKCHECK( createBuffer( bufferSize, useFlags, memProps, uniformBuffers[i] ) );
+
+		// required NVIDIA alignment
+		uniformBuffers[i].alignment = 256;
+		uniformBuffers[i].map();
+	}
+
+	return VK_SUCCESS;
+}
+
 VkResult Renderer::createVertexBuffer()
 {	
 	VkDeviceSize bufferSize = VERTEX_BUFFER_SIZE_MB * 1024 * 1024;
@@ -833,52 +853,6 @@ void Renderer::TestBindModel()
 	indexBuffer.unmap();
 }
 
-VkResult Renderer::createDescriptorSetLayout()
-{
-	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-	// the same as in the vertex shader 
-	uboLayoutBinding.binding = 0;
-	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-	// will be used in the vertex stage/shader 
-	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-	samplerLayoutBinding.binding = 1;
-	samplerLayoutBinding.descriptorCount = 1;
-	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
-
-	VkDescriptorSetLayoutCreateInfo createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	createInfo.bindingCount = (uint32_t)bindings.size();
-	createInfo.pBindings = bindings.data();
-		
-	return vkCreateDescriptorSetLayout( logicalDevice, &createInfo, nullptr, &descriptorSetLayout );
-}
-
-VkResult Renderer::createUniformBuffers()
-{
-	uniformBuffers.resize( swapchain.images.size() );
-
-	VkDeviceSize bufferSize = UNIFORM_BUFFER_SIZE_KB * 1024;
-	VkBufferUsageFlags useFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-
-	for( size_t i = 0; i < swapchain.images.size(); i++ )
-	{
-		VKCHECK( createBuffer( bufferSize, useFlags, memProps, uniformBuffers[i] ) );
-
-		// required NVIDIA alignment
-		uniformBuffers[i].alignment = 256;
-		uniformBuffers[i].map();
-	}
-
-	return VK_SUCCESS;
-}
-
 VkResult Renderer::createDescriptorPool()
 {
 	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
@@ -886,7 +860,7 @@ VkResult Renderer::createDescriptorPool()
 	poolSizes[0].descriptorCount = (uint32_t)swapchain.images.size();
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizes[1].descriptorCount = MAX_DESCRIPTORS;
-	
+
 	VkDescriptorPoolCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	createInfo.poolSizeCount = (uint32_t)poolSizes.size();
@@ -896,9 +870,41 @@ VkResult Renderer::createDescriptorPool()
 	return vkCreateDescriptorPool( logicalDevice, &createInfo, nullptr, &descriptorPool );
 }
 
+VkResult Renderer::createDescriptorSetLayout()
+{
+// UBO 
+	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+// Textures
+	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+	samplerLayoutBinding.binding = 1;
+	samplerLayoutBinding.descriptorCount = 1;
+	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	//std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+
+	VkDescriptorSetLayoutCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	createInfo.bindingCount = 1;
+	createInfo.pBindings = &uboLayoutBinding;
+		
+	VKCHECK( vkCreateDescriptorSetLayout( logicalDevice, &createInfo, nullptr, &uboLayout ) );
+
+	createInfo.pBindings = &samplerLayoutBinding;
+	VKCHECK( vkCreateDescriptorSetLayout( logicalDevice, &createInfo, nullptr, &textureLayout ) );
+
+	return VK_SUCCESS;
+}
+
 VkResult Renderer::createDescriptorSets()
 {
-	std::vector<VkDescriptorSetLayout> layouts( swapchain.images.size(), descriptorSetLayout );
+// UBO descriptor
+	std::vector<VkDescriptorSetLayout> layouts( swapchain.images.size(), uboLayout );
 	VkDescriptorSetAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = descriptorPool;
@@ -906,49 +912,54 @@ VkResult Renderer::createDescriptorSets()
 	
 	allocInfo.descriptorSetCount = (uint32_t)swapchain.images.size();
 
-	descriptorSets.resize( swapchain.images.size() );
+	uboDescriptors.resize( swapchain.images.size() );
 
-	VkResult res = VK_SUCCESS; 
-	res = vkAllocateDescriptorSets( logicalDevice, &allocInfo, descriptorSets.data() );
-	if ( res != VK_SUCCESS )
-	{
-		return res;
-	}
+	VKCHECK( vkAllocateDescriptorSets( logicalDevice, &allocInfo, uboDescriptors.data() ) );
+
+	VkDescriptorBufferInfo bufferInfo = {};
+	bufferInfo.offset = 0;
+	bufferInfo.range = sizeof( UniformBufferObject );
+
+	VkWriteDescriptorSet uboWrite = {};
+	uboWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	uboWrite.dstBinding = 0;
+	uboWrite.dstArrayElement = 0;
+	uboWrite.descriptorCount = 1;
+	uboWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	uboWrite.pBufferInfo = &bufferInfo;
 	
 	for( size_t i = 0; i < swapchain.images.size(); i++ )
 	{
-		VkDescriptorBufferInfo bufferInfo = {};
+		uboWrite.dstSet = uboDescriptors[i];
 		bufferInfo.buffer = uniformBuffers[i].buffer;
-		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof( UniformBufferObject );
 
-		VkDescriptorImageInfo imageInfo = {};
-		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = textureImageView;
-		imageInfo.sampler = textureSampler;
-			   
-		std::array<VkWriteDescriptorSet, 2> writeDescriptorSets = {};
-		writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[0].dstSet = descriptorSets[i];
-		// same as in the shader 
-		writeDescriptorSets[0].dstBinding = 0;
-		// we only have 1 ubo 
-		writeDescriptorSets[0].dstArrayElement = 0;
-		writeDescriptorSets[0].descriptorCount = 1;
-		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		writeDescriptorSets[0].pBufferInfo = &bufferInfo;
-
-		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[1].dstSet = descriptorSets[i];
-		writeDescriptorSets[1].dstBinding = 1;
-		writeDescriptorSets[1].dstArrayElement = 0;
-		writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		writeDescriptorSets[1].descriptorCount = 1;
-		writeDescriptorSets[1].pImageInfo = &imageInfo;
-
-
-		vkUpdateDescriptorSets( logicalDevice, 2, writeDescriptorSets.data(), 0, nullptr );
+		vkUpdateDescriptorSets( logicalDevice, 1, &uboWrite, 0, nullptr );
 	}
+
+// Texture Descriptor
+	VkDescriptorSetAllocateInfo texAllocInfo = {};
+	texAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	texAllocInfo.descriptorPool = descriptorPool;
+	texAllocInfo.pSetLayouts = &textureLayout;
+	texAllocInfo.descriptorSetCount = 1;
+	
+	vkAllocateDescriptorSets( logicalDevice, &texAllocInfo, &textureDescriptor );
+
+	VkDescriptorImageInfo imageInfo = {};
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfo.imageView = textureImageView;
+	imageInfo.sampler = textureSampler;
+	
+	VkWriteDescriptorSet textureWrite = {};
+	textureWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	textureWrite.dstSet = textureDescriptor;
+	textureWrite.dstBinding = 1;
+	textureWrite.dstArrayElement = 0;
+	textureWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	textureWrite.descriptorCount = 1;
+	textureWrite.pImageInfo = &imageInfo;
+
+	vkUpdateDescriptorSets( logicalDevice, 1, &textureWrite, 0, nullptr );
 
 	return VK_SUCCESS;
 };
@@ -1350,7 +1361,9 @@ void Renderer::shutdown()
 
 	swapchain.shutdown();
 
-	vkDestroyDescriptorSetLayout( logicalDevice, descriptorSetLayout, nullptr );
+	vkDestroyDescriptorSetLayout( logicalDevice, uboLayout, nullptr );
+	vkDestroyDescriptorSetLayout( logicalDevice, textureLayout, nullptr );
+
 	vkDestroyDescriptorPool( logicalDevice, descriptorPool, nullptr );
 
 	vkDestroyDevice( logicalDevice, nullptr );

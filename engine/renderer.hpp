@@ -150,10 +150,14 @@ public:
 	VkResult						createUniformBuffers();
 
 // descriptor sets
-	// resource descriptors allow shaders to access to vulkan objects
-	VkDescriptorSetLayout			descriptorSetLayout;
 	VkDescriptorPool				descriptorPool;
-	std::vector<VkDescriptorSet>	descriptorSets;
+	//VkDescriptorSetLayout			descriptorSetLayout;
+	VkDescriptorSetLayout			uboLayout;
+	VkDescriptorSetLayout			textureLayout;
+
+	std::vector<VkDescriptorSet>	uboDescriptors;
+	VkDescriptorSet					textureDescriptor;
+
 	VkResult						createDescriptorSetLayout();
 	VkResult						createDescriptorPool();
 	VkResult						createDescriptorSets();
