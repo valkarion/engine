@@ -21,9 +21,10 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-#define UNIFORM_BUFFER_SIZE_MB	32
+#define UNIFORM_BUFFER_SIZE_KB	2048
 #define VERTEX_BUFFER_SIZE_MB	128
 #define INDEX_BUFFER_SIZE_MB	128
+#define MAX_DESCRIPTORS			256	// each texture has it's own descriptor
 
 std::unique_ptr<Renderer> Renderer::_instance = std::make_unique<Renderer>();
 
@@ -862,7 +863,7 @@ VkResult Renderer::createUniformBuffers()
 {
 	uniformBuffers.resize( swapchain.images.size() );
 
-	VkDeviceSize bufferSize = UNIFORM_BUFFER_SIZE_MB * 1024 * 1024;
+	VkDeviceSize bufferSize = UNIFORM_BUFFER_SIZE_KB * 1024;
 	VkBufferUsageFlags useFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
@@ -884,13 +885,13 @@ VkResult Renderer::createDescriptorPool()
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 	poolSizes[0].descriptorCount = (uint32_t)swapchain.images.size();
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = (uint32_t)swapchain.images.size();
+	poolSizes[1].descriptorCount = MAX_DESCRIPTORS;
 	
 	VkDescriptorPoolCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	createInfo.poolSizeCount = (uint32_t)poolSizes.size();
 	createInfo.pPoolSizes = poolSizes.data();
-	createInfo.maxSets = (uint32_t)swapchain.images.size();
+	createInfo.maxSets = MAX_DESCRIPTORS;
 
 	return vkCreateDescriptorPool( logicalDevice, &createInfo, nullptr, &descriptorPool );
 }

@@ -85,7 +85,6 @@ void SetWindowDebugTitle( GLFWwindow* window, int frameRate )
 	glfwSetWindowTitle( window, name );
 }
 
-
 void Application::run()
 {
 	FrameCounter frameCounter;

@@ -2,8 +2,10 @@
 
 void FrameCounter::update()
 {
-	deltaTime += std::chrono::duration_cast<std::chrono::microseconds>(
+	lastFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(
 		( std::chrono::high_resolution_clock::now() - fixPoint ) ).count();
+
+	deltaTime += lastFrameTime;
 	fixPoint = std::chrono::high_resolution_clock::now();
 
 	static const int64_t oneSecond = ( int64_t )1e6;
@@ -18,6 +20,16 @@ void FrameCounter::update()
 	{
 		accumulator++;
 	}
+}
+
+int64_t FrameCounter::getLastFrameTime() const
+{
+	return lastFrameTime;
+}
+
+float FrameCounter::lastFrameTimeInSeconds() const
+{
+	return (float)lastFrameTime / 1e6;
 }
 
 int	FrameCounter::getFramerate()

@@ -16,9 +16,12 @@ class FrameCounter
 			fixPoint;
 	int		accumulator;
 	int64_t	deltaTime;
+	int64_t lastFrameTime;
 	int		lastFps;
 public:
 	void	update();
+	int64_t getLastFrameTime() const;
+	float	lastFrameTimeInSeconds() const;
 	int		getFramerate();
 
 			FrameCounter();
