@@ -612,14 +612,7 @@ void Renderer::beginDraw()
 }
 
 glm::mat4x4 GetModelMatrix( TransformComponent* transform )
-{
-	transform->rotation.x += 1.f;
-	if ( transform->rotation.x > 360.f )
-	{
-		transform->rotation.x -= 360.f;
-	}
-
-	glm::mat4x4 model( 1.f );
+{	glm::mat4x4 model( 1.f );
 	
 	// displacement
 	model = glm::translate( model, transform->position );
@@ -662,6 +655,8 @@ void Renderer::draw()
 	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
 		MeshComponent* meshComponent = em->get<MeshComponent>( ent );
+		RenderModel& m = models[meshComponent->meshName];
+		offsets[0] = m.vertexOffset;
 
 		transformOffset = transformBuffer.offset;
 
@@ -1247,11 +1242,19 @@ void Renderer::loadModel( const std::string& objName )
 	void* vMemory = vertexBuffer.allocate( vAllocSize );
 	std::memcpy( vMemory, mesh->vertecies.data(), vAllocSize );
 
+	renderModel.vertexCount = mesh->vertecies.size();
+	renderModel.vertexOffset = vertexOffset;
+
 // index data 
 	uint32_t indexOffset	= indexBuffer.offset;	
 	size_t iAllocSize = mesh->indicies.size() * sizeof( mesh->indicies[0] );
 	void* iMemory = indexBuffer.allocate( iAllocSize );
 	std::memcpy( iMemory, mesh->indicies.data(), iAllocSize );
+
+	renderModel.indexOffset = indexOffset;
+	renderModel.indexCount = mesh->indicies.size();
+
+	models[objName] = renderModel;
 }
 
 void Renderer::init()
@@ -1306,6 +1309,17 @@ void Renderer::init()
 
 void Renderer::shutdown()
 {
+	for ( auto& it : textures )
+	{
+		vkDestroyImageView( logicalDevice, it.second.view, nullptr );
+		vkDestroyImage( logicalDevice, it.second.image, nullptr );
+		vkFreeMemory( logicalDevice, it.second.memory, nullptr );
+	}
+
+	vkDestroyImageView( logicalDevice, depthImageView, nullptr );
+	vkDestroyImage( logicalDevice, depthImage, nullptr );
+	vkFreeMemory( logicalDevice, depthImageMemory, nullptr );
+
 	vkDestroySemaphore( logicalDevice, imageAvailableSemaphore, nullptr );
 	vkDestroySemaphore( logicalDevice, renderFinishedSemaphore, nullptr );
 

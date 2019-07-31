@@ -30,10 +30,16 @@ void SetupScene()
 	Renderer* ren		= Renderer::instance();
 
 // Load data to ResourceManager
+	rm->loadImage( "D:\\engine\\textures\\dinosaur.bmp", "dinosaur" );
+	rm->loadMesh( "D:\\engine\\models\\dinosaur.obj", "dinosaur" );
+
 	rm->loadImage( "D:\\engine\\textures\\chalet.bmp", "chalet" );
 	rm->loadMesh( "D:\\engine\\models\\chalet.obj", "chalet" );
 
 // Convert that data to Renderable Stuff
+	ren->loadTexture( "dinosaur" );
+	ren->loadModel( "dinosaur" );
+
 	ren->loadTexture( "chalet" );
 	ren->loadModel( "chalet" );
 
@@ -42,26 +48,35 @@ void SetupScene()
 	Scene* currentScene = sm->setActiveScene( sceneId );
 	
 // Setup test Entities 
-	E_ID ent = em->addEntity();
-	currentScene->entities.push_back( ent );
-	
-	TransformComponent* tc = em->add<TransformComponent>( ent );
-	tc->position = glm::vec3( 0.f, 0.f, 0.f );
+	{
+		E_ID ent = em->addEntity();
+		currentScene->entities.push_back( ent );
 
-	MeshComponent* mc = em->add<MeshComponent>( ent );
-	mc->meshName = "chalet";
-	mc->textureName = "chalet";
+		TransformComponent* tc = em->add<TransformComponent>( ent );
+		tc->position = glm::vec3( 0.f, 0.f, 0.f );
+		tc->scale = glm::vec3( 0.1f );
+
+		MeshComponent* mc = em->add<MeshComponent>( ent );
+		mc->meshName = "dinosaur";
+		mc->textureName = "dinosaur";
+	}
 	
-	//for ( size_t i = 0; i < 9; i++ )
-	//{
-	//	E_ID ent = em->addEntity();
-	//	currentScene->entities.push_back( ent );
-	//	TransformComponent* tc = em->add<TransformComponent>( ent );
-	//	
-	//	int px = -3 + ( ( i % 3 ) * 3 );
-	//	int py = -3 + ( ( i / 3 ) * 3 );
-	//	tc->position = glm::vec3( float( px ), float( py ), 0.f );
-	//}
+	{
+		E_ID ent = em->addEntity();
+		currentScene->entities.push_back( ent );
+
+		TransformComponent* tc = em->add<TransformComponent>( ent );
+		tc->position = glm::vec3( 0.f, 0.f, 0.f );
+
+		MeshComponent* mc = em->add<MeshComponent>( ent );
+		mc->meshName = "chalet";
+		mc->textureName = "chalet";
+
+		tc->rotation.x = glm::radians( 270.f );
+		tc->rotation.z = glm::radians( 90.f );
+
+		tc->position.y = -1.f;
+	}
 };
 
 void T_Renderer()
