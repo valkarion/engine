@@ -147,11 +147,15 @@ public:
 	VulkanBuffer					vertexBuffer;
 	VulkanBuffer					indexBuffer;	
 	std::vector<VulkanBuffer>		uniformBuffers;
+	
+	VulkanBuffer					stagingBuffer;
+	VkResult						createStagingBuffer();
+	void							copyStagingBuffer( VulkanBuffer& dest, size_t size, size_t offset );
 
+	// holds model matricies 
 	VulkanBuffer					transformBuffer;
 	VkResult						createTransformBuffer();
 	
-	void							copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size );
 	// abstract helper for all buffer creation process
 	VkResult						createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
 										VkMemoryPropertyFlags memFlags, VulkanBuffer& buffer );

@@ -784,17 +784,6 @@ VkResult Renderer::createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
 	return VK_SUCCESS;
 }
 
-void Renderer::copyBuffer( VkBuffer src, VkBuffer dest, VkDeviceSize size )
-{
-	VkCommandBuffer cmdBuffer = beginOneTimeCommands();
-
-	VkBufferCopy copy = {};
-	copy.size = size;
-	vkCmdCopyBuffer( cmdBuffer, src, dest, 1, &copy );
-
-	endOneTimeCommands( cmdBuffer );
-}
-
 VkResult Renderer::createUniformBuffers()
 {
 	uniformBuffers.resize( swapchain.images.size() );
@@ -815,20 +804,11 @@ VkResult Renderer::createUniformBuffers()
 	return VK_SUCCESS;
 }
 
-VkResult Renderer::createVertexBuffer()
-{	
-	VkDeviceSize bufferSize = VERTEX_BUFFER_SIZE_MB * 1024 * 1024;
-	VkBufferUsageFlags flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
-
-	return createBuffer( bufferSize, flags, memProps, vertexBuffer );
-}
-
 VkResult Renderer::createTransformBuffer()
 {
 	VkDeviceSize bufferSize = VERTEX_BUFFER_SIZE_MB * 1024 * 1024;
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
 	return createBuffer( bufferSize, flags, memProps, transformBuffer );
 }
@@ -836,10 +816,41 @@ VkResult Renderer::createTransformBuffer()
 VkResult Renderer::createIndexBuffer()
 {
 	VkDeviceSize bufferSize = INDEX_BUFFER_SIZE_MB * 1024 * 1024;
-	VkBufferUsageFlags flags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+	VkBufferUsageFlags flags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 	return createBuffer( bufferSize, flags, memProps, indexBuffer );
+}
+
+VkResult Renderer::createVertexBuffer()
+{	
+	VkDeviceSize bufferSize = VERTEX_BUFFER_SIZE_MB * 1024 * 1024;
+	VkBufferUsageFlags flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+	return createBuffer( bufferSize, flags, memProps, vertexBuffer );
+}
+
+VkResult Renderer::createStagingBuffer()
+{
+	VkDeviceSize bufferSize = VERTEX_BUFFER_SIZE_MB * 1024 * 1024;
+	VkBufferUsageFlags flags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+
+	return createBuffer( bufferSize, flags, memProps, stagingBuffer );
+}
+
+void Renderer::copyStagingBuffer( VulkanBuffer& dest, size_t size, size_t offset )
+{
+	VkCommandBuffer cmdBuffer = beginOneTimeCommands();
+
+	VkBufferCopy copy = {};
+	copy.size = size;
+	copy.srcOffset = 0;
+	copy.dstOffset = offset;
+	vkCmdCopyBuffer( cmdBuffer, stagingBuffer.buffer, dest.buffer, 1, &copy );
+
+	endOneTimeCommands( cmdBuffer );
 }
 
 VkResult Renderer::createDescriptorPool()
@@ -1233,23 +1244,30 @@ VkResult Renderer::createDepthResources()
 void Renderer::loadModel( const std::string& objName )
 {
 	const Mesh* mesh = ResourceManager::instance()->getMesh( objName );
-
 	RenderModel renderModel = {};
+	stagingBuffer.offset = 0;
 
 // vertex data 
-	uint32_t vertexOffset	= vertexBuffer.offset;
+	uint32_t vertexOffset = vertexBuffer.offset;
 	size_t vAllocSize = mesh->vertecies.size() * sizeof( Vertex );
-	void* vMemory = vertexBuffer.allocate( vAllocSize );
+	void* vMemory = stagingBuffer.allocate( vAllocSize );
 	std::memcpy( vMemory, mesh->vertecies.data(), vAllocSize );
 
 	renderModel.vertexCount = mesh->vertecies.size();
 	renderModel.vertexOffset = vertexOffset;
 
+	copyStagingBuffer( vertexBuffer, vAllocSize, vertexOffset );
+	vertexBuffer.offset += vAllocSize;
+
 // index data 
-	uint32_t indexOffset	= indexBuffer.offset;	
+	stagingBuffer.offset = 0;
+	uint32_t indexOffset = indexBuffer.offset;	
 	size_t iAllocSize = mesh->indicies.size() * sizeof( mesh->indicies[0] );
-	void* iMemory = indexBuffer.allocate( iAllocSize );
+	void* iMemory = stagingBuffer.allocate( iAllocSize );
 	std::memcpy( iMemory, mesh->indicies.data(), iAllocSize );
+
+	copyStagingBuffer( indexBuffer, vAllocSize, indexOffset );
+	indexBuffer.offset += iAllocSize;
 
 	renderModel.indexOffset = indexOffset;
 	renderModel.indexCount = mesh->indicies.size();
@@ -1259,12 +1277,11 @@ void Renderer::loadModel( const std::string& objName )
 
 void Renderer::init()
 {
+#ifdef _DEBUG
 	useValidationLayers = true;
-	//#ifdef _DEBUG
-	//useValidationLayers = true;
-	//#else
-	//useValidationLayers = false;
-	//#endif 	
+#else
+	useValidationLayers = false;
+#endif 	
 	
 	renderedFrameCount = 0;
 
@@ -1293,12 +1310,14 @@ void Renderer::init()
 	VKCHECK( createFrameBuffers() );
 	VKCHECK( createTextureSampler() );
 		
+	VKCHECK( createStagingBuffer() );
 	VKCHECK( createVertexBuffer() );
 	VKCHECK( createIndexBuffer() );
 	VKCHECK( createTransformBuffer() );
 	VKCHECK( createUniformBuffers() );
-	vertexBuffer.map();
-	indexBuffer.map();
+	stagingBuffer.map();
+	//vertexBuffer.map();
+	//indexBuffer.map();
 	transformBuffer.map();
 	
 	VKCHECK( createDescriptorPool() );
