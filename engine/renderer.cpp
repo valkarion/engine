@@ -22,6 +22,7 @@
 #define UNIFORM_BUFFER_SIZE_KB	2048
 #define VERTEX_BUFFER_SIZE_MB	128
 #define INDEX_BUFFER_SIZE_MB	128
+#define STAGING_BUFFER_SIZE_MB	128
 #define MAX_DESCRIPTORS			256	// each texture has it's own descriptor
 
 std::unique_ptr<Renderer> Renderer::_instance = std::make_unique<Renderer>();
@@ -833,7 +834,7 @@ VkResult Renderer::createVertexBuffer()
 
 VkResult Renderer::createStagingBuffer()
 {
-	VkDeviceSize bufferSize = VERTEX_BUFFER_SIZE_MB * 1024 * 1024;
+	VkDeviceSize bufferSize = STAGING_BUFFER_SIZE_MB * 1024 * 1024;
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
 

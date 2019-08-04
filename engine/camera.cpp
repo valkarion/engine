@@ -18,14 +18,14 @@ void Camera::displace( glm::vec3 v )
 {
 	if ( !isnan( v.x ) && !isnan( v.y ) )
 	{
-		position += v;
+		position += sensitivity * v;
 	}
 }
 
 void Camera::turn( glm::vec2 delta )
 {
-	glm::vec3 strafe =glm::cross( direction, up );
-	glm::mat4 rotation = glm::mat4( glm::rotate( -delta.x * sensitivity, up ) *
+	glm::vec3 strafe	= glm::cross( direction, up );
+	glm::mat4 rotation	= glm::mat4( glm::rotate( -delta.x * sensitivity, up ) *
 		glm::rotate( -delta.y * sensitivity, strafe ) );
 
 	direction = glm::mat3( rotation ) * direction;
@@ -48,7 +48,8 @@ glm::mat4 Camera::getProjection()
 {
 	glm::mat4 proj = glm::perspective( glm::radians( 90.f ),
 		aspect, nearClip, farClip );
-	proj[1][1] *= -1; // vulkan specific flip 
+
+	proj[1][1] *= -1; // vulkan specific flip; would be upside down otherwise
 
 	return proj;
 }

@@ -13,7 +13,7 @@ void PrintToOutputWindow( const char* fmt, ... )
 	static char buffer[MAX_LOG_SIZE];
 
 	va_start( args, fmt );
-	snprintf( buffer, MAX_LOG_SIZE, fmt, args );
+	vsnprintf( buffer, MAX_LOG_SIZE, fmt, args );
 	va_end( args );
 	
 	OutputDebugString( buffer );
@@ -32,7 +32,7 @@ void WriteToErrorLog( const char* fmt, ... )
 	static char buffer[MAX_LOG_SIZE];
 
 	va_start( args, fmt );
-	snprintf( buffer, MAX_LOG_SIZE, fmt, args );
+	vsnprintf( buffer, MAX_LOG_SIZE, fmt, args );
 	va_end( args );
 
 	PrintToOutputWindow( buffer, args );

@@ -33,15 +33,15 @@ void SetupScene()
 	rm->loadImage( "D:\\engine\\textures\\dinosaur.bmp", "dinosaur" );
 	rm->loadMesh( "D:\\engine\\models\\dinosaur.obj", "dinosaur" );
 
-	rm->loadImage( "D:\\engine\\textures\\chalet.bmp", "chalet" );
-	rm->loadMesh( "D:\\engine\\models\\chalet.obj", "chalet" );
+	//rm->loadImage( "D:\\engine\\textures\\chalet.bmp", "chalet" );
+	//rm->loadMesh( "D:\\engine\\models\\chalet.obj", "chalet" );
 
 // Convert that data to Renderable Stuff
 	ren->loadTexture( "dinosaur" );
 	ren->loadModel( "dinosaur" );
 
-	ren->loadTexture( "chalet" );
-	ren->loadModel( "chalet" );
+	//ren->loadTexture( "chalet" );
+	//ren->loadModel( "chalet" );
 
 // Set scene
 	SC_ID sceneId = sm->addScene();
@@ -61,6 +61,7 @@ void SetupScene()
 		mc->textureName = "dinosaur";
 	}
 	
+/*
 	{
 		E_ID ent = em->addEntity();
 		currentScene->entities.push_back( ent );
@@ -77,6 +78,7 @@ void SetupScene()
 
 		tc->position.y = -1.f;
 	}
+*/
 };
 
 void T_Renderer()
