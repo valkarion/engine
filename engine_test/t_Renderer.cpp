@@ -8,6 +8,7 @@
 #include "resourceManager.hpp"
 #include "renderer.hpp"
 #include "camera.hpp"
+#include "fileSystem.hpp"
 #include <glm/glm.hpp>
 
 void AddInputCommands()
@@ -22,63 +23,36 @@ void AddInputCommands()
 	InputSystem::instance()->setupKeyboardCommands( keymap );
 }
 
-void SetupScene()
+void SetupBasicScene()
 {
-	SceneManager*	sm	= SceneManager::instance();
-	EntityManager*	em	= EntityManager::instance();
+	SceneManager*	sm = SceneManager::instance();
+	EntityManager*	em = EntityManager::instance();
 	ResourceManager* rm = ResourceManager::instance();
-	Renderer* ren		= Renderer::instance();
+	Renderer* ren = Renderer::instance();
 
 // Load data to ResourceManager
-	rm->loadImage( "D:\\engine\\textures\\dinosaur.bmp", "dinosaur" );
-	rm->loadMesh( "D:\\engine\\models\\dinosaur.obj", "dinosaur" );
-
-	//rm->loadImage( "D:\\engine\\textures\\chalet.bmp", "chalet" );
-	//rm->loadMesh( "D:\\engine\\models\\chalet.obj", "chalet" );
-
+	rm->loadImage( "..\\textures\\chalet.jpg", "chalet" );
+	rm->loadMesh( "..\\models\\chalet.obj", "chalet" );
+	
 // Convert that data to Renderable Stuff
-	ren->loadTexture( "dinosaur" );
-	ren->loadModel( "dinosaur" );
-
-	//ren->loadTexture( "chalet" );
-	//ren->loadModel( "chalet" );
+	ren->loadTexture( "chalet" );
+	ren->loadModel( "chalet" );
 
 // Set scene
 	SC_ID sceneId = sm->addScene();
 	Scene* currentScene = sm->setActiveScene( sceneId );
-	
-// Setup test Entities 
-	{
-		E_ID ent = em->addEntity();
-		currentScene->entities.push_back( ent );
 
-		TransformComponent* tc = em->add<TransformComponent>( ent );
-		tc->position = glm::vec3( 0.f, 0.f, 0.f );
-		tc->scale = glm::vec3( 0.1f );
+// Create Entity
+	E_ID ent = em->addEntity();
+	currentScene->entities.push_back( ent );
 
-		MeshComponent* mc = em->add<MeshComponent>( ent );
-		mc->meshName = "dinosaur";
-		mc->textureName = "dinosaur";
-	}
-	
-/*
-	{
-		E_ID ent = em->addEntity();
-		currentScene->entities.push_back( ent );
+	TransformComponent* tc = em->add<TransformComponent>( ent );
+	tc->position = glm::vec3( 0.f, 0.f, 0.f );
+	tc->rotation = glm::vec3( 0.f, 0.f, 0.f );
 
-		TransformComponent* tc = em->add<TransformComponent>( ent );
-		tc->position = glm::vec3( 0.f, 0.f, 0.f );
-
-		MeshComponent* mc = em->add<MeshComponent>( ent );
-		mc->meshName = "chalet";
-		mc->textureName = "chalet";
-
-		tc->rotation.x = glm::radians( 270.f );
-		tc->rotation.z = glm::radians( 90.f );
-
-		tc->position.y = -1.f;
-	}
-*/
+	MeshComponent* mc = em->add<MeshComponent>( ent );
+	mc->meshName = "chalet";
+	mc->textureName = "chalet";
 };
 
 void T_Renderer()
@@ -90,7 +64,7 @@ void T_Renderer()
 
 	Camera::instance()->initCamera();
 	AddInputCommands();
-	SetupScene();
+	SetupBasicScene();
 
 	Application::instance()->run();
 }

@@ -261,6 +261,7 @@
     <ClInclude Include="idManager.hpp" />
     <ClInclude Include="inputSystem.hpp" />
     <ClInclude Include="libs\sol.hpp" />
+    <ClInclude Include="libs\stb_image.h" />
     <ClInclude Include="loggers.hpp" />
     <ClInclude Include="luaStateController.hpp" />
     <ClInclude Include="renderer.hpp" />

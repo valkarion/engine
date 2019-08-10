@@ -1,9 +1,46 @@
 #include "fileSystem.hpp"
 #include "loggers.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #include <algorithm>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+
+std::vector<std::string> GetFilesInDirectory( const std::string& path, const std::string ext )
+{
+	std::vector<std::string> res;
+	fs::path dir( path.c_str() );
+	fs::directory_iterator end;
+	std::string extension = "." + ext;
+	bool checkExtension = !ext.empty();
+
+	if ( !fs::exists( dir ) || !fs::is_directory( dir ) )
+	{
+		return res;
+	}
+
+	for ( fs::directory_iterator diter( dir ); diter != end; ++diter )
+	{
+		if ( fs::is_regular_file( diter->status() ) )
+		{
+			if ( ( checkExtension && diter->path().extension() == extension ) || !checkExtension )
+			{
+				if ( checkExtension )
+				{
+					res.push_back( diter->path().stem().string() );
+				}
+				else
+				{
+					res.push_back( diter->path().filename().string() );
+				}
+			}
+		}
+	}
+
+	return res;
+}
 
 bool WriteToFile( const std::string& file, const std::string& message )
 {
@@ -45,71 +82,20 @@ std::vector<char> ReadBinaryFile( const std::string& file )
 	return buffer;
 }
 
-std::vector<char> ReverseReadRange( std::vector<char>::iterator begin, size_t size )
+ImageInfo LoadImage( const std::string& filepath )
 {
-	std::vector<char> range;
-	range.resize( size );
+	// the graphics card requires an alpha channel, even if it does not exists
+	static int forceBPP = 4;
 
-	while( size > 0 )
-	{
-		range[size - 1] = *begin;
-		begin++;
-		size--;
-	}
+	int width, height, bpp;
+	uint8_t* data = stbi_load( filepath.c_str(), &width, &height, &bpp, STBI_rgb_alpha );
 
-	return range;
-}
+	ImageInfo ii;
+	ii.width = width;
+	ii.height = height;
+	ii.bytes.resize( width * height * forceBPP );
+	std::memcpy( ii.bytes.data(), data, width * height * forceBPP );
 
-#pragma pack(push, 1)
-struct BMPHeader
-{
-	/* BMP HEADER */
-	uint16_t type = 0x4D42; // "BM"
-	uint32_t size;
-	uint16_t reserved1 = 0;
-	uint16_t reserved2 = 0;
-	uint32_t offsetBytes = sizeof( BMPHeader );
-
-	/* DIB HEADER */
-	uint32_t dibHeaderSize = 40;
-	int32_t width;
-	int32_t height;
-	uint16_t planes = 1;
-	uint16_t bitDepth = 32;
-	uint32_t compression = 0; // BI_RGB
-	uint32_t imageSize = 0; // ^ can be 0 because of this
-	int32_t horizontalRes = 0;
-	int32_t verticalRes = 0;
-	uint32_t nColors = 0;
-	uint32_t impColors = 0;
-};
-#pragma pack(pop) 
-
-ImageInfo LoadBMP32( const std::string& filepath )
-{
-	static uint32_t widthMemoryIndex = 18;
-	static uint32_t heightMemoryIndex = 22;
-	static uint32_t win32BitmapHeaderSize = 54;
-	
-	std::vector<char> file = ReadBinaryFile( filepath );
-
-	BMPHeader header;
-	std::memcpy( (char*)&header, file.data(), sizeof( BMPHeader ) );
-
-	if( file.size() == 0 )
-	{
-		WriteToErrorLog( "Failed to open BMP File: " + filepath );
-		return {};
-	}
-
-	uint32_t width, height;
-	std::memcpy( &width, file.data() + widthMemoryIndex, sizeof( uint32_t ) );
-	std::memcpy( &height, file.data() + heightMemoryIndex, sizeof( uint32_t ) );
-	
-	ImageInfo bmpinfo;
-	bmpinfo.width = width;
-	bmpinfo.height = height;
-		
-	bmpinfo.bytes = std::vector( file.begin() + win32BitmapHeaderSize, file.end() );
-	return bmpinfo;
+	stbi_image_free( data );
+	return ii;
 }

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+std::vector<std::string> GetFilesInDirectory( const std::string& path, const std::string ext = "" );
 bool WriteToFile( const std::string& file, const std::string& message );
 bool CheckFileExists( const std::string& file );
 std::vector<char> ReadBinaryFile( const std::string& file );
@@ -14,4 +15,4 @@ struct ImageInfo
 	std::vector<char> bytes;
 };
 
-ImageInfo LoadBMP32( const std::string& filepath );
+ImageInfo LoadImage( const std::string& filepath );

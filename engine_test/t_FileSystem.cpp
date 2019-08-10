@@ -2,13 +2,13 @@
 #include "fileSystem.hpp"
 #include <cassert>
 
-void TestBMP()
+void TestImageLoad()
 {
-	uint32_t size = 1'440 * 900 * 3;
-	uint32_t width = 1'440;
-	uint32_t height = 900;
+	uint32_t width = 512;
+	uint32_t height = 512;
+	uint32_t size = width * height * 4;
 
-	ImageInfo fileInfo = LoadBMP32( "valid.bmp" );
+	ImageInfo fileInfo = LoadImage( "test.jpg" );
 
 	assert( width == fileInfo.width );
 	assert( height == fileInfo.height );
@@ -17,5 +17,5 @@ void TestBMP()
 
 void T_FileSystem()
 {
-	TestBMP();
+	TestImageLoad();
 }

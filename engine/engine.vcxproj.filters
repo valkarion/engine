@@ -158,5 +158,8 @@
     <ClInclude Include="components.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="libs\stb_image.h">
+      <Filter>libs</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

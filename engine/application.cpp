@@ -70,6 +70,10 @@ bool Application::init()
 	EntityManager::instance()->initialize();
 
 	Renderer::instance()->init();
+
+// Load placeholder textures for renderer
+	ResourceManager::instance()->loadImage( "..\\textures\\notexture.bmp", "notexture" );
+	Renderer::instance()->loadTexture( "notexture" );
 	
 	InputSystem::instance()->init( Renderer::instance()->window );
 

@@ -3,8 +3,9 @@
 
 int main()
 {
-	T_Renderer();
+	//T_FileSystem();
 	//T_LuaController();
+	T_Renderer();
 
 	return 0;
 }

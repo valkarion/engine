@@ -1,0 +1,86 @@
+﻿
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch master
+# Your branch is up-to-date with 'origin/master'.
+#
+# Changes to be committed:
+#	modified:   engine/application.cpp
+#	modified:   engine/engine.vcxproj
+#	modified:   engine/engine.vcxproj.filters
+#	modified:   engine/fileSystem.cpp
+#	modified:   engine/fileSystem.hpp
+#	new file:   engine/libs/stb_image.h
+#	modified:   engine/renderer.cpp
+#	modified:   engine/renderer.hpp
+#	modified:   engine/resourceManager.cpp
+#	modified:   engine/resourceManager.hpp
+#	modified:   engine/scene.hpp
+#	modified:   engine_test/main.cpp
+#	modified:   engine_test/t_FileSystem.cpp
+#	modified:   engine_test/t_Renderer.cpp
+#	new file:   scene/BIGDOOR2.bmp
+#	new file:   scene/BIGDOOR4.bmp
+#	new file:   scene/BRNBIGC.bmp
+#	new file:   scene/BRNBIGL.bmp
+#	new file:   scene/BRNBIGR.bmp
+#	new file:   scene/BROWN1.bmp
+#	new file:   scene/BROWN144.bmp
+#	new file:   scene/BROWN96.bmp
+#	new file:   scene/BROWNGRN.bmp
+#	new file:   scene/CEIL3_5.bmp
+#	new file:   scene/CEIL5_1.bmp
+#	new file:   scene/CEIL5_2.bmp
+#	new file:   scene/COMPSPAN.bmp
+#	new file:   scene/COMPTALL.bmp
+#	new file:   scene/COMPTILE.bmp
+#	new file:   scene/COMPUTE2.bmp
+#	new file:   scene/COMPUTE3.bmp
+#	new file:   scene/DOOR3.bmp
+#	new file:   scene/DOORSTOP.bmp
+#	new file:   scene/DOORTRAK.bmp
+#	new file:   scene/EXITDOOR.bmp
+#	new file:   scene/EXITSIGN.bmp
+#	new file:   scene/FLAT14.bmp
+#	new file:   scene/FLAT18.bmp
+#	new file:   scene/FLAT20.bmp
+#	new file:   scene/FLAT23.bmp
+#	new file:   scene/FLAT5_5.bmp
+#	new file:   scene/FLOOR1_1.bmp
+#	new file:   scene/FLOOR4_8.bmp
+#	new file:   scene/FLOOR5_1.bmp
+#	new file:   scene/FLOOR5_2.bmp
+#	new file:   scene/FLOOR6_2.bmp
+#	new file:   scene/FLOOR7_1.bmp
+#	new file:   scene/FLOOR7_2.bmp
+#	new file:   scene/F_SKY1.bmp
+#	new file:   scene/LITE3.bmp
+#	new file:   scene/NUKAGE3.bmp
+#	new file:   scene/NUKE24.bmp
+#	new file:   scene/PLANET1.bmp
+#	new file:   scene/SLADWALL.bmp
+#	new file:   scene/STARG3.bmp
+#	new file:   scene/STARGR1.bmp
+#	new file:   scene/STARTAN1.bmp
+#	new file:   scene/STARTAN3.bmp
+#	new file:   scene/STEP1.bmp
+#	new file:   scene/STEP2.bmp
+#	new file:   scene/STEP6.bmp
+#	new file:   scene/SUPPORT2.bmp
+#	new file:   scene/SW1COMP.bmp
+#	new file:   scene/SW1STRTN.bmp
+#	new file:   scene/TEKWALL1.bmp
+#	new file:   scene/TEKWALL4.bmp
+#	new file:   scene/TLITE6_1.bmp
+#	new file:   scene/TLITE6_4.bmp
+#	new file:   scene/TLITE6_5.bmp
+#	new file:   scene/TLITE6_6.bmp
+#	new file:   scene/doom_E1M1.mtl
+#	deleted:    textures/chalet.bmp
+#	new file:   textures/chalet.jpg
+#	deleted:    textures/dinosaur.bmp
+#	deleted:    textures/graphicscat.bmp
+#	new file:   textures/notexture.bmp
+#
+

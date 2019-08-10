@@ -15,6 +15,8 @@
 
 #include "idManager.hpp"
 
+struct Mesh;
+
 // indecies of the queues that can handle commands we need
 struct QueueFamilyIndicies
 {
@@ -61,9 +63,12 @@ class Renderer
 	static std::unique_ptr<Renderer> _instance;
 
 	uint32_t						currentImageIndex;
+	
 	void							beginDraw();
 	void							draw();
 	void							endDraw();
+
+	const VulkanTexture*			getTexture( const std::string& name ) const;
 public:
 	GLFWwindow*						window;
 	uint64_t						renderedFrameCount;
@@ -146,6 +151,7 @@ public:
 	uint32_t						findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags );
 	VulkanBuffer					vertexBuffer;
 	VulkanBuffer					indexBuffer;	
+	VulkanBuffer					dynamicIndexBuffer;
 	std::vector<VulkanBuffer>		uniformBuffers;
 	
 	VulkanBuffer					stagingBuffer;
@@ -161,6 +167,7 @@ public:
 										VkMemoryPropertyFlags memFlags, VulkanBuffer& buffer );
 	VkResult						createVertexBuffer();
 	VkResult						createIndexBuffer();
+	VkResult						createDynamicIndexBuffer();
 	VkResult						createUniformBuffers();
 
 // descriptor sets

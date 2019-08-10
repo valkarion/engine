@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "idManager.hpp"
+#include "utils.hpp"
 
 /*
 	Scenes are bascially maps, they contain entities, triggers 
@@ -12,5 +13,8 @@
 class Scene
 {
 public:
+	// world is a special multitexture entity
+	E_ID world = UNSET_ID;
+
 	std::vector<E_ID> entities;
 };

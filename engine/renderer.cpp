@@ -287,8 +287,8 @@ VkVertexInputBindingDescription	Renderer::createBindingDescription(
 
 VkResult Renderer::createGraphicsPipeline()
 {	
-	std::vector<char> vertexShaderCode = ReadBinaryFile( "D:\\engine\\shaders\\vert.spv" );
-	std::vector<char> fragmentShaderCode = ReadBinaryFile( "D:\\engine\\shaders\\frag.spv" );
+	std::vector<char> vertexShaderCode = ReadBinaryFile( "..\\shaders\\vert.spv" );
+	std::vector<char> fragmentShaderCode = ReadBinaryFile( "..\\shaders\\frag.spv" );
 
 	VkShaderModule vShaderModule;
 	VkShaderModule fShaderModule;
@@ -629,6 +629,16 @@ glm::mat4x4 GetModelMatrix( TransformComponent* transform )
 	return model;
 }
 
+const VulkanTexture* Renderer::getTexture( const std::string& name ) const
+{
+	if ( textures.count( name ) == 0 )
+	{
+		return &textures.at( "notexture" );
+	}
+
+	return &textures.at( name );
+}
+
 void Renderer::draw()
 {
 	VkCommandBuffer cmdBuf		= commandBuffers[currentImageIndex];
@@ -655,27 +665,26 @@ void Renderer::draw()
 
 	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
-		MeshComponent* meshComponent = em->get<MeshComponent>( ent );
-		RenderModel& m = models[meshComponent->meshName];
-		offsets[0] = m.vertexOffset;
+		MeshComponent* meshComponent	= em->get<MeshComponent>( ent );
+		const Mesh* mesh				= rm->getMesh( meshComponent->meshName );
+		const RenderModel& model		= models[meshComponent->meshName];
+		const VulkanTexture* texture	= getTexture( meshComponent->textureName );
 
-		transformOffset = transformBuffer.offset;
+		offsets[0]		= model.vertexOffset;
+		transformOffset	= transformBuffer.offset;
 
-		glm::mat4x4* model = ( glm::mat4x4* )transformBuffer.allocate( sizeof( glm::mat4x4 ) );
-		*model = GetModelMatrix( em->get<TransformComponent>( ent ) );
-		
+		glm::mat4x4* modelMatrix	= ( glm::mat4x4* )transformBuffer.allocate( sizeof( glm::mat4x4 ) );
+		*modelMatrix				= GetModelMatrix( em->get<TransformComponent>( ent ) );
+
 		vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
-				
+
 		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
 		vkCmdBindVertexBuffers( cmdBuf, 1, 1, &transformBuffer.buffer, &transformOffset );
-
+		
 		vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
-
-		const Mesh* mesh = rm->getMesh( meshComponent->meshName );
-		VulkanTexture& texture = textures.at( meshComponent->textureName );
-
+		
 		vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
-			0, 1, &texture.descriptor, 0, &dynamicOffset );
+			0, 1, &texture->descriptor, 0, &dynamicOffset );
 
 		vkCmdDrawIndexed( cmdBuf, (uint32_t)mesh->vertecies.size(), 1, 0, 0, 0 );
 	}
@@ -822,6 +831,16 @@ VkResult Renderer::createIndexBuffer()
 
 	return createBuffer( bufferSize, flags, memProps, indexBuffer );
 }
+
+VkResult Renderer::createDynamicIndexBuffer()
+{
+	VkDeviceSize bufferSize = INDEX_BUFFER_SIZE_MB * 1024 * 1024;
+	VkBufferUsageFlags flags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+	return createBuffer( bufferSize, flags, memProps, dynamicIndexBuffer );
+}
+
 
 VkResult Renderer::createVertexBuffer()
 {	
@@ -976,6 +995,12 @@ void Renderer::loadTexture( const std::string& name )
 {
 	ResourceManager* rm = ResourceManager::instance();
 	const Image* img	= rm->getImage( name );
+
+	if ( img == nullptr )
+	{
+		WriteToErrorLog( "Failed to load image %s.", name.c_str() );
+		return;
+	}
 
 	VkDeviceSize size	= img->colorData.size();
 
@@ -1249,12 +1274,12 @@ void Renderer::loadModel( const std::string& objName )
 	stagingBuffer.offset = 0;
 
 // vertex data 
-	uint32_t vertexOffset = vertexBuffer.offset;
+	uint32_t vertexOffset = (uint32_t)vertexBuffer.offset;
 	size_t vAllocSize = mesh->vertecies.size() * sizeof( Vertex );
 	void* vMemory = stagingBuffer.allocate( vAllocSize );
 	std::memcpy( vMemory, mesh->vertecies.data(), vAllocSize );
 
-	renderModel.vertexCount = mesh->vertecies.size();
+	renderModel.vertexCount = (uint32_t)mesh->vertecies.size();
 	renderModel.vertexOffset = vertexOffset;
 
 	copyStagingBuffer( vertexBuffer, vAllocSize, vertexOffset );
@@ -1262,7 +1287,7 @@ void Renderer::loadModel( const std::string& objName )
 
 // index data 
 	stagingBuffer.offset = 0;
-	uint32_t indexOffset = indexBuffer.offset;	
+	uint32_t indexOffset = (uint32_t)indexBuffer.offset;
 	size_t iAllocSize = mesh->indicies.size() * sizeof( mesh->indicies[0] );
 	void* iMemory = stagingBuffer.allocate( iAllocSize );
 	std::memcpy( iMemory, mesh->indicies.data(), iAllocSize );
@@ -1271,7 +1296,7 @@ void Renderer::loadModel( const std::string& objName )
 	indexBuffer.offset += iAllocSize;
 
 	renderModel.indexOffset = indexOffset;
-	renderModel.indexCount = mesh->indicies.size();
+	renderModel.indexCount = (uint32_t)mesh->indicies.size();
 
 	models[objName] = renderModel;
 }
@@ -1314,11 +1339,13 @@ void Renderer::init()
 	VKCHECK( createStagingBuffer() );
 	VKCHECK( createVertexBuffer() );
 	VKCHECK( createIndexBuffer() );
+	VKCHECK( createDynamicIndexBuffer() );
 	VKCHECK( createTransformBuffer() );
 	VKCHECK( createUniformBuffers() );
 	stagingBuffer.map();
 	//vertexBuffer.map();
 	//indexBuffer.map();
+	dynamicIndexBuffer.map();
 	transformBuffer.map();
 	
 	VKCHECK( createDescriptorPool() );
@@ -1358,7 +1385,9 @@ void Renderer::shutdown()
 	
 	vertexBuffer.destroy();
 	indexBuffer.destroy();
+	dynamicIndexBuffer.destroy();
 	transformBuffer.destroy();
+	stagingBuffer.destroy();
 
 	for( size_t i = 0; i < uniformBuffers.size(); i++ )
 	{
