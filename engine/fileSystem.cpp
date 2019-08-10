@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 namespace fs = boost::filesystem;
 
 std::vector<std::string> GetFilesInDirectory( const std::string& path, const std::string ext )
@@ -13,7 +14,7 @@ std::vector<std::string> GetFilesInDirectory( const std::string& path, const std
 	std::vector<std::string> res;
 	fs::path dir( path.c_str() );
 	fs::directory_iterator end;
-	std::string extension = "." + ext;
+	std::string extension = "." + boost::algorithm::to_lower_copy( ext );
 	bool checkExtension = !ext.empty();
 
 	if ( !fs::exists( dir ) || !fs::is_directory( dir ) )
@@ -25,7 +26,7 @@ std::vector<std::string> GetFilesInDirectory( const std::string& path, const std
 	{
 		if ( fs::is_regular_file( diter->status() ) )
 		{
-			if ( ( checkExtension && diter->path().extension() == extension ) || !checkExtension )
+			if ( ( checkExtension && boost::algorithm::to_lower_copy( diter->path().extension().string() ) == extension ) || !checkExtension )
 			{
 				if ( checkExtension )
 				{

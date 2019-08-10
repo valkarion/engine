@@ -22,6 +22,10 @@ struct MaterialRange
 	// staring Mesh::faces index 
 	size_t		start = 0;
 	// number of Mesh::faces elements
+	size_t		nFaces = 0;
+	// starting vertex index
+	size_t		startIndex = 0;
+	// sum number of vertex indecies
 	size_t		range = 0;
 };
 

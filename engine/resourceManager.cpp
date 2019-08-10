@@ -79,6 +79,7 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 				
 				Vertex vertex;
 				vertex.position = { vx, vy, vz };
+			// Y texture coordinate needs to be flipped because .obj texture 0 coordinate is bottom not top
 				vertex.textureCoordinates = { tx, 1.f - ty };
 				vertex.color = { 1.f, 1.f, 1.f };
 
@@ -92,38 +93,43 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 			
 			indexOffset += vert;
 		}
-
-		MaterialRange matRange;
-		int startIndex = -1;
-		int lastId = -1;
-		for ( size_t i = 0; i < shape.mesh.material_ids.size(); i++ )
+		
+		const int nIds = shape.mesh.material_ids.size();
+		if ( nIds > 0 )
 		{
-			int id = shape.mesh.material_ids[i];
-			if ( id == -1 )
+			MaterialRange matRange;
+			int indexer = 0;
+			int lastId = shape.mesh.material_ids[0];
+			int nVerteciesCovered = 0;
+			while ( indexer < nIds )
 			{
-				continue;
-			}
-
-			if ( id == lastId )
-			{
-				if ( startIndex == -1 )
+				int id = shape.mesh.material_ids[indexer];
+				if ( id == lastId )
 				{
-					matRange.matName = materials[id].name;
-					startIndex = i;
+					matRange.matName = id == -1 ? "notexture" : materials[id].name;
+					matRange.nFaces++;
+					matRange.range += shape.mesh.num_face_vertices[indexer];
+					nVerteciesCovered += shape.mesh.num_face_vertices[indexer];
+				}
+				else
+				{
+					mesh.materialFaceIndexRanges.push_back( matRange );
+					matRange = {};
+					matRange.startIndex = nVerteciesCovered;
+					matRange.start = indexer;
+					lastId = id;
+					continue;
 				}
 
-				matRange.range++;
+				lastId = id;
+				indexer++;
 			}
-			else if ( lastId != -1 )
+
+			if ( matRange.range != 0 )
 			{
-				matRange.start = (size_t)startIndex;
 				mesh.materialFaceIndexRanges.push_back( matRange );
-				matRange = {};
-				startIndex = -1;
 			}
-			
-			lastId = id;
-		}
+		}		
 	}
 	
 	return true;

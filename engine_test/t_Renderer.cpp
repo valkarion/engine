@@ -55,6 +55,43 @@ void SetupBasicScene()
 	mc->textureName = "chalet";
 };
 
+void SetupMapScene()
+{
+	SceneManager*	sm = SceneManager::instance();
+	EntityManager*	em = EntityManager::instance();
+	ResourceManager* rm = ResourceManager::instance();
+	Renderer* ren = Renderer::instance();
+
+	// Load data to ResourceManager
+	rm->loadMesh( "..\\scene\\cube.obj", "map", "..\\scene" );
+	ren->loadModel( "map" );
+
+	std::vector<std::string> textures = GetFilesInDirectory( "..\\scene", "png" );
+	for ( const auto& t : textures )
+	{
+		char buffer[256];
+		std::snprintf( buffer, 256, "..\\scene\\%s.png", t.c_str() );
+		rm->loadImage( buffer, t );
+
+		ren->loadTexture( t );
+	}
+	
+	// Set scene
+	SC_ID sceneId = sm->addScene();
+	Scene* currentScene = sm->setActiveScene( sceneId );
+
+	E_ID ent = em->addEntity();
+	currentScene->world = ent;
+	currentScene->entities.push_back( ent );
+
+	TransformComponent* tc = em->add<TransformComponent>( ent );
+	tc->position = glm::vec3( 0.f, 0.f, 0.f );
+
+	MeshComponent* mc = em->add<MeshComponent>( ent );
+	mc->meshName = "map";
+	mc->textureName = "cube";
+}
+
 void T_Renderer()
 {
 	if( !Application::instance()->init() )
@@ -64,7 +101,9 @@ void T_Renderer()
 
 	Camera::instance()->initCamera();
 	AddInputCommands();
-	SetupBasicScene();
+	
+	//SetupBasicScene();
+	SetupMapScene();
 
 	Application::instance()->run();
 }

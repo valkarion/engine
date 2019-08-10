@@ -668,7 +668,6 @@ void Renderer::draw()
 		MeshComponent* meshComponent	= em->get<MeshComponent>( ent );
 		const Mesh* mesh				= rm->getMesh( meshComponent->meshName );
 		const RenderModel& model		= models[meshComponent->meshName];
-		const VulkanTexture* texture	= getTexture( meshComponent->textureName );
 
 		offsets[0]		= model.vertexOffset;
 		transformOffset	= transformBuffer.offset;
@@ -678,15 +677,42 @@ void Renderer::draw()
 
 		vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
 
-		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
 		vkCmdBindVertexBuffers( cmdBuf, 1, 1, &transformBuffer.buffer, &transformOffset );
+		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
 		
-		vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
-		
-		vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
-			0, 1, &texture->descriptor, 0, &dynamicOffset );
+		if ( mesh->materialFaceIndexRanges.size() > 0 )
+		{
+			uint32_t indexOffset = 0;
+			for ( const auto& tex : mesh->materialFaceIndexRanges )
+			{
+				const VulkanTexture* texture = getTexture( tex.matName );
+			
+				vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pipelineLayout, 0, 1, &texture->descriptor, 0, &dynamicOffset );
+				
+				VkDeviceSize oldOffset = dynamicIndexBuffer.offset;
+				size_t mallocBytes = tex.range * sizeof( uint32_t );
+				void* mem = dynamicIndexBuffer.allocate( mallocBytes );
+				std::memcpy( mem, mesh->indicies.data() + tex.startIndex, mallocBytes );
+			
+				vkCmdBindIndexBuffer( cmdBuf, dynamicIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
+				//vkCmdDrawIndexed( cmdBuf, tex.range, 1, tex.startIndex, indexOffset, 0 );
+				vkCmdDrawIndexed( cmdBuf, tex.range, 1, tex.startIndex, 0, 0 );
+			
+				indexOffset += tex.range;
+			}
+		}
+		else
+		{
+			vkCmdBindIndexBuffer( cmdBuf, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
-		vkCmdDrawIndexed( cmdBuf, (uint32_t)mesh->vertecies.size(), 1, 0, 0, 0 );
+			const VulkanTexture* texture = getTexture( meshComponent->textureName );
+
+			vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
+				0, 1, &texture->descriptor, 0, &dynamicOffset );
+
+			vkCmdDrawIndexed( cmdBuf, (uint32_t)mesh->vertecies.size(), 1, 0, 0, 0 );
+		}
 	}
 }
 
