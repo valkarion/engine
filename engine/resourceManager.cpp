@@ -94,40 +94,43 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 			indexOffset += vert;
 		}
 		
-		const int nIds = shape.mesh.material_ids.size();
-		if ( nIds > 0 )
+		if ( !materials.empty() )
 		{
-			MaterialRange matRange;
-			int indexer = 0;
-			int lastId = shape.mesh.material_ids[0];
-			int nVerteciesCovered = 0;
-			while ( indexer < nIds )
+			const int nIds = shape.mesh.material_ids.size();
+			if ( nIds > 0 )
 			{
-				int id = shape.mesh.material_ids[indexer];
-				if ( id == lastId )
+				MaterialRange matRange;
+				int indexer = 0;
+				int lastId = shape.mesh.material_ids[0];
+				int nVerteciesCovered = 0;
+				while ( indexer < nIds )
 				{
-					matRange.matName = id == -1 ? "notexture" : materials[id].name;
-					matRange.nFaces++;
-					matRange.range += shape.mesh.num_face_vertices[indexer];
-					nVerteciesCovered += shape.mesh.num_face_vertices[indexer];
+					int id = shape.mesh.material_ids[indexer];
+					if ( id == lastId )
+					{
+						matRange.matName = id == -1 ? "notexture" : materials[id].name;
+						matRange.nFaces++;
+						matRange.range += shape.mesh.num_face_vertices[indexer];
+						nVerteciesCovered += shape.mesh.num_face_vertices[indexer];
+					}
+					else
+					{
+						mesh.materialFaceIndexRanges.push_back( matRange );
+						matRange = {};
+						matRange.startIndex = nVerteciesCovered;
+						matRange.start = indexer;
+						lastId = id;
+						continue;
+					}
+
+					lastId = id;
+					indexer++;
 				}
-				else
+
+				if ( matRange.range != 0 )
 				{
 					mesh.materialFaceIndexRanges.push_back( matRange );
-					matRange = {};
-					matRange.startIndex = nVerteciesCovered;
-					matRange.start = indexer;
-					lastId = id;
-					continue;
 				}
-
-				lastId = id;
-				indexer++;
-			}
-
-			if ( matRange.range != 0 )
-			{
-				mesh.materialFaceIndexRanges.push_back( matRange );
 			}
 		}		
 	}

@@ -63,9 +63,9 @@ void SetupMapScene()
 	Renderer* ren = Renderer::instance();
 
 	// Load data to ResourceManager
-	rm->loadMesh( "..\\scene\\cube.obj", "map", "..\\scene" );
+	rm->loadMesh( "..\\scene\\doom_E1M1.obj", "map", "..\\scene" );
 	ren->loadModel( "map" );
-
+	   
 	std::vector<std::string> textures = GetFilesInDirectory( "..\\scene", "png" );
 	for ( const auto& t : textures )
 	{
@@ -89,7 +89,6 @@ void SetupMapScene()
 
 	MeshComponent* mc = em->add<MeshComponent>( ent );
 	mc->meshName = "map";
-	mc->textureName = "cube";
 }
 
 void T_Renderer()
@@ -102,8 +101,19 @@ void T_Renderer()
 	Camera::instance()->initCamera();
 	AddInputCommands();
 	
+	
 	//SetupBasicScene();
 	SetupMapScene();
 
+	E_ID world = SceneManager::instance()->getActiveScene()->world;
+
+	MeshComponent* mesh = EntityManager::instance()->get<MeshComponent>( world );
+	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( world );
+
+	glm::vec3 position = ResourceManager::instance()->getMesh( mesh->meshName )->vertecies[0].position;
+	tc->scale = glm::vec3( 0.5f, 0.5f, 0.5f );
+
+	Camera::instance()->position = 0.5f * position;
+	
 	Application::instance()->run();
 }

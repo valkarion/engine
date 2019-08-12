@@ -682,7 +682,7 @@ void Renderer::draw()
 		
 		if ( mesh->materialFaceIndexRanges.size() > 0 )
 		{
-			uint32_t indexOffset = 0;
+			dynamicIndexBuffer.offset = 0;
 			for ( const auto& tex : mesh->materialFaceIndexRanges )
 			{
 				const VulkanTexture* texture = getTexture( tex.matName );
@@ -696,10 +696,7 @@ void Renderer::draw()
 				std::memcpy( mem, mesh->indicies.data() + tex.startIndex, mallocBytes );
 			
 				vkCmdBindIndexBuffer( cmdBuf, dynamicIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
-				//vkCmdDrawIndexed( cmdBuf, tex.range, 1, tex.startIndex, indexOffset, 0 );
 				vkCmdDrawIndexed( cmdBuf, tex.range, 1, tex.startIndex, 0, 0 );
-			
-				indexOffset += tex.range;
 			}
 		}
 		else
@@ -1369,8 +1366,6 @@ void Renderer::init()
 	VKCHECK( createTransformBuffer() );
 	VKCHECK( createUniformBuffers() );
 	stagingBuffer.map();
-	//vertexBuffer.map();
-	//indexBuffer.map();
 	dynamicIndexBuffer.map();
 	transformBuffer.map();
 	

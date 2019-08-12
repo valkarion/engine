@@ -61,6 +61,6 @@ void Camera::initCamera()
 	up = glm::vec3( 0.f, 1.f, 0.f );
 	aspect = window_width.floatValue / window_height.floatValue;
 	nearClip = 0.1f;
-	farClip = 1000.f;
+	farClip = 3000.f;
 	sensitivity = 0.005f;	
 }
