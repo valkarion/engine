@@ -663,6 +663,11 @@ void Renderer::draw()
 	vkCmdPushConstants( cmdBuf, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 		0, sizeof( glm::mat4x4 ), &pushConstant );
 
+	if ( SceneManager::instance()->getActiveScene() == nullptr )
+	{
+		return;
+	}
+
 	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
 		MeshComponent* meshComponent	= em->get<MeshComponent>( ent );

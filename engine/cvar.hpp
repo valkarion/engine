@@ -25,6 +25,8 @@ public:
 	CVar*			next;
 	static CVar*	staticCVars;
 
+	void			setValue( const std::string& value );
+
 					CVar( const std::string& name, const std::string& value );
 					CVar( const std::string& name, const std::string& value, 
 						const std::string& description );

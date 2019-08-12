@@ -63,14 +63,14 @@ void SetupMapScene()
 	Renderer* ren = Renderer::instance();
 
 	// Load data to ResourceManager
-	rm->loadMesh( "..\\scene\\doom_E1M1.obj", "map", "..\\scene" );
+	rm->loadMesh( "..\\WS_WorkingDir\\models\\doom_E1M1.obj", "map", "..\\WS_WorkingDir\\models" );
 	ren->loadModel( "map" );
 	   
-	std::vector<std::string> textures = GetFilesInDirectory( "..\\scene", "png" );
+	std::vector<std::string> textures = GetFilesInDirectory( "..\\WS_WorkingDir\\textures", "png" );
 	for ( const auto& t : textures )
 	{
 		char buffer[256];
-		std::snprintf( buffer, 256, "..\\scene\\%s.png", t.c_str() );
+		std::snprintf( buffer, 256, "..\\WS_WorkingDir\\textures\\%s.png", t.c_str() );
 		rm->loadImage( buffer, t );
 
 		ren->loadTexture( t );

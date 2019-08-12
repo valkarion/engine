@@ -12,9 +12,10 @@
 #include "luaStateController.hpp"
 #include "entityManager.hpp"
 
-CVar window_width(			"window_width",			"1280" );
-CVar window_height(			"window_height",		"800" );
-CVar window_title(			"window_title",			"No Name Engine" );
+CVar window_width(	"window_width",		"1280" );
+CVar window_height(	"window_height",	"800" );
+CVar window_title(	"window_title",		"No Name Engine" );
+CVar print_fps(		"print_fps",		"0" );
 
 std::unique_ptr<Application> Application::_instance = std::make_unique<Application>();
 
@@ -77,6 +78,12 @@ bool Application::init()
 	
 	InputSystem::instance()->init( Renderer::instance()->window );
 
+// Run autoexec if present 
+	if ( CheckFileExists( "autoexec.lua" ) )
+	{
+		LuaStateController::instance()->safeRunScriptFile( "autoexec.lua" );
+	}
+
 	return true;
 }
 
@@ -101,7 +108,11 @@ void Application::run()
 
 		Renderer::instance()->drawFrame();
 
-		SetWindowDebugTitle( Renderer::instance()->window, frameCounter.getFramerate() );
+		if ( print_fps.intValue == 1 )
+		{
+			SetWindowDebugTitle( Renderer::instance()->window, frameCounter.getFramerate() );
+		}
+
 		frameCounter.update();
 	}
 
