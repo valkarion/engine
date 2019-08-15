@@ -11,6 +11,7 @@
 #include "resourceManager.hpp"
 #include "luaStateController.hpp"
 #include "entityManager.hpp"
+#include "sceneManager.hpp"
 
 CVar window_width(	"window_width",		"1280" );
 CVar window_height(	"window_height",	"800" );
@@ -56,6 +57,38 @@ bool Application::initGLFW()
 	return true;
 }
 
+void Application::loadLuaData()
+{
+	// run user script files 
+	std::vector<std::string> scripts = GetFilesInDirectory( "scripts", "lua" );
+	for ( const auto& s : scripts )
+	{
+		LuaStateController::instance()->safeRunScriptFile( "scripts\\" + s + ".lua" );
+	}
+
+	// load scenes
+	sol::table scenes = LuaStateController::instance()->getDataTable( "scenes" );
+	if ( scenes )
+	{
+		for ( const auto& sc : scenes )
+		{
+			sol::table s = sc.second.as<sol::table>();
+			const std::string name = s["name"].get_or<std::string>( UNSET_S );
+
+			if ( name == UNSET_S )
+			{
+				WriteToErrorLog( "Scenes must have a unique name property; skipping." );
+				continue;
+			}						
+
+			SC_ID id = SceneManager::instance()->addScene( name );		
+			Scene* scene = SceneManager::instance()->getSceneById( id );
+			scene->name = name;
+			scene->worldObjName = s["world"].get_or<std::string>( UNSET_S );
+		}
+	}
+}
+
 bool Application::init()
 {
 	CVarSystem::instance()->registerStaticCVars();
@@ -66,6 +99,9 @@ bool Application::init()
 	LuaStateController::instance()->registerFunctions();
 	LuaStateController::instance()->registerClasses();
 
+// Initialize lua Data table
+	LuaStateController::instance()->safeRunScriptFile( "core\\data.lua" );
+
 	initGLFW();
 
 	EntityManager::instance()->initialize();
@@ -73,17 +109,11 @@ bool Application::init()
 	Renderer::instance()->init();
 
 // Load placeholder textures for renderer
-	ResourceManager::instance()->loadImage( "..\\textures\\notexture.bmp", "notexture" );
+	ResourceManager::instance()->loadImage( "core\\notexture.bmp", "notexture" );
 	Renderer::instance()->loadTexture( "notexture" );
-	
+
 	InputSystem::instance()->init( Renderer::instance()->window );
-
-// Run autoexec if present 
-	if ( CheckFileExists( "autoexec.lua" ) )
-	{
-		LuaStateController::instance()->safeRunScriptFile( "autoexec.lua" );
-	}
-
+	
 	return true;
 }
 

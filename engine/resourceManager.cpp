@@ -84,9 +84,15 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 				vertex.color = { 1.f, 1.f, 1.f };
 
 				mesh.vertecies.push_back( vertex );
-				mesh.indicies.push_back( mesh.indicies.size() );
-				mesh.trueIndecies.push_back( idx.vertex_index );
+				mesh.indicies.push_back( (uint32_t)mesh.indicies.size() );
+				mesh.trueIndecies.push_back( (uint32_t)idx.vertex_index );
+
+// compiler throws a warning about conversion to glm's weird type casting, but it's okay here.
+#pragma warning( push )
+#pragma warning( disable: 4244 4267 )
+				// generate the face 
 				faceVertexIndecies[v] = idx.vertex_index;
+#pragma warning( pop )
 			}
 
 			mesh.faces.push_back( faceVertexIndecies );
@@ -96,7 +102,7 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 		
 		if ( !materials.empty() )
 		{
-			const int nIds = shape.mesh.material_ids.size();
+			const size_t nIds = shape.mesh.material_ids.size();
 			if ( nIds > 0 )
 			{
 				MaterialRange matRange;

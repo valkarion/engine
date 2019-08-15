@@ -21,6 +21,8 @@ public:
 
 	void setAspect( float ratio );
 
+	void setPosition( glm::vec3 p );
+
 	glm::mat4 getView();
 	glm::mat4 getProjection();
 

@@ -1,11 +1,16 @@
 ﻿- Miért így lett kialakítva a project struktúra?	
 	ha az engine egy lib, akkor kívülről könnyebben használható az applikációk által
 	és könnyebben lehet egy teszt frameworköt köréhúzni.
+######################################################################
 - Nem lehet boost::lockfree::queue-kat listába létrehozni
 - Hogyan kell változó kapacitású queue-t létrehozni, 
 	ha nincs megadva elszál az assertion
+	
+######################################################################
 - Environment Változó Validation Layer felülírja a program oldali 
 	Validation Layereket (egyszer fordult elő lib updatenél)
+	
+######################################################################
 - Olyan képformátum kell amit a videókártya támogat (pl.:VK_FORMAT_R8G8B8A8_UNORM)
 	Valamiért nem nagyon vannak támogatva az olyan formátumok amikben nincs alpha channel
 	A videokártya csak 32 bites képeket eszik meg, amik nem azok azokat magasabb libek 
@@ -13,7 +18,14 @@
 - Képbetöltés: van Boost.GIL de ő csak egy absztrakciót ad képfileok betöltésére, különböző 
 	típusú fileokhoz további .libek kellenek amiket lehet a gil-en keresztül használni. A GIL 
 	magától csak jpeg-et tud nyitni.
+		- Képproblémák megoldva az stb_image.h single-header file használatával ami lefed mindent és 
+		auto konvertál RGBA bufferekre. Jobb lett volna boost de ez a light-weightebb és gyorsabb megoldás
+		
+######################################################################
 - Boost.StrongTypeDef alapokon működik az egyedi azonosító kezelés
+	- Copy/Paste után ki kellett egészíteni 1-2 dologgal hogy működjön Lua oldalról
+
+######################################################################
 - Több objektum megjelenítése? 
 	- Dinimus UBO objektumok. 
 		descriptor: VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC 
@@ -21,11 +33,18 @@
 		256 bites offset NVIDIA kártya miatt
 		amikor rajzolára kerül az objektum újra kell bindolni a descriptorsetet és megadni 
 			a jelenlegi UBO offsetet 
+	- Dinamikus UBO csak akkor működik ha több pipeline van, az UBO ugyanis fix amikor 
+	a shaderek futnak. Kevés Globális Konstants adathoz PushConstant-ok használata kell
+	Ez általában max csak 128byteos buffer, mert a CommandBuffer része viszont így gyorsabban 
+	el tudja érni a vulkan.
+	- Dinamikus bármilyen adat átküldéséhez bufferek kellenek pl Transform Buffer ami a 
+		TransformComponent és ezeket bindolni render időben
+			
+######################################################################
 - Hogyan kell teljesen szeparálni a textúrákat a descriptor setektől inicializálás időben?
 	A descriptor set írja le hogy milyen VkImage osztályon dolgozik jelenleg, inicializálás időben 
 	viszont még nincsenek textúrák amiknek lennének képei. 
-- UBO globális konstans és egy darab van belőle a renderpass alatt, hogyan kell a model 
-	mátrixot kiszámolni C++ oldalon és instance szinten átadni?
-- Push Constants:
-	Ha kevés mennyiségű globális konstans kell akkor lehet használni, 
-	gyorsabb mint az UBO viszotn csak 128 byte: Kamera mátrixokra tökéletes
+	- Textúrákat nem lehet teljesen szeparálni a descriptoroktól: A descriptort használja a 
+	vulkan a megjelenítéshez viszont a descriptornak szüksége van egy textúra image viewra.
+	- A megoldás: Minden egyes textúrának külön Image/ImageView/Descriptort létrehozni, 
+	ezeket bindolni render időben a különböző objektumokhoz

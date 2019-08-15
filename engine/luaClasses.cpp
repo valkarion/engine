@@ -35,6 +35,7 @@ void LCamera( sol::state& l )
 	l.new_usertype<Camera>("Camera", 
 		"displace", &Camera::displace, 
 		"turn", &Camera::turn,
+		"setPosition", &Camera::setPosition,
 		"getPosition", [&]() -> glm::vec3 
 		{
 			return Camera::instance()->position;

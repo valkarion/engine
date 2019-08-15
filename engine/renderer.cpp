@@ -287,8 +287,8 @@ VkVertexInputBindingDescription	Renderer::createBindingDescription(
 
 VkResult Renderer::createGraphicsPipeline()
 {	
-	std::vector<char> vertexShaderCode = ReadBinaryFile( "..\\shaders\\vert.spv" );
-	std::vector<char> fragmentShaderCode = ReadBinaryFile( "..\\shaders\\frag.spv" );
+	std::vector<char> vertexShaderCode = ReadBinaryFile( "shaders\\compiled\\default.vspv" );
+	std::vector<char> fragmentShaderCode = ReadBinaryFile( "shaders\\compiled\\default.fspv" );
 
 	VkShaderModule vShaderModule;
 	VkShaderModule fShaderModule;

@@ -29,7 +29,7 @@ sol::protected_function_result LuaStateController::safeRunScriptFile( const std:
 		} );
 }
 
-sol::table LuaStateController::getDataTable( const std::string& accessor ) const
+sol::table LuaStateController::getDataTable( const std::string& accessor )
 {
 	sol::table d = state["data"];
 	if ( d != sol::nil )

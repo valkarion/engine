@@ -39,7 +39,7 @@ void SetupBasicScene()
 	ren->loadModel( "chalet" );
 
 // Set scene
-	SC_ID sceneId = sm->addScene();
+	SC_ID sceneId = sm->addScene( "scene" );
 	Scene* currentScene = sm->setActiveScene( sceneId );
 
 // Create Entity
@@ -77,7 +77,7 @@ void SetupMapScene()
 	}
 	
 	// Set scene
-	SC_ID sceneId = sm->addScene();
+	SC_ID sceneId = sm->addScene( "scene" );
 	Scene* currentScene = sm->setActiveScene( sceneId );
 
 	E_ID ent = em->addEntity();

@@ -38,6 +38,11 @@ void Camera::setAspect( float ratio )
 	aspect = ratio;
 }
 
+void Camera::setPosition( glm::vec3 p )
+{
+	position = p;
+}
+
 glm::mat4 Camera::getView()
 {
 	glm::mat4 view = glm::lookAt( position, position + direction, up );

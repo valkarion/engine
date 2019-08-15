@@ -13,6 +13,10 @@
 class Scene
 {
 public:
+	SC_ID		id;
+	std::string name;
+	std::string	worldObjName;
+
 	// world is a special multitexture entity
 	E_ID world = UNSET_ID;
 

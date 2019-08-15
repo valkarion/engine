@@ -62,6 +62,23 @@ E_ID EntityManager::createCopyOf( const std::string& prototypeName, E_ID copyInt
 	return copy;
 }
 
+void EntityManager::removeEntity( E_ID id, bool freeId )
+{
+	Vi_ID vid = virtualIds[id];
+
+	for ( auto& it : componentMap )
+	{
+		it.second[vid.v] = nullptr;
+	}
+
+	virtualIds.erase( id );
+
+	if ( freeId )
+		IDFREE( id );
+
+	IDFREE( vid );
+}
+
 void EntityManager::initialize()
 {
 	componentMap[&typeid( TransformComponent )] = std::vector<std::unique_ptr<Component>>();

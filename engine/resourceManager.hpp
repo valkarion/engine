@@ -7,6 +7,7 @@
 #include "utils.hpp"
 #include "vulkanVertex.hpp"
 
+// Holds pixel RGBA data that can directly be loaded into the renderer
 struct Image
 {
 	std::string				filename;
@@ -16,17 +17,19 @@ struct Image
 	std::vector<uint8_t>	colorData;
 };
 
+// For multitexture objects this object will hold 
+// what indecies/faces belong to one texture
 struct MaterialRange
 {
 	std::string matName = UNSET_S;
 	// staring Mesh::faces index 
-	size_t		start = 0;
+	uint32_t	start = 0;
 	// number of Mesh::faces elements
-	size_t		nFaces = 0;
+	uint32_t	nFaces = 0;
 	// starting vertex index
-	size_t		startIndex = 0;
+	uint32_t	startIndex = 0;
 	// sum number of vertex indecies
-	size_t		range = 0;
+	uint32_t	range = 0;
 };
 
 struct Mesh

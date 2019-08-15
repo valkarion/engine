@@ -2,10 +2,14 @@
 
 std::unique_ptr<SceneManager> SceneManager::_instance = std::make_unique<SceneManager>();
 
-SC_ID SceneManager::addScene()
+SC_ID SceneManager::addScene( const std::string& name )
 {
 	SC_ID id = IDGET( SC_ID );
 	scenes[id] = std::make_unique<Scene>();
+	scenes[id]->id = id;
+
+	namedScenes[name] = id;
+
 	return id;
 }
 
@@ -30,6 +34,16 @@ Scene* SceneManager::getActiveScene()
 	return scene;
 }
 
+Scene* SceneManager::getSceneById( SC_ID id )
+{
+	if ( scenes.count( id ) != 0 )
+	{
+		return scenes.at( id ).get();
+	}
+
+	return nullptr;
+}
+
 Scene* SceneManager::setActiveScene( SC_ID id )
 {	
 	if ( scenes.count( id ) != 0 )
@@ -38,6 +52,17 @@ Scene* SceneManager::setActiveScene( SC_ID id )
 	}
 
 	return getActiveScene();
+}
+
+Scene* SceneManager::findSceneByName( const std::string& name )
+{
+	auto iter = namedScenes.find( name );
+	if ( iter != namedScenes.end() )
+	{
+		return scenes.at( iter->second ).get();
+	}
+
+	return nullptr;
 }
 
 void SceneManager::shutdown()

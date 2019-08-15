@@ -14,6 +14,8 @@ class Application
 	
 	void				shutdown();
 public:
+	void				loadLuaData();
+
 	bool				init();
 	void				run();
 	void				quit();

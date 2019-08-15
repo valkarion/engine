@@ -16,150 +16,168 @@
     <Filter Include="libs">
       <UniqueIdentifier>{5ffa3295-4737-4f4b-8a5d-966cf795e3db}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Core">
+      <UniqueIdentifier>{4f608488-847a-40aa-b78e-100cd56be7a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Renderer">
+      <UniqueIdentifier>{32902716-2d55-48c2-acfc-b571634dad5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Managers">
+      <UniqueIdentifier>{6006dd3b-4d3a-45f6-953f-374c1946ec9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{1d45b270-4fab-482d-9504-00489278af3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Managers">
+      <UniqueIdentifier>{5c3b8c70-5ed4-41a7-99f0-ddef105de3e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Renderer">
+      <UniqueIdentifier>{db5ffcd7-4152-4544-ad00-807daa42e38a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="devissues.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="application.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cvar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="frameCounter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="loggers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cvarSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="fileSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="taskScheduler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="inputSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="resourceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="luaStateController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="luaFunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="luaClasses.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="entityManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkanDebugger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkanBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkanSwapchain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkanCommon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sceneManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
     <ClCompile Include="components.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="application.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="cvar.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="cvarSystem.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="entityManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="fileSystem.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="frameCounter.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="inputSystem.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="loggers.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="luaClasses.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="luaFunctions.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="luaStateController.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="resourceManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="sceneManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="taskScheduler.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkanSwapchain.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkanBuffer.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkanCommon.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkanDebugger.cpp">
+      <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cvar.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="frameCounter.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="loggers.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cvarSystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="fileSystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="taskScheduler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inputSystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="camera.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resourceManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="luaStateController.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="libs\sol.hpp">
       <Filter>libs</Filter>
     </ClInclude>
-    <ClInclude Include="utils.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="entityManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="idManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkanDebugger.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkanBuffer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkanVertex.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkanSwapchain.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkanCommon.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="scene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sceneManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="components.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="libs\stb_image.h">
       <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="application.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="components.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="cvar.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="cvarSystem.hpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="entityManager.hpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="fileSystem.hpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="frameCounter.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="idManager.hpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="inputSystem.hpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="loggers.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="luaStateController.hpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="resourceManager.hpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="scene.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="sceneManager.hpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="taskScheduler.hpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanBuffer.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanCommon.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanDebugger.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanSwapchain.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanVertex.hpp">
+      <Filter>Header Files\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

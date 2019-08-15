@@ -65,7 +65,7 @@ public:
 	E_ID createCopyOf( const std::string& prototypeName, const E_ID copyInto = UNSET_ID );
 	void addPrototype( const std::string& name, const E_ID id );
 	
-	void removeEntity( const E_ID id, const bool freeId = true );
+	void removeEntity( E_ID id, bool freeId = true );
 	bool prototypeExists( const std::string& name ) const;
 	bool IDExists( const E_ID id ) const;
 

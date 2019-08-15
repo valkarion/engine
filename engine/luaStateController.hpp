@@ -16,7 +16,7 @@ public:
 	void registerClasses(); // @luaClasses.cpp
 	void registerFunctions(); // @luaFunctions.cpp 
 
-	sol::table getDataTable( const std::string& accessor ) const;
+	sol::table getDataTable( const std::string& accessor );
 
 	static LuaStateController* instance();
 };

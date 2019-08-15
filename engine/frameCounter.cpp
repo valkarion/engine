@@ -29,7 +29,7 @@ int64_t FrameCounter::getLastFrameTime() const
 
 float FrameCounter::lastFrameTimeInSeconds() const
 {
-	return (float)lastFrameTime / 1e6;
+	return (float)lastFrameTime / (float)1e6;
 }
 
 int	FrameCounter::getFramerate()
