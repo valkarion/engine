@@ -12,6 +12,7 @@
 #include "luaStateController.hpp"
 #include "entityManager.hpp"
 #include "sceneManager.hpp"
+#include "camera.hpp"
 
 CVar window_width(	"window_width",		"1280" );
 CVar window_height(	"window_height",	"800" );
@@ -114,6 +115,8 @@ bool Application::init()
 
 	InputSystem::instance()->init( Renderer::instance()->window );
 	
+	Camera::instance()->initCamera();
+
 	return true;
 }
 

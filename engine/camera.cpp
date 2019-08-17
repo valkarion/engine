@@ -61,7 +61,7 @@ glm::mat4 Camera::getProjection()
 
 void Camera::initCamera()
 {
-	position = glm::vec3( 0.f, 0.f, 5.f );
+	position = glm::vec3( 0.f, 0.f, 0.f );
 	direction = glm::vec3( 0.f, 0.f, -1.f );
 	up = glm::vec3( 0.f, 1.f, 0.f );
 	aspect = window_width.floatValue / window_height.floatValue;

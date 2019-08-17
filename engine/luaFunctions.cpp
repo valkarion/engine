@@ -90,12 +90,15 @@ void SetActiveScene( const std::string& name )
 		}
 
 		// spawn new world
-		E_ID wId = EntityManager::instance()->addEntity();
-		TransformComponent* tc = em->add<TransformComponent>( wId );
-		MeshComponent* mc = em->add<MeshComponent>( wId );
-		mc->meshName = newScene->worldObjName;
-		newScene->world = wId;
-		newScene->entities.push_back( wId );
+		if ( newScene->worldObjName != UNSET_S )
+		{
+			E_ID wId = EntityManager::instance()->addEntity();
+			TransformComponent* tc = em->add<TransformComponent>( wId );
+			MeshComponent* mc = em->add<MeshComponent>( wId );
+			mc->meshName = newScene->worldObjName;
+			newScene->world = wId;
+			newScene->entities.push_back( wId );
+		}
 		
 		SceneManager::instance()->setActiveScene( newScene->id );
 	}
