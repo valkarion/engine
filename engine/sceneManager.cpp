@@ -34,7 +34,18 @@ Scene* SceneManager::getActiveScene()
 	return scene;
 }
 
-Scene* SceneManager::getSceneById( SC_ID id )
+Scene* SceneManager::setActiveScene( SC_ID id )
+{
+	if ( scenes.count( id ) != 0 )
+	{
+		activeScene = id;
+	}
+
+	return getActiveScene();
+}
+
+
+Scene* SceneManager::getScene( SC_ID id )
 {
 	if ( scenes.count( id ) != 0 )
 	{
@@ -44,17 +55,7 @@ Scene* SceneManager::getSceneById( SC_ID id )
 	return nullptr;
 }
 
-Scene* SceneManager::setActiveScene( SC_ID id )
-{	
-	if ( scenes.count( id ) != 0 )
-	{
-		activeScene = id;
-	}
-
-	return getActiveScene();
-}
-
-Scene* SceneManager::findSceneByName( const std::string& name )
+Scene* SceneManager::getScene( const std::string& name )
 {
 	auto iter = namedScenes.find( name );
 	if ( iter != namedScenes.end() )

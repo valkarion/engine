@@ -77,6 +77,14 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 				tinyobj::real_t tx = attribute.texcoords[2 * idx.texcoord_index + 0];
 				tinyobj::real_t ty = attribute.texcoords[2 * idx.texcoord_index + 1];
 				
+			// calc bounding box vertecies 
+				if ( mesh.topLeftNear.x > vx ) mesh.topLeftNear.x = vx;
+				if ( mesh.botRightFar.x < vx ) mesh.botRightFar.x = vx;
+				if ( mesh.topLeftNear.y > vy ) mesh.topLeftNear.y = vy;
+				if ( mesh.botRightFar.y < vy ) mesh.botRightFar.y = vy;
+				if ( mesh.topLeftNear.z > vz ) mesh.topLeftNear.z = vz;
+				if ( mesh.botRightFar.z < vz ) mesh.botRightFar.z = vz;
+
 				Vertex vertex;
 				vertex.position = { vx, vy, vz };
 			// Y texture coordinate needs to be flipped because .obj texture 0 coordinate is bottom not top

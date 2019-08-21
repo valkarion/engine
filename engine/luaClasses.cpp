@@ -1,6 +1,9 @@
 #include "luaStateController.hpp"
 #include <glm/glm.hpp>
 #include "camera.hpp"
+#include "playerController.hpp"
+#include "entityManager.hpp"
+#include "components.hpp"
 
 void LVector( sol::state& l )
 {
@@ -50,8 +53,18 @@ void LCamera( sol::state& l )
 		} );
 }
 
+void LPlayerController( sol::state& l )
+{
+	l.new_usertype<PlayerController>( "PlayerController",
+		"displace", &PlayerController::displace,
+		"setPosition", &PlayerController::setPosition,
+		"setEntity", &PlayerController::setEntity
+	);
+}
+
 void LuaStateController::registerClasses()
 {
 	LVector( state );
 	LCamera( state );
+	LPlayerController( state );
 }

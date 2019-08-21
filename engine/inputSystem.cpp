@@ -42,7 +42,6 @@ void cursor_callback( GLFWwindow* win, double xpos, double ypos )
 		float deltax = is->mouseCurrent.x - is->mousePrev.x;
 		float deltay = is->mouseCurrent.y - is->mousePrev.y;	
 
-		// camera.turn( glm::vec2( deltax, deltay ) );
 		Camera::instance()->turn( glm::vec2( deltax, deltay ) );		
 	}
 }

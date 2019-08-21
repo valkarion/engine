@@ -18,9 +18,9 @@ public:
 	SC_ID addScene( const std::string& name );
 	void destroyScene( SC_ID id );
 	Scene* getActiveScene();
-	Scene* getSceneById( SC_ID id );
 	Scene* setActiveScene( SC_ID id );
-	Scene* findSceneByName( const std::string& name );
+	Scene* getScene( SC_ID id );
+	Scene* getScene( const std::string& name );
 
 	void shutdown();
 

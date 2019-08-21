@@ -5,4 +5,9 @@ LoadAllTextures()
 LoadAllModels()
 SetActiveScene("scene")
 
-GetCamera():setPosition( vec3:new( -1984, 24, -3648 ) )
+local player 	= CreateEntity()
+local tc 		= AddTransformComponent()
+
+GetPlayerController():setEntity( player ) 
+GetPlayerController():setPosition( vec3:new( -1984, 24, -3648 ) )
+

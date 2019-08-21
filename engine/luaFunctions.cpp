@@ -9,15 +9,32 @@
 #include "entityManager.hpp"
 #include "components.hpp"
 #include "resourceManager.hpp"
+#include "playerController.hpp"
 
 extern CVar window_title;
+
+template<typename T> 
+T solObjectToId( const sol::object& obj )
+{
+	T result = {};
+
+	if ( obj.is<T>() )
+	{
+		result = obj.as<T>();
+	}
+	else
+	{
+		result = obj.as<int>();
+	}
+
+	return result;
+}
 
 // dev 
 void DebugPrint( const std::string& message )
 {
 	PrintToOutputWindow( message );
 }
-
 void LoadAllTextures()
 {
 	std::vector<std::string> textures = GetFilesInDirectory( "textures", "png" );
@@ -37,7 +54,6 @@ void LoadAllTextures()
 		}
 	}
 }
-
 void LoadAllModels()
 {
 	std::vector<std::string> models = GetFilesInDirectory( "models", "obj" );
@@ -63,7 +79,6 @@ void SetWindowTitle( const std::string& title )
 {
 	window_title.setValue( title );
 }
-
 void SetCVar( const std::string& cvar, sol::object value )
 {
 	CVar* cv = CVarSystem::instance()->find( cvar );
@@ -77,7 +92,7 @@ void SetCVar( const std::string& cvar, sol::object value )
 void SetActiveScene( const std::string& name )
 {
 	Scene* oldScene = SceneManager::instance()->getActiveScene();
-	Scene* newScene = SceneManager::instance()->findSceneByName( name );
+	Scene* newScene = SceneManager::instance()->getScene( name );
 
 	if ( newScene )
 	{
@@ -107,12 +122,49 @@ void SetActiveScene( const std::string& name )
 		WriteToErrorLog( "Failed to set active scene: %s", name.c_str() );
 	}
 }
+void AddEntityToScene( sol::object eid, const std::string& name )
+{
+	E_ID id = solObjectToId<E_ID>( eid );
+	SceneManager::instance()->getScene( name )->entities.push_back( id );
+}
 
 // objects 
 Camera* GetCamera()
 {
 	return Camera::instance();
 }
+PlayerController* GetPlayerController()
+{
+	return PlayerController::instance();
+}
+
+// Entity Manipulation
+E_ID CreateEntity()
+{
+	return EntityManager::instance()->addEntity();
+}
+TransformComponent* AddTransformComponent( sol::object obj )
+{
+	E_ID id = solObjectToId<E_ID>( obj );
+	return EntityManager::instance()->add<TransformComponent>( id );
+}
+MeshComponent* AddMeshComponent( sol::object obj )
+{
+	E_ID id = solObjectToId<E_ID>( obj );
+	return EntityManager::instance()->add<MeshComponent>( id );
+}
+TransformComponent* GetTransformComponent( sol::object obj )
+{
+	E_ID id = solObjectToId<E_ID>( obj );
+	return EntityManager::instance()->get<TransformComponent>( id );	
+}
+MeshComponent* GetMeshComponent( sol::object obj )
+{
+	E_ID id = solObjectToId<E_ID>( obj );
+	return EntityManager::instance()->get<MeshComponent>( id );
+}
+
+
 
 void LuaStateController::registerFunctions()
 {
@@ -126,4 +178,13 @@ void LuaStateController::registerFunctions()
 	state["SetActiveScene"] = SetActiveScene;
 
 	state["GetCamera"] = GetCamera;
+	state["GetPlayerController"] = GetPlayerController;
+
+	state["CreateEntity"] = CreateEntity;
+
+// this is ducttape
+	state["AddTransformComponent"] = AddTransformComponent;
+	state["AddMeshComponent"] = AddMeshComponent;
+	state["GetTransformComponent"] = GetTransformComponent;
+	state["GetMeshComponent"] = GetMeshComponent;
 }

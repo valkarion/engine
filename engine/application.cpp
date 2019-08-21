@@ -83,7 +83,7 @@ void Application::loadLuaData()
 			}						
 
 			SC_ID id = SceneManager::instance()->addScene( name );		
-			Scene* scene = SceneManager::instance()->getSceneById( id );
+			Scene* scene = SceneManager::instance()->getScene( id );
 			scene->name = name;
 			scene->worldObjName = s["world"].get_or<std::string>( UNSET_S );
 		}

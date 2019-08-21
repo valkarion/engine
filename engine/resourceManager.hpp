@@ -40,6 +40,10 @@ struct Mesh
 	std::vector<glm::vec4>		faces;
 	std::vector<MaterialRange>	materialFaceIndexRanges;
 	std::vector<uint32_t>		trueIndecies;
+
+	// bounding box range 
+	glm::vec3 topLeftNear;
+	glm::vec3 botRightFar;
 };
 
 class ResourceManager
