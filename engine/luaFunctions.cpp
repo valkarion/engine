@@ -143,6 +143,8 @@ E_ID CreateEntity()
 {
 	return EntityManager::instance()->addEntity();
 }
+
+// these are ducttape, find a fancy way to make these
 TransformComponent* AddTransformComponent( sol::object obj )
 {
 	E_ID id = solObjectToId<E_ID>( obj );
@@ -163,8 +165,18 @@ MeshComponent* GetMeshComponent( sol::object obj )
 	E_ID id = solObjectToId<E_ID>( obj );
 	return EntityManager::instance()->get<MeshComponent>( id );
 }
+CollidableComponent* AddCollidableComponent( sol::object obj )
+{
+	E_ID id = solObjectToId<E_ID>( obj );
+	return EntityManager::instance()->add<CollidableComponent>( id );
 
+}
+CollidableComponent* GetCollidableComponent( sol::object obj )
+{
+	E_ID id = solObjectToId<E_ID>( obj );
+	return EntityManager::instance()->get<CollidableComponent>( id );
 
+}
 
 void LuaStateController::registerFunctions()
 {
@@ -187,4 +199,6 @@ void LuaStateController::registerFunctions()
 	state["AddMeshComponent"] = AddMeshComponent;
 	state["GetTransformComponent"] = GetTransformComponent;
 	state["GetMeshComponent"] = GetMeshComponent;
+	state["AddCollidableComponent"] = AddCollidableComponent;
+	state["GetCollidableComponent"] = GetCollidableComponent;
 }

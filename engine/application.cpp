@@ -102,6 +102,8 @@ bool Application::init()
 
 // Initialize lua Data table
 	LuaStateController::instance()->safeRunScriptFile( "core\\data.lua" );
+// Load user and core data 
+	loadLuaData();
 
 	initGLFW();
 
@@ -114,7 +116,11 @@ bool Application::init()
 	Renderer::instance()->loadTexture( "notexture" );
 
 	InputSystem::instance()->init( Renderer::instance()->window );
-	
+	sol::table iTable = LuaStateController::instance()->getDataTable( "input" );
+	InputSystem::instance()->setupInputFunctions( iTable );
+	sol::table kTable = LuaStateController::instance()->getDataTable( "keymap" );
+	InputSystem::instance()->setupKeyboardCommands( kTable );
+
 	Camera::instance()->initCamera();
 
 	return true;
@@ -135,10 +141,15 @@ void Application::run()
 
 	while( !exitGame && !glfwWindowShouldClose( Renderer::instance()->window ) )
 	{
+	// Input 
 		glfwPollEvents();
-
 		InputSystem::instance()->update();
 
+	// Systems
+
+
+
+	// Render
 		Renderer::instance()->drawFrame();
 
 		if ( print_fps.intValue == 1 )

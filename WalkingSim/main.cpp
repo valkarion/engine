@@ -7,8 +7,6 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 {
 	if ( Application::instance()->init() )
 	{
-		Application::instance()->loadLuaData();
-
 		LuaStateController::instance()->safeRunScriptFile( "startup.lua" );
 		
 		Application::instance()->run();

@@ -5,6 +5,7 @@
 #include "entityManager.hpp"
 #include "components.hpp"
 
+// helper and meta classes
 void LVector( sol::state& l )
 {
 	l.new_usertype<glm::vec3>( "vec3",
@@ -32,7 +33,6 @@ void LVector( sol::state& l )
 			glm::vec3( float, float, float )>()
 		);
 }
-
 void LCamera( sol::state& l )
 {
 	l.new_usertype<Camera>("Camera", 
@@ -52,7 +52,6 @@ void LCamera( sol::state& l )
 			return Camera::instance()->up;
 		} );
 }
-
 void LPlayerController( sol::state& l )
 {
 	l.new_usertype<PlayerController>( "PlayerController",
@@ -62,9 +61,50 @@ void LPlayerController( sol::state& l )
 	);
 }
 
+// components
+void LComponent( sol::state& l )
+{
+	l.new_usertype<Component>( "Component" );
+}
+void LTransformComponent( sol::state& l )
+{
+	l.new_usertype<TransformComponent>( "TransformComponent",
+		"position", &TransformComponent::position,
+		"rotation", &TransformComponent::rotation,
+		"scale", &TransformComponent::scale,
+		
+		sol::base_classes, sol::bases<Component>() );
+}
+void LMeshComponent( sol::state& l )
+{
+	l.new_usertype<MeshComponent>( "MeshComponent",
+		"meshName", &MeshComponent::meshName,
+		"textureName", &MeshComponent::textureName,
+		
+		sol::base_classes, sol::bases<Component>() );
+}
+void LCollidableComponent( sol::state& l )
+{
+	l.new_usertype<CollidableComponent>( "CollidableComponent",
+		"sphereRadius", &CollidableComponent::sphereRadius,
+		"bbox", &CollidableComponent::getBBox,
+		"type", sol::property(
+			&CollidableComponent::getTypeStr,
+			&CollidableComponent::setTypeStr
+			),
+
+		sol::base_classes, sol::bases<Component>()
+		);
+}
+
 void LuaStateController::registerClasses()
 {
 	LVector( state );
 	LCamera( state );
 	LPlayerController( state );
+
+	LComponent( state );
+	LTransformComponent( state );
+	LMeshComponent( state );
+	LCollidableComponent( state );
 }
