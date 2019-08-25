@@ -32,6 +32,11 @@ float FrameCounter::lastFrameTimeInSeconds() const
 	return (float)lastFrameTime / (float)1e6;
 }
 
+float FrameCounter::lastFrameTimeInMicroSeconds() const
+{
+	return (float)lastFrameTime / ( float )1e3;
+}
+
 int	FrameCounter::getFramerate()
 {
 	return lastFps;

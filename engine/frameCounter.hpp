@@ -22,6 +22,7 @@ public:
 	void	update();
 	int64_t getLastFrameTime() const;
 	float	lastFrameTimeInSeconds() const;
+	float	lastFrameTimeInMicroSeconds() const;
 	int		getFramerate();
 
 			FrameCounter();

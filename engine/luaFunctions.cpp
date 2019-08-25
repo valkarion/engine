@@ -13,6 +13,22 @@
 
 extern CVar window_title;
 
+#define COMPONENT_PROPERTIES( ComponentName )							\
+ComponentName* Add##ComponentName ( sol::object obj )					\
+{																		\
+	E_ID id = solObjectToId<E_ID>( obj );								\
+	return EntityManager::instance()->add<ComponentName>( id );			\
+}																		\
+ComponentName* Get##ComponentName ( sol::object obj )					\
+{																		\
+	E_ID id = solObjectToId<E_ID>( obj );								\
+	return EntityManager::instance()->get<ComponentName>( id );			\
+}																		
+
+#define COMPONENT_REGISTERS( ComponentName )				\
+state["Add"#ComponentName] = Add##ComponentName;			\
+state["Get"#ComponentName] = Get##ComponentName;
+
 template<typename T> 
 T solObjectToId( const sol::object& obj )
 {
@@ -145,38 +161,10 @@ E_ID CreateEntity()
 }
 
 // these are ducttape, find a fancy way to make these
-TransformComponent* AddTransformComponent( sol::object obj )
-{
-	E_ID id = solObjectToId<E_ID>( obj );
-	return EntityManager::instance()->add<TransformComponent>( id );
-}
-MeshComponent* AddMeshComponent( sol::object obj )
-{
-	E_ID id = solObjectToId<E_ID>( obj );
-	return EntityManager::instance()->add<MeshComponent>( id );
-}
-TransformComponent* GetTransformComponent( sol::object obj )
-{
-	E_ID id = solObjectToId<E_ID>( obj );
-	return EntityManager::instance()->get<TransformComponent>( id );	
-}
-MeshComponent* GetMeshComponent( sol::object obj )
-{
-	E_ID id = solObjectToId<E_ID>( obj );
-	return EntityManager::instance()->get<MeshComponent>( id );
-}
-CollidableComponent* AddCollidableComponent( sol::object obj )
-{
-	E_ID id = solObjectToId<E_ID>( obj );
-	return EntityManager::instance()->add<CollidableComponent>( id );
-
-}
-CollidableComponent* GetCollidableComponent( sol::object obj )
-{
-	E_ID id = solObjectToId<E_ID>( obj );
-	return EntityManager::instance()->get<CollidableComponent>( id );
-
-}
+COMPONENT_PROPERTIES( TransformComponent );
+COMPONENT_PROPERTIES( MeshComponent );
+COMPONENT_PROPERTIES( CollidableComponent );
+COMPONENT_PROPERTIES( RigidbodyComponent );
 
 void LuaStateController::registerFunctions()
 {
@@ -188,6 +176,7 @@ void LuaStateController::registerFunctions()
 	state["SetCVar"] = SetCVar;
 
 	state["SetActiveScene"] = SetActiveScene;
+	state["AddEntityToScene"] = AddEntityToScene;
 
 	state["GetCamera"] = GetCamera;
 	state["GetPlayerController"] = GetPlayerController;
@@ -195,10 +184,8 @@ void LuaStateController::registerFunctions()
 	state["CreateEntity"] = CreateEntity;
 
 // this is ducttape
-	state["AddTransformComponent"] = AddTransformComponent;
-	state["AddMeshComponent"] = AddMeshComponent;
-	state["GetTransformComponent"] = GetTransformComponent;
-	state["GetMeshComponent"] = GetMeshComponent;
-	state["AddCollidableComponent"] = AddCollidableComponent;
-	state["GetCollidableComponent"] = GetCollidableComponent;
+	COMPONENT_REGISTERS( TransformComponent );
+	COMPONENT_REGISTERS( MeshComponent );
+	COMPONENT_REGISTERS( CollidableComponent );
+	COMPONENT_REGISTERS( RigidbodyComponent );
 }

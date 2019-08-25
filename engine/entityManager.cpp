@@ -67,6 +67,7 @@ void EntityManager::initialize()
 	registerComponent<TransformComponent>();
 	registerComponent<MeshComponent>();
 	registerComponent<CollidableComponent>();
+	registerComponent<RigidbodyComponent>();
 }
 
 void EntityManager::shutdown()

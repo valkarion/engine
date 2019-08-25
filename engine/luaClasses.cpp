@@ -96,6 +96,14 @@ void LCollidableComponent( sol::state& l )
 		sol::base_classes, sol::bases<Component>()
 		);
 }
+void LRigidbodyComponent( sol::state& l )
+{
+	l.new_usertype<RigidbodyComponent>( "RigidbodyComponent",
+		"affectedByGravity", &RigidbodyComponent::affectedByGravity,
+
+		sol::base_classes, sol::bases<Component>()
+		);
+}
 
 void LuaStateController::registerClasses()
 {
@@ -107,4 +115,5 @@ void LuaStateController::registerClasses()
 	LTransformComponent( state );
 	LMeshComponent( state );
 	LCollidableComponent( state );
+	LRigidbodyComponent( state );
 }

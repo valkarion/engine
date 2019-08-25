@@ -75,3 +75,13 @@ public:
 
 	CollidableComponent();
 };
+
+class RigidbodyComponent : public Component
+{
+	std::unique_ptr<Component> cloneImp() const;
+public:
+	bool affectedByGravity;
+	glm::vec3 velocity;
+
+	RigidbodyComponent();
+};

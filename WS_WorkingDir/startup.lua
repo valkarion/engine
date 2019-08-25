@@ -6,7 +6,12 @@ LoadAllModels()
 SetActiveScene("scene")
 
 local player = CreateEntity()
-local tc = AddTransformComponent()
+AddTransformComponent( player )
+AddCollidableComponent( player ) 
+local rbc = AddRigidbodyComponent(player)
+rbc.affectedByGravity = true 
+
+AddEntityToScene( player, "scene" )
 
 GetPlayerController():setEntity( player ) 
 GetPlayerController():setPosition( vec3:new( -1984, 24, -3648 ) )

@@ -9,7 +9,6 @@ std::unique_ptr<Component> Component::clone() const
 Component::~Component() 
 {}
 
-
 std::unique_ptr<Component> TransformComponent::cloneImp() const
 {
 	return std::make_unique<TransformComponent>( *this );
@@ -47,6 +46,7 @@ std::array<glm::vec3, 2> CollidableComponent::getBBox()
 	std::array<glm::vec3, 2> res = { bbox[0], bbox[1] };
 	return res;
 }
+
 std::string CollidableComponent::getTypeStr()
 {
 	std::string res = "none";
@@ -65,6 +65,7 @@ std::string CollidableComponent::getTypeStr()
 
 	return res;
 }
+
 void CollidableComponent::setTypeStr( const std::string& cType )
 {
 	if ( cType == "face" )
@@ -90,4 +91,10 @@ CollidableComponent::CollidableComponent()
 	sphereRadius( 0.f )
 {}
 
-
+std::unique_ptr<Component> RigidbodyComponent::cloneImp() const
+{
+	return std::make_unique<RigidbodyComponent>( *this );
+}
+RigidbodyComponent::RigidbodyComponent()
+	:affectedByGravity( false )
+{}

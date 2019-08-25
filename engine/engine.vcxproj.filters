@@ -105,6 +105,9 @@
     <ClCompile Include="playerController.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="physicsSystem.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libs\sol.hpp">
@@ -183,6 +186,9 @@
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="playerController.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="physicsSystem.hpp">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>

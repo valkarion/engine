@@ -13,6 +13,7 @@
 #include "entityManager.hpp"
 #include "sceneManager.hpp"
 #include "camera.hpp"
+#include "physicsSystem.hpp"
 
 CVar window_width(	"window_width",		"1280" );
 CVar window_height(	"window_height",	"800" );
@@ -146,8 +147,8 @@ void Application::run()
 		InputSystem::instance()->update();
 
 	// Systems
-
-
+		PhysicsSystem::instance()->update( 
+			frameCounter.lastFrameTimeInMicroSeconds() );
 
 	// Render
 		Renderer::instance()->drawFrame();

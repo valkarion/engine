@@ -671,6 +671,11 @@ void Renderer::draw()
 	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
 		MeshComponent* meshComponent	= em->get<MeshComponent>( ent );
+		if ( !meshComponent )
+		{
+			continue;
+		}
+
 		const Mesh* mesh				= rm->getMesh( meshComponent->meshName );
 		const RenderModel& model		= models[meshComponent->meshName];
 

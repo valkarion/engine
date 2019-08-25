@@ -232,6 +232,7 @@
     <ClCompile Include="luaClasses.cpp" />
     <ClCompile Include="luaFunctions.cpp" />
     <ClCompile Include="luaStateController.cpp" />
+    <ClCompile Include="physicsSystem.cpp" />
     <ClCompile Include="playerController.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="resourceManager.cpp" />
