@@ -2,11 +2,14 @@
 
 #include <glm/glm.hpp>
 #include <memory>
+#include "idManager.hpp"
 
 class Camera
 {
 	static std::unique_ptr<Camera> _instance;
 public:
+	E_ID follows;
+
 	glm::vec3 position;
 	glm::vec3 direction;
 	glm::vec3 up;	
@@ -20,8 +23,10 @@ public:
 	void turn( glm::vec2 delta );
 
 	void setAspect( float ratio );
-
 	void setPosition( glm::vec3 p );
+	void attachEntity( E_ID who );
+
+	void update();
 
 	glm::mat4 getView();
 	glm::mat4 getProjection();

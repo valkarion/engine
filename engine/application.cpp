@@ -139,6 +139,7 @@ void SetWindowDebugTitle( GLFWwindow* window, int frameRate )
 void Application::run()
 {
 	FrameCounter frameCounter;
+	frameCounter.update();
 
 	while( !exitGame && !glfwWindowShouldClose( Renderer::instance()->window ) )
 	{
@@ -148,7 +149,9 @@ void Application::run()
 
 	// Systems
 		PhysicsSystem::instance()->update( 
-			frameCounter.lastFrameTimeInMicroSeconds() );
+			frameCounter.lastFrameTimeInSeconds() );
+
+		Camera::instance()->update();
 
 	// Render
 		Renderer::instance()->drawFrame();

@@ -10,7 +10,9 @@ PhysicsSystem* PhysicsSystem::instance()
 	return _instance.get();
 }
 
-void PhysicsSystem::update( const float deltaMS )
+const glm::vec3 gravity = glm::vec3( 0.f, -9.81f, 0.f );
+
+void PhysicsSystem::update( const float deltaSeconds )
 {
 	Scene* scene = SceneManager::instance()->getActiveScene();
 	if ( !scene )
@@ -24,9 +26,16 @@ void PhysicsSystem::update( const float deltaMS )
 	{
 		RigidbodyComponent* rbc = em->get<RigidbodyComponent>( ent );
 		CollidableComponent* cc = em->get<CollidableComponent>( ent );
+		TransformComponent* tc = em->get<TransformComponent>( ent );
 
+		if ( rbc == nullptr )
+		{
+			continue;
+		}
 
-
-		int a = 2; a;
+		if ( rbc->affectedByGravity )
+		{
+			tc->position += gravity * deltaSeconds;
+		}
 	}
 };

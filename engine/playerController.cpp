@@ -21,8 +21,6 @@ void PlayerController::setPosition( glm::vec3 position )
 	{
 		tc->position = position;
 	}
-
-	Camera::instance()->setPosition( position );
 }
 
 void PlayerController::displace( glm::vec3 movement )
@@ -37,8 +35,6 @@ void PlayerController::displace( glm::vec3 movement )
 	{
 		tc->position += movement;
 	}
-
-	Camera::instance()->setPosition( tc->position );
 }
 
 void PlayerController::setEntity( const E_ID id )

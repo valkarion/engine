@@ -5,11 +5,14 @@ LoadAllTextures()
 LoadAllModels()
 SetActiveScene("scene")
 
+-- Setup entity 
 local player = CreateEntity()
 AddTransformComponent( player )
 AddCollidableComponent( player ) 
 local rbc = AddRigidbodyComponent(player)
 rbc.affectedByGravity = true 
+GetCamera():attachEntity( player )
+
 
 AddEntityToScene( player, "scene" )
 

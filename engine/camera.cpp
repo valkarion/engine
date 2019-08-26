@@ -1,5 +1,8 @@
 #include "camera.hpp"
 #include "cvar.hpp"
+#include "utils.hpp"
+#include "entityManager.hpp"
+#include "components.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -41,6 +44,20 @@ void Camera::setAspect( float ratio )
 void Camera::setPosition( glm::vec3 p )
 {
 	position = p;
+}
+
+void Camera::attachEntity( E_ID who )
+{
+	follows = who;
+}
+
+void Camera::update()
+{
+	if ( follows != UNSET_ID )
+	{
+		TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( follows );
+		position = tc->position;
+	}
 }
 
 glm::mat4 Camera::getView()

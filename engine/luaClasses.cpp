@@ -5,6 +5,22 @@
 #include "entityManager.hpp"
 #include "components.hpp"
 
+// IDs
+template <typename IDType>
+void registerId( sol::state& l, const std::string& name )
+{
+	l.new_usertype<IDType>( name,
+		"v", &IDType::v,
+		"gen", &IDType::gen,
+
+		"new", sol::constructors<
+		IDType( const decltype( IDType::v ) ),
+		IDType( const decltype( IDType::v ), const int gen ),
+		IDType(),
+		IDType( const IDType& )>()
+		);
+}
+
 // helper and meta classes
 void LVector( sol::state& l )
 {
@@ -50,7 +66,12 @@ void LCamera( sol::state& l )
 		"getUp", [&]() -> glm::vec3
 		{
 			return Camera::instance()->up;
-		} );
+		},
+		"attachEntity", [&]( Camera* cam, E_ID obj )
+		{
+			E_ID id = obj;
+			Camera::instance()->attachEntity( id );
+		});
 }
 void LPlayerController( sol::state& l )
 {
@@ -107,6 +128,9 @@ void LRigidbodyComponent( sol::state& l )
 
 void LuaStateController::registerClasses()
 {
+	registerId<E_ID>( state, "E_ID" );
+	registerId<SC_ID>( state, "SC_ID" );
+
 	LVector( state );
 	LCamera( state );
 	LPlayerController( state );

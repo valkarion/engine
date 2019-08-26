@@ -29,27 +29,10 @@ ComponentName* Get##ComponentName ( sol::object obj )					\
 state["Add"#ComponentName] = Add##ComponentName;			\
 state["Get"#ComponentName] = Get##ComponentName;
 
-template<typename T> 
-T solObjectToId( const sol::object& obj )
-{
-	T result = {};
-
-	if ( obj.is<T>() )
-	{
-		result = obj.as<T>();
-	}
-	else
-	{
-		result = obj.as<int>();
-	}
-
-	return result;
-}
-
 // dev 
-void DebugPrint( const std::string& message )
+void DebugPrint( sol::object obj )
 {
-	PrintToOutputWindow( message );
+	PrintToOutputWindow( obj.as<std::string>() );
 }
 void LoadAllTextures()
 {
