@@ -189,7 +189,7 @@
       <Filter>Header Files\Core</Filter>
     </ClInclude>
     <ClInclude Include="physicsSystem.hpp">
-      <Filter>Header Files\Core</Filter>
+      <Filter>Header Files\Managers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

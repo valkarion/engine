@@ -7,14 +7,13 @@ SetActiveScene("scene")
 
 -- Setup entity 
 local player = CreateEntity()
-AddTransformComponent( player )
-AddCollidableComponent( player ) 
-local rbc = AddRigidbodyComponent(player)
+AddTransformComponent( player ) 
+local rbc 	= AddRigidbodyComponent( player )
 rbc.affectedByGravity = true 
-GetCamera():attachEntity( player )
-
 
 AddEntityToScene( player, "scene" )
-
 GetPlayerController():setEntity( player ) 
-GetPlayerController():setPosition( vec3:new( -1984, 24, -3648 ) )
+GetPlayerController():setPosition( vec3:new( -1057, 35, -3623  ) )
+GetPlayerController():setFacingDirection( vec3:new( 0, 0, 1 ) )
+
+GetCamera():attachEntity( player )

@@ -1,18 +1,18 @@
 data:extend("input", {
 	move_forward = function () 
-		DebugPrint("forward")
+		GetPlayerController():forward()
 	end,
 
 	move_backward = function () 
-		DebugPrint("backward")
+		GetPlayerController():backward()
 	end,
 
 	strafe_left = function () 
-		DebugPrint("left")
+		GetPlayerController():strafeLeft()
 	end,
 
 	strafe_right = function () 
-		DebugPrint("right")
+		GetPlayerController():strafeRight()
 	end 
 })
 

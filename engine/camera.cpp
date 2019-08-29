@@ -49,6 +49,12 @@ void Camera::setPosition( glm::vec3 p )
 void Camera::attachEntity( E_ID who )
 {
 	follows = who;
+
+	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( follows );
+	if ( tc )
+	{
+		direction = tc->facingDirection;
+	}
 }
 
 void Camera::update()
@@ -56,7 +62,12 @@ void Camera::update()
 	if ( follows != UNSET_ID )
 	{
 		TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( follows );
-		position = tc->position;
+		
+		if ( tc )
+		{
+			position = tc->position;
+			tc->facingDirection = direction;
+		}
 	}
 }
 
@@ -79,7 +90,7 @@ glm::mat4 Camera::getProjection()
 void Camera::initCamera()
 {
 	position = glm::vec3( 0.f, 0.f, 0.f );
-	direction = glm::vec3( 0.f, 0.f, -1.f );
+	direction = glm::vec3( 0.f, 0.f, 1.f );
 	up = glm::vec3( 0.f, 1.f, 0.f );
 	aspect = window_width.floatValue / window_height.floatValue;
 	nearClip = 0.1f;

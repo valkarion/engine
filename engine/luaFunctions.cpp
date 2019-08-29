@@ -146,7 +146,6 @@ E_ID CreateEntity()
 // these are ducttape, find a fancy way to make these
 COMPONENT_PROPERTIES( TransformComponent );
 COMPONENT_PROPERTIES( MeshComponent );
-COMPONENT_PROPERTIES( CollidableComponent );
 COMPONENT_PROPERTIES( RigidbodyComponent );
 
 void LuaStateController::registerFunctions()
@@ -169,6 +168,5 @@ void LuaStateController::registerFunctions()
 // this is ducttape
 	COMPONENT_REGISTERS( TransformComponent );
 	COMPONENT_REGISTERS( MeshComponent );
-	COMPONENT_REGISTERS( CollidableComponent );
 	COMPONENT_REGISTERS( RigidbodyComponent );
 }

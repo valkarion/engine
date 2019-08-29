@@ -78,7 +78,13 @@ void LPlayerController( sol::state& l )
 	l.new_usertype<PlayerController>( "PlayerController",
 		"displace", &PlayerController::displace,
 		"setPosition", &PlayerController::setPosition,
-		"setEntity", &PlayerController::setEntity
+		"setFacingDirection", &PlayerController::setFacingDirection,
+		"setEntity", &PlayerController::setEntity, 
+		
+		"forward", &PlayerController::forward,
+		"backward", &PlayerController::backward,
+		"strafeLeft", &PlayerController::strafeLeft,
+		"strafeRight", &PlayerController::strafeRight
 	);
 }
 
@@ -104,19 +110,6 @@ void LMeshComponent( sol::state& l )
 		
 		sol::base_classes, sol::bases<Component>() );
 }
-void LCollidableComponent( sol::state& l )
-{
-	l.new_usertype<CollidableComponent>( "CollidableComponent",
-		"sphereRadius", &CollidableComponent::sphereRadius,
-		"bbox", &CollidableComponent::getBBox,
-		"type", sol::property(
-			&CollidableComponent::getTypeStr,
-			&CollidableComponent::setTypeStr
-			),
-
-		sol::base_classes, sol::bases<Component>()
-		);
-}
 void LRigidbodyComponent( sol::state& l )
 {
 	l.new_usertype<RigidbodyComponent>( "RigidbodyComponent",
@@ -138,6 +131,5 @@ void LuaStateController::registerClasses()
 	LComponent( state );
 	LTransformComponent( state );
 	LMeshComponent( state );
-	LCollidableComponent( state );
 	LRigidbodyComponent( state );
 }
