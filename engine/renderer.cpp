@@ -376,6 +376,7 @@ VkResult Renderer::createGraphicsPipeline()
 	rasterCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	// how to generate fragments for the polygon? 
 	rasterCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+	//rasterCreateInfo.polygonMode = VK_POLYGON_MODE_LINE;
 	rasterCreateInfo.lineWidth = 1.f;
 	rasterCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
 	// GLM matricies need this to be CCW

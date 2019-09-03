@@ -74,8 +74,14 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 				tinyobj::real_t vx = attribute.vertices[3 * idx.vertex_index + 0];
 				tinyobj::real_t vy = attribute.vertices[3 * idx.vertex_index + 1];
 				tinyobj::real_t vz = attribute.vertices[3 * idx.vertex_index + 2];
-				tinyobj::real_t tx = attribute.texcoords[2 * idx.texcoord_index + 0];
-				tinyobj::real_t ty = attribute.texcoords[2 * idx.texcoord_index + 1];
+				
+				tinyobj::real_t tx = 0;
+				tinyobj::real_t ty = 0;
+				if ( idx.texcoord_index >= 0 )
+				{
+					tx = attribute.texcoords[2 * idx.texcoord_index + 0];
+					ty = attribute.texcoords[2 * idx.texcoord_index + 1];
+				}
 				
 			// calc bounding box vertecies 
 				if ( mesh.topLeftNear.x > vx ) mesh.topLeftNear.x = vx;

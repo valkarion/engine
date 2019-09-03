@@ -11,44 +11,79 @@ PhysicsSystem* PhysicsSystem::instance()
 	return _instance.get();
 }
 
-const glm::vec3 gravity = glm::vec3( 0.f, 0.f, 0.f );
-//const glm::vec3 gravity = glm::vec3( 0.f, -9.81f, 0.f );
+//const glm::vec3 gravity = glm::vec3( 0.f, 0.f, 0.f );
+const glm::vec3 gravity = glm::vec3( 0.f, -9.81f, 0.f );
 
-float ScalarTriple( const glm::vec3& u, const glm::vec3& v, const glm::vec3& w )
+// update clamps for debugging and startup
+const float maxTime = 1.f;
+const float minTime = 0.0001f;
+
+// Möller–Trumbore intersection algorithm
+bool RayTriangleIntersection( const glm::vec3& p, const glm::vec3& dir,
+	const std::array<glm::vec3, 3>& triangle, glm::vec3& intersectionPoint )
 {
-	return glm::dot( glm::cross( u, v ), w );
-}
+	const float EPSILON = 0.00001f;
 
-// Christer Ericson: Real time collision detection p. 186
-bool LineTriangleIntersects( const glm::vec3& p, const glm::vec3& q, const std::array<glm::vec3, 3>& triangle, glm::vec3& intersectionPoint )
-{
-	glm::vec3 pq = q - p;
-	glm::vec3 pa = triangle[0] - p;
-	glm::vec3 pb = triangle[1] - p;
-	glm::vec3 pc = triangle[2] - p;
+	glm::vec3 edge1, edge2, h, s, q;
+	float a, f, u, v;
 
-	float u = ScalarTriple( pq, pc, pb );
-	float v = ScalarTriple( pq, pa, pc );
-	float w = ScalarTriple( pq, pb, pa );
+	edge1 = triangle[1] - triangle[0];
+	edge2 = triangle[2] - triangle[0];
+	h = glm::cross( dir, edge2 );
+	a = glm::dot( edge1, h );
 
-	if ( u < 0.f || v < 0.f || w < 0.f )
+	// check if ray is parallel to triangle 
+	if ( std::abs( a ) < EPSILON )
 	{
 		return false;
 	}
 
-	float denom = 1.f / ( u + v + w );
-	intersectionPoint = glm::vec3( u / denom, v / denom, w / denom );
-	
-	return true;
+	f = 1.f / a;
+	s = p - triangle[0];
+	u = f * glm::dot( s, h );
+
+	if ( u < 0.f || u > 1.f )
+	{
+		return false;
+	}
+
+	q = glm::cross( s, edge1 );
+	v = f * glm::dot( dir, q );
+
+	if ( v < 0.f || u + v > 1.f )
+	{
+		return false;
+	}
+
+	float t = f * glm::dot( edge2, q );
+	if ( t > EPSILON )
+	{
+		intersectionPoint = p + ( dir * t );
+		return true;
+	}
+
+	return false;
 }
 
-bool PhysicsSystem::checkWorldCollision( E_ID world, E_ID  ent )
+bool PhysicsSystem::checkWorldCollision( E_ID world, E_ID  ent, float deltaSeconds, glm::vec3& forceVector )
 {
+	// clamp to a min/ max value in case of massive delay (eg.: debugging)
+	if ( deltaSeconds > maxTime )
+	{
+		deltaSeconds = maxTime;
+	}
+	else if ( deltaSeconds < minTime )
+	{
+		deltaSeconds = minTime;
+	}
+
 	MeshComponent* m0 = EntityManager::instance()->get<MeshComponent>( world );
 	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( ent );
 
 	const Mesh* m = ResourceManager::instance()->getMesh( m0->meshName );
 	
+	glm::vec3 deltaGravity = ( gravity * deltaSeconds );
+
 	for ( const glm::vec4& f : m->faces )
 	{
 		std::array<glm::vec3, 3> face = {
@@ -58,19 +93,23 @@ bool PhysicsSystem::checkWorldCollision( E_ID world, E_ID  ent )
 		};
 
 		glm::vec3 ip;
-		if ( LineTriangleIntersects( tc->position, tc->position + gravity, face, ip ) )
-		{
-			float glen = gravity.length();
-			float iplen = ip.length();
+		if ( RayTriangleIntersection( tc->position, glm::normalize( deltaGravity ), face, ip ) )
+		{				
+			float glen = glm::distance( glm::vec3( 0.f, 0.f, 0.f ), deltaGravity );
+			glm::vec3 delta = ip - tc->position;
+			float iplen = glm::distance( delta, deltaGravity );
 
-			if ( ip.length() < gravity.length() )
-			{
-				int a = 2; a;
-			}
+			// clip the force vector
+			if ( iplen < glen )
+			{		
+				forceVector = glm::vec3( 0.f, 0.f, 0.f );
+				return true;
+			}			
 		}
 	}
 
-	return true;
+	forceVector = deltaGravity;
+	return false;
 }
 
 void PhysicsSystem::update( const float deltaSeconds )
@@ -98,11 +137,12 @@ void PhysicsSystem::update( const float deltaSeconds )
 			continue;
 		}
 
-		checkWorldCollision( scene->world, ent );
+		glm::vec3 clippedForceVector;
+		checkWorldCollision( scene->world, ent, deltaSeconds, clippedForceVector );
 
 		if ( rbc->affectedByGravity )
 		{
-			tc->position += gravity * deltaSeconds;
+			tc->position += clippedForceVector;
 		}
 	}
 };
