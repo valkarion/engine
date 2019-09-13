@@ -2,7 +2,9 @@
 #include <string>
 #include <cstring>
 
-void PrintToOutputWindow( const char* fmt, ... );
-void PrintToOutputWindow( const std::string& message );
-void WriteToErrorLog( const char* fmt, ... );
+// these overloads are for the lua side 
 void WriteToErrorLog( const std::string& message );
+void PrintToOutputWindow( const std::string& message );
+
+void PrintToOutputWindow( const char* fmt, ... );
+void WriteToErrorLog( const char* fmt, ... );

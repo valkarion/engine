@@ -20,6 +20,7 @@ public:
 	void backward();
 	void strafeLeft();
 	void strafeRight();
+	void jump();
 
 	static PlayerController* instance();
 };

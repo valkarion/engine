@@ -13,6 +13,10 @@ data:extend("input", {
 
 	strafe_right = function () 
 		GetPlayerController():strafeRight()
+	end,
+	
+	jump = function () 
+		GetPlayerController():jump()
 	end 
 })
 
@@ -20,5 +24,6 @@ data:extend("keymap", {
 	{"w", "move_forward"}, 
 	{"a", "strafe_left"},
 	{"s", "move_backward"},
-	{"d", "strafe_right"}
+	{"d", "strafe_right"},
+	{"space", "jump"}
 })

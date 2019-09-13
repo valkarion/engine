@@ -81,13 +81,34 @@ void PlayerController::backward()
 void PlayerController::strafeLeft()
 {
 	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
-	if ( tc )
+	RigidbodyComponent* rc = EntityManager::instance()->get<RigidbodyComponent>( attachedEntity );
+	if ( tc != nullptr && rc != nullptr )
 	{
+		glm::vec3 strafe = glm::cross( tc->facingDirection, 
+			Camera::instance()->up );
 
+		rc->velocity += glm::normalize( strafe ) * 1.f;
 	}
 }
 
 void PlayerController::strafeRight()
 {
+	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
+	RigidbodyComponent* rc = EntityManager::instance()->get<RigidbodyComponent>( attachedEntity );
+	if ( tc != nullptr && rc != nullptr )
+	{
+		glm::vec3 strafe = glm::cross( tc->facingDirection,
+			Camera::instance()->up );
 
+		rc->velocity += glm::normalize( strafe ) * -1.f;
+	}
+}
+
+void PlayerController::jump()
+{
+	RigidbodyComponent* rc = EntityManager::instance()->get<RigidbodyComponent>( attachedEntity );
+	if ( rc )
+	{
+		//rc->velocity += glm::vec3( 0.f, 10.f, 0.f );
+	}
 }

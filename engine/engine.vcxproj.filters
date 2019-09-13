@@ -102,10 +102,10 @@
     <ClCompile Include="vulkanDebugger.cpp">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="playerController.cpp">
-      <Filter>Source Files\Core</Filter>
-    </ClCompile>
     <ClCompile Include="physicsSystem.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="playerController.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>

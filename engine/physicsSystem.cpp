@@ -67,29 +67,17 @@ bool RayTriangleIntersection( const glm::vec3& p, const glm::vec3& dir,
 
 bool PhysicsSystem::checkWorldCollision( E_ID world, E_ID  ent, float deltaSeconds, glm::vec3& forceVector )
 {
-	// clamp to a min/ max value in case of massive delay (eg.: debugging)
-	if ( deltaSeconds > maxTime )
-	{
-		deltaSeconds = maxTime;
-	}
-	else if ( deltaSeconds < minTime )
-	{
-		deltaSeconds = minTime;
-	}
-
-	MeshComponent* m0 = EntityManager::instance()->get<MeshComponent>( world );
+	MeshComponent* mc = EntityManager::instance()->get<MeshComponent>( world );
 	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( ent );
 
-	const Mesh* m = ResourceManager::instance()->getMesh( m0->meshName );
+	const Mesh* m = ResourceManager::instance()->getMesh( mc->meshName );
 	
 	glm::vec3 deltaGravity = ( gravity * deltaSeconds );
 
 	for ( const glm::vec4& f : m->faces )
 	{
-		std::array<glm::vec3, 3> face = {
-			m->vertecies[f.r].position,
-			m->vertecies[f.g].position,
-			m->vertecies[f.b].position
+		std::array<glm::vec3, 3> face = { m->vertecies[f.r].position,
+			m->vertecies[f.g].position,	m->vertecies[f.b].position
 		};
 
 		glm::vec3 ip;
@@ -112,6 +100,20 @@ bool PhysicsSystem::checkWorldCollision( E_ID world, E_ID  ent, float deltaSecon
 	return false;
 }
 
+float CheckClampTime( float time )
+{
+	if ( time > maxTime )
+	{
+		time = maxTime;
+	}
+	else if ( time < minTime )
+	{
+		time = minTime;
+	}
+
+	return time;
+}
+
 void PhysicsSystem::update( const float deltaSeconds )
 {
 	Scene* scene = SceneManager::instance()->getActiveScene();
@@ -119,6 +121,9 @@ void PhysicsSystem::update( const float deltaSeconds )
 	{
 		return;
 	}
+
+	// clamp to a min/max value in case of massive delay (eg.: debugging)
+	float time = CheckClampTime( deltaSeconds );
 
 	EntityManager* em = EntityManager::instance();
 
@@ -138,7 +143,7 @@ void PhysicsSystem::update( const float deltaSeconds )
 		}
 
 		glm::vec3 clippedForceVector;
-		checkWorldCollision( scene->world, ent, deltaSeconds, clippedForceVector );
+		checkWorldCollision( scene->world, ent, time, clippedForceVector );
 
 		if ( rbc->affectedByGravity )
 		{

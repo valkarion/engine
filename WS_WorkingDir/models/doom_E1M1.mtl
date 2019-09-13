@@ -3,225 +3,225 @@
 
 newmtl BIGDOOR2
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\BIGDOOR2.PNG
+map_Kd ..\textures\BIGDOOR2.PNG
 
 newmtl BIGDOOR4
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\BIGDOOR4.PNG
+map_Kd ..\textures\BIGDOOR4.PNG
 
 newmtl BRNBIGC
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\BRNBIGC.PNG
+map_Kd ..\textures\BRNBIGC.PNG
 
 newmtl BRNBIGL
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\BRNBIGL.PNG
+map_Kd ..\textures\BRNBIGL.PNG
 
 newmtl BRNBIGR
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\BRNBIGR.PNG
+map_Kd ..\textures\BRNBIGR.PNG
 
 newmtl BROWN1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\BROWN1.PNG
+map_Kd ..\textures\BROWN1.PNG
 
 newmtl BROWN144
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\BROWN144.PNG
+map_Kd ..\textures\BROWN144.PNG
 
 newmtl BROWN96
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\BROWN96.PNG
+map_Kd ..\textures\BROWN96.PNG
 
 newmtl BROWNGRN
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\BROWNGRN.PNG
+map_Kd ..\textures\BROWNGRN.PNG
 
 newmtl COMPSPAN
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\COMPSPAN.PNG
+map_Kd ..\textures\COMPSPAN.PNG
 
 newmtl COMPTALL
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\COMPTALL.PNG
+map_Kd ..\textures\COMPTALL.PNG
 
 newmtl COMPTILE
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\COMPTILE.PNG
+map_Kd ..\textures\COMPTILE.PNG
 
 newmtl COMPUTE2
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\COMPUTE2.PNG
+map_Kd ..\textures\COMPUTE2.PNG
 
 newmtl COMPUTE3
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\COMPUTE3.PNG
+map_Kd ..\textures\COMPUTE3.PNG
 
 newmtl DOOR3
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\DOOR3.PNG
+map_Kd ..\textures\DOOR3.PNG
 
 newmtl DOORSTOP
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\DOORSTOP.PNG
+map_Kd ..\textures\DOORSTOP.PNG
 
 newmtl DOORTRAK
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\DOORTRAK.PNG
+map_Kd ..\textures\DOORTRAK.PNG
 
 newmtl EXITDOOR
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\EXITDOOR.PNG
+map_Kd ..\textures\EXITDOOR.PNG
 
 newmtl EXITSIGN
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\EXITSIGN.PNG
+map_Kd ..\textures\EXITSIGN.PNG
 
 newmtl LITE3
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\LITE3.PNG
+map_Kd ..\textures\LITE3.PNG
 
 newmtl NUKE24
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\NUKE24.PNG
+map_Kd ..\textures\NUKE24.PNG
 
 newmtl PLANET1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\PLANET1.PNG
+map_Kd ..\textures\PLANET1.PNG
 
 newmtl SLADWALL
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\SLADWALL.PNG
+map_Kd ..\textures\SLADWALL.PNG
 
 newmtl STARG3
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\STARG3.PNG
+map_Kd ..\textures\STARG3.PNG
 
 newmtl STARGR1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\STARGR1.PNG
+map_Kd ..\textures\STARGR1.PNG
 
 newmtl STARTAN1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\STARTAN1.PNG
+map_Kd ..\textures\STARTAN1.PNG
 
 newmtl STARTAN3
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\STARTAN3.PNG
+map_Kd ..\textures\STARTAN3.PNG
 
 newmtl STEP1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\STEP1.PNG
+map_Kd ..\textures\STEP1.PNG
 
 newmtl STEP6
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\STEP6.PNG
+map_Kd ..\textures\STEP6.PNG
 
 newmtl SUPPORT2
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\SUPPORT2.PNG
+map_Kd ..\textures\SUPPORT2.PNG
 
 newmtl SW1COMP
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\SW1COMP.PNG
+map_Kd ..\textures\SW1COMP.PNG
 
 newmtl SW1STRTN
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\SW1STRTN.PNG
+map_Kd ..\textures\SW1STRTN.PNG
 
 newmtl TEKWALL1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\TEKWALL1.PNG
+map_Kd ..\textures\TEKWALL1.PNG
 
 newmtl TEKWALL4
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\TEKWALL4.PNG
+map_Kd ..\textures\TEKWALL4.PNG
 
 newmtl CEIL3_5
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\CEIL3_5.PNG
+map_Kd ..\textures\CEIL3_5.PNG
 
 newmtl CEIL5_1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\CEIL5_1.PNG
+map_Kd ..\textures\CEIL5_1.PNG
 
 newmtl CEIL5_2
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\CEIL5_2.PNG
+map_Kd ..\textures\CEIL5_2.PNG
 
 newmtl F_SKY1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\F_SKY1.PNG
+map_Kd ..\textures\F_SKY1.PNG
 
 newmtl FLAT14
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLAT14.PNG
+map_Kd ..\textures\FLAT14.PNG
 
 newmtl FLAT18
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLAT18.PNG
+map_Kd ..\textures\FLAT18.PNG
 
 newmtl FLAT20
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLAT20.PNG
+map_Kd ..\textures\FLAT20.PNG
 
 newmtl FLAT23
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLAT23.PNG
+map_Kd ..\textures\FLAT23.PNG
 
 newmtl FLAT5_5
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLAT5_5.PNG
+map_Kd ..\textures\FLAT5_5.PNG
 
 newmtl FLOOR1_1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLOOR1_1.PNG
+map_Kd ..\textures\FLOOR1_1.PNG
 
 newmtl FLOOR4_8
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLOOR4_8.PNG
+map_Kd ..\textures\FLOOR4_8.PNG
 
 newmtl FLOOR5_1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLOOR5_1.PNG
+map_Kd ..\textures\FLOOR5_1.PNG
 
 newmtl FLOOR5_2
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLOOR5_2.PNG
+map_Kd ..\textures\FLOOR5_2.PNG
 
 newmtl FLOOR6_2
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLOOR6_2.PNG
+map_Kd ..\textures\FLOOR6_2.PNG
 
 newmtl FLOOR7_1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLOOR7_1.PNG
+map_Kd ..\textures\FLOOR7_1.PNG
 
 newmtl FLOOR7_2
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\FLOOR7_2.PNG
+map_Kd ..\textures\FLOOR7_2.PNG
 
 newmtl NUKAGE3
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\NUKAGE3.PNG
+map_Kd ..\textures\NUKAGE3.PNG
 
 newmtl STEP2
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\STEP2.PNG
+map_Kd ..\textures\STEP2.PNG
 
 newmtl TLITE6_1
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\TLITE6_1.PNG
+map_Kd ..\textures\TLITE6_1.PNG
 
 newmtl TLITE6_4
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\TLITE6_4.PNG
+map_Kd ..\textures\TLITE6_4.PNG
 
 newmtl TLITE6_5
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\TLITE6_5.PNG
+map_Kd ..\textures\TLITE6_5.PNG
 
 newmtl TLITE6_6
 Kd 1.0 1.0 1.0
-map_Kd D:\Games\GZDoom\test\TLITE6_6.PNG
+map_Kd ..\textures\TLITE6_6.PNG
 

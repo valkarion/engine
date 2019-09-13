@@ -84,7 +84,8 @@ void LPlayerController( sol::state& l )
 		"forward", &PlayerController::forward,
 		"backward", &PlayerController::backward,
 		"strafeLeft", &PlayerController::strafeLeft,
-		"strafeRight", &PlayerController::strafeRight
+		"strafeRight", &PlayerController::strafeRight, 
+		"jump", &PlayerController::jump
 	);
 }
 
