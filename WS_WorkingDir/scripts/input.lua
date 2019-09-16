@@ -17,6 +17,16 @@ data:extend("input", {
 	
 	jump = function () 
 		GetPlayerController():jump()
+	end, 
+	
+	noclip = function () 
+		local id = GetPlayerController().playerID
+		GetRigidbodyComponent(id).collidable = false 
+	end,
+	
+	nogravity = function () 
+		local id = GetPlayerController().playerID
+		GetRigidbodyComponent(id).affectedByGravity = false 
 	end 
 })
 
@@ -25,5 +35,7 @@ data:extend("keymap", {
 	{"a", "strafe_left"},
 	{"s", "move_backward"},
 	{"d", "strafe_right"},
-	{"space", "jump"}
+	{"space", "jump"}, 
+	{"f6", "noclip"},
+	{"f7", "nogravity"}
 })

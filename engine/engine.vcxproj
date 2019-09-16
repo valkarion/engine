@@ -241,6 +241,7 @@
     <ClCompile Include="vulkanBuffer.cpp" />
     <ClCompile Include="vulkanCommon.cpp" />
     <ClCompile Include="vulkanDebugger.cpp" />
+    <ClCompile Include="vulkanPipelineHelpers.cpp" />
     <ClCompile Include="vulkanSwapchain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -269,6 +270,7 @@
     <ClInclude Include="vulkanBuffer.hpp" />
     <ClInclude Include="vulkanCommon.hpp" />
     <ClInclude Include="vulkanDebugger.hpp" />
+    <ClInclude Include="vulkanPipelineHelpers.hpp" />
     <ClInclude Include="vulkanSwapchain.hpp" />
     <ClInclude Include="vulkanVertex.hpp" />
   </ItemGroup>

@@ -69,6 +69,7 @@ class Renderer
 	void							endDraw();
 
 	const VulkanTexture*			getTexture( const std::string& name ) const;
+
 public:
 	GLFWwindow*						window;
 	uint64_t						renderedFrameCount;
@@ -114,17 +115,6 @@ public:
 	VkPipelineLayout				pipelineLayout;
 	VkResult						createShaderModule(
 		const std::vector<char>& code, VkShaderModule* module );
-
-	// describes the size and input location of data for the shader 
-	VkVertexInputAttributeDescription createAttributeDescription(
-		uint32_t bindingNumber, uint32_t location,
-		VkFormat typeFormat, uint32_t offset );
-
-	// describes the rate of when information is given to the shader
-	// eg.: for every single vertex or for instances 
-	VkVertexInputBindingDescription	createBindingDescription(
-		uint32_t bindingNumber, uint32_t stride, VkVertexInputRate rate
-	);
 
 	VkResult						createGraphicsPipeline();
 
@@ -172,7 +162,6 @@ public:
 
 // descriptor sets
 	VkDescriptorPool				descriptorPool;
-	//VkDescriptorSetLayout			descriptorSetLayout;
 	VkDescriptorSetLayout			uboLayout;
 	VkDescriptorSetLayout			textureLayout;
 

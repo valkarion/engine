@@ -87,7 +87,7 @@ void PlayerController::strafeLeft()
 		glm::vec3 strafe = glm::cross( tc->facingDirection, 
 			Camera::instance()->up );
 
-		rc->velocity += glm::normalize( strafe ) * 1.f;
+		tc->position -= glm::normalize( strafe ) * moveSpeed;
 	}
 }
 
@@ -100,7 +100,7 @@ void PlayerController::strafeRight()
 		glm::vec3 strafe = glm::cross( tc->facingDirection,
 			Camera::instance()->up );
 
-		rc->velocity += glm::normalize( strafe ) * -1.f;
+		tc->position += glm::normalize( strafe ) * moveSpeed;
 	}
 }
 
@@ -111,4 +111,9 @@ void PlayerController::jump()
 	{
 		//rc->velocity += glm::vec3( 0.f, 10.f, 0.f );
 	}
+}
+
+E_ID PlayerController::getPlayerId()
+{
+	return attachedEntity;
 }

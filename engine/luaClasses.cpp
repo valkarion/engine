@@ -79,13 +79,15 @@ void LPlayerController( sol::state& l )
 		"displace", &PlayerController::displace,
 		"setPosition", &PlayerController::setPosition,
 		"setFacingDirection", &PlayerController::setFacingDirection,
-		"setEntity", &PlayerController::setEntity, 
-		
+		"setEntity", &PlayerController::setEntity,
+
 		"forward", &PlayerController::forward,
 		"backward", &PlayerController::backward,
 		"strafeLeft", &PlayerController::strafeLeft,
-		"strafeRight", &PlayerController::strafeRight, 
-		"jump", &PlayerController::jump
+		"strafeRight", &PlayerController::strafeRight,
+		"jump", &PlayerController::jump,
+
+		"playerID", sol::property( &PlayerController::getPlayerId )
 	);
 }
 
@@ -113,7 +115,8 @@ void LMeshComponent( sol::state& l )
 }
 void LRigidbodyComponent( sol::state& l )
 {
-	l.new_usertype<RigidbodyComponent>( "RigidbodyComponent",
+	l.new_usertype<RigidbodyComponent>( "RigidbodyComponent",	
+		"collidable", &RigidbodyComponent::collidable,
 		"affectedByGravity", &RigidbodyComponent::affectedByGravity,
 
 		sol::base_classes, sol::bases<Component>()

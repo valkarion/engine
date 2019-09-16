@@ -70,8 +70,8 @@ void EntityManager::initialize()
 }
 
 void EntityManager::shutdown()
-{
-	virtualIds.clear();
+{	
 	componentMap.clear();
+	virtualIds.clear();	
 	IDRESET( E_ID );
 }

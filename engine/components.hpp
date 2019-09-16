@@ -27,6 +27,7 @@ public:
 	glm::vec3 facingDirection;
 
 	TransformComponent();
+	~TransformComponent();
 };
 
 class MeshComponent : public Component
@@ -38,6 +39,7 @@ public:
 	std::string textureName;
 
 	MeshComponent();
+	~MeshComponent();
 };
 
 class RigidbodyComponent : public Component
@@ -49,4 +51,5 @@ public:
 	glm::vec3 velocity;
 
 	RigidbodyComponent();
+	~RigidbodyComponent();
 };

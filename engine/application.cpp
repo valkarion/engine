@@ -174,11 +174,11 @@ void Application::quit()
 
 void Application::shutdown()
 {
+	EntityManager::instance()->shutdown();
+
 	Renderer::instance()->shutdown();
 	   
 	ResourceManager::instance()->shutdown();
-
-	EntityManager::instance()->shutdown();
 
 	glfwDestroyWindow( Renderer::instance()->window );
 	glfwTerminate();

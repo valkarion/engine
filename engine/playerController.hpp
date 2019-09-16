@@ -21,6 +21,7 @@ public:
 	void strafeLeft();
 	void strafeRight();
 	void jump();
+	E_ID getPlayerId();
 
 	static PlayerController* instance();
 };

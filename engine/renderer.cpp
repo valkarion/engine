@@ -18,6 +18,7 @@
 #include <chrono>
 
 #include "vulkanCommon.hpp"
+#include "vulkanPipelineHelpers.hpp"
 
 #define UNIFORM_BUFFER_SIZE_KB	2048
 #define VERTEX_BUFFER_SIZE_MB	128
@@ -245,7 +246,6 @@ bool Renderer::checkForSupportedExtensions( VkPhysicalDevice device )
 	return requiredExtensions.empty();
 }
 
-
 VkResult Renderer::createShaderModule( const std::vector<char>& code,
 	VkShaderModule* module )
 {
@@ -256,33 +256,6 @@ VkResult Renderer::createShaderModule( const std::vector<char>& code,
 
 	return vkCreateShaderModule( logicalDevice, &createInfo,
 		nullptr, module );
-}
-
-VkVertexInputAttributeDescription Renderer::createAttributeDescription( 
-	uint32_t bindingNumber, uint32_t location, VkFormat typeFormat, 
-	uint32_t offset )
-{
-	VkVertexInputAttributeDescription desc = {};
-	
-	desc.binding = bindingNumber;
-	desc.location = location;
-	desc.format = typeFormat;
-	desc.offset = offset;
-
-	return desc;
-}
-
-VkVertexInputBindingDescription	Renderer::createBindingDescription(
-	uint32_t bindingNumber, uint32_t stride, VkVertexInputRate rate
-)
-{
-	VkVertexInputBindingDescription desc = {};
-
-	desc.binding = bindingNumber;
-	desc.stride = stride;
-	desc.inputRate = rate;
-
-	return desc;
 }
 
 VkResult Renderer::createGraphicsPipeline()
@@ -296,17 +269,11 @@ VkResult Renderer::createGraphicsPipeline()
 	VKCHECK( createShaderModule( vertexShaderCode, &vShaderModule ) );
 	VKCHECK( createShaderModule( fragmentShaderCode, &fShaderModule ) );
 
-	VkPipelineShaderStageCreateInfo vStageCreateInfo = {};
-	vStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vStageCreateInfo.module = vShaderModule;
-	vStageCreateInfo.pName = "main";
+	VkPipelineShaderStageCreateInfo vStageCreateInfo = CreatePipelineShaderStageCreateInfo(
+		vShaderModule, VK_SHADER_STAGE_VERTEX_BIT, "main" );
 
-	VkPipelineShaderStageCreateInfo fStageCreateInfo = {};
-	fStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	fStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	fStageCreateInfo.module = fShaderModule;
-	fStageCreateInfo.pName = "main";
+	VkPipelineShaderStageCreateInfo fStageCreateInfo = CreatePipelineShaderStageCreateInfo(
+		fShaderModule, VK_SHADER_STAGE_FRAGMENT_BIT, "main" );
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = {
 		vStageCreateInfo, fStageCreateInfo
@@ -319,20 +286,20 @@ VkResult Renderer::createGraphicsPipeline()
 	std::vector<VkVertexInputBindingDescription> bindings;
 
 	attributes = {
-		createAttributeDescription( 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof( Vertex, Vertex::position ) ),
-		createAttributeDescription( 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof( Vertex, Vertex::color ) ),
-		createAttributeDescription( 0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof( Vertex, Vertex::textureCoordinates ) ),
+		CreateVertexInputAttributeDescription( 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof( Vertex, Vertex::position ) ),
+		CreateVertexInputAttributeDescription( 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof( Vertex, Vertex::color ) ),
+		CreateVertexInputAttributeDescription( 0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof( Vertex, Vertex::textureCoordinates ) ),
 
 		// These four create a matrix on the shader side, but there is no valid matrix format on the C++ side
-		createAttributeDescription( 1, 3, VK_FORMAT_R32G32B32A32_SFLOAT, 0 ),
-		createAttributeDescription( 1, 4, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof( glm::vec4 ) ),
-		createAttributeDescription( 1, 5, VK_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof( glm::vec4 ) ),
-		createAttributeDescription( 1, 6, VK_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof( glm::vec4 ) )
+		CreateVertexInputAttributeDescription( 1, 3, VK_FORMAT_R32G32B32A32_SFLOAT, 0 ),
+		CreateVertexInputAttributeDescription( 1, 4, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof( glm::vec4 ) ),
+		CreateVertexInputAttributeDescription( 1, 5, VK_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof( glm::vec4 ) ),
+		CreateVertexInputAttributeDescription( 1, 6, VK_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof( glm::vec4 ) )
 	};
 
 	bindings = {
-		createBindingDescription( 0, sizeof( Vertex ), VK_VERTEX_INPUT_RATE_VERTEX ),
-		createBindingDescription( 1, sizeof( glm::mat4x4 ), VK_VERTEX_INPUT_RATE_INSTANCE )
+		CreateVertexInputBindingDescription( 0, sizeof( Vertex ), VK_VERTEX_INPUT_RATE_VERTEX ),
+		CreateVertexInputBindingDescription( 1, sizeof( glm::mat4x4 ), VK_VERTEX_INPUT_RATE_INSTANCE )
 	};
 
 	vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -342,72 +309,28 @@ VkResult Renderer::createGraphicsPipeline()
 	vertexInputCreateInfo.pVertexBindingDescriptions = bindings.data();
 
 	// the kind of geometry will be drawn from the vertecies
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
-	inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	inputAssemblyCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	inputAssemblyCreateInfo.primitiveRestartEnable = VK_FALSE;
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = 
+		CreatePipelineInputAssemblyStateCreateInfo( VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST );
 
-	// what part of the framebuffer should be rendered to? (all of it)
-	VkViewport viewport = {};
-	viewport.x = 0.f;
-	viewport.y = 0.f;
-	viewport.minDepth = 0.f;
-	viewport.maxDepth = 1.0f;
-	viewport.width = (float)swapchain.extent.width;
-	viewport.height = (float)swapchain.extent.height;
-	
-	// what part of the frame buffer should we keep? (all of it)
-	VkRect2D scissor = {};
-	scissor.offset = VkOffset2D{ 0, 0 };
-	scissor.extent = swapchain.extent;
+	VkViewport viewport;
+	VkRect2D scissor;
+	VkPipelineViewportStateCreateInfo viewportCreateInfo = 
+		CreatePipelineViewportStateCreateInfo( viewport, scissor,
+			swapchain.extent.width, swapchain.extent.height );
 
-	VkPipelineViewportStateCreateInfo viewportCreateInfo = {};
-	viewportCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	viewportCreateInfo.pScissors = &scissor;
-	viewportCreateInfo.scissorCount = 1;
-	viewportCreateInfo.pViewports = &viewport;
-	viewportCreateInfo.viewportCount = 1;
-	
-	VkPipelineRasterizationStateCreateInfo rasterCreateInfo = {};
-	rasterCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	// keep fragments that are not between the near and far plane? 
-	rasterCreateInfo.depthClampEnable = VK_FALSE;
-	// disable frame buffer output?
-	rasterCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-	// how to generate fragments for the polygon? 
-	rasterCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-	//rasterCreateInfo.polygonMode = VK_POLYGON_MODE_LINE;
-	rasterCreateInfo.lineWidth = 1.f;
-	rasterCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-	// GLM matricies need this to be CCW
-	rasterCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-	rasterCreateInfo.depthBiasEnable = VK_FALSE;
+	VkPipelineRasterizationStateCreateInfo rasterCreateInfo = 
+		CreatePipelineRasterizationStateCreateInfo( VK_POLYGON_MODE_FILL, 
+			VK_CULL_MODE_BACK_BIT );
 
-	VkPipelineMultisampleStateCreateInfo multisampleCreateInfo = {};
-	multisampleCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	multisampleCreateInfo.sampleShadingEnable = VK_FALSE;
-	multisampleCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	VkPipelineMultisampleStateCreateInfo multisampleCreateInfo =
+		CreatePipelineMultisampleStateCreateInfo();
 
-	VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo = {};
-	depthStencilCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	depthStencilCreateInfo.depthTestEnable = VK_TRUE;
-	depthStencilCreateInfo.depthWriteEnable = VK_TRUE;
-	depthStencilCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
-	depthStencilCreateInfo.depthBoundsTestEnable = VK_FALSE;
-	depthStencilCreateInfo.stencilTestEnable = VK_FALSE;
+	VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo =
+		CreatePipelineDepthStencilStateCreateInfo();
 
-	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-	colorBlendAttachment.colorWriteMask =
-		VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-		VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	colorBlendAttachment.blendEnable = VK_FALSE;
-
-	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = {};
-	colorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-	colorBlendStateCreateInfo.pAttachments = &colorBlendAttachment;
-	colorBlendStateCreateInfo.attachmentCount = 1;
-	colorBlendStateCreateInfo.logicOp = VK_LOGIC_OP_COPY;
-	colorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
+	VkPipelineColorBlendAttachmentState colorBlendAttachment;
+	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo =
+		CreatePipelineColorBlendStateCreateInfo( colorBlendAttachment );
 	
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

@@ -108,6 +108,9 @@
     <ClCompile Include="playerController.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="vulkanPipelineHelpers.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libs\sol.hpp">
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="physicsSystem.hpp">
       <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanPipelineHelpers.hpp">
+      <Filter>Header Files\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
