@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan.hpp>
 
+class VulkanDevice;
+
 class VulkanBuffer
 {
 public:
@@ -22,3 +24,7 @@ public:
 	void			unmap();
 	void			destroy();
 };
+
+// abstract helper for all buffer creation process
+VkResult CreateBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
+	VkMemoryPropertyFlags memFlags, VulkanBuffer& buffer, VulkanDevice& device );

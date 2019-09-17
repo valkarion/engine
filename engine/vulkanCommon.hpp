@@ -11,9 +11,13 @@
 #include "cvar.hpp"
 #include "loggers.hpp"
 
+class VulkanDevice;
+
 extern CVar window_title;
 extern CVar window_width;
 extern CVar window_height;
+
+#define USE_VALIDATION_LAYERS true 
 
 #define VKCHECK( fn )															\
 {																				\
@@ -28,6 +32,33 @@ extern CVar window_height;
 extern const std::vector<const char*> validationLayers;
 extern const std::vector<const char*> deviceExtensions;
 
-// imageviews are used by the renderer and swapchain so its here not in either class
+// holds handles to texture and a descriptor used during rendering
+struct VulkanTexture
+{
+	VkImage							image;
+	VkImageView						view;
+	VkDeviceMemory					memory;
+	VkDescriptorSet					descriptor;
+};
+
+// buffers require certain type(s) of memory(s), this will find it 
+uint32_t FindMemoryType( uint32_t filter, VkMemoryPropertyFlags flags, VkPhysicalDevice physicalDevice );
+
 VkResult CreateImageView( const VkDevice logicalDevice, const VkImage image, 
 	const VkFormat format, const VkImageAspectFlags aspectFlags, VkImageView* view );
+
+// arg collection for CreateImage()
+struct CreateImageProperties
+{
+	uint32_t width;
+	uint32_t height;
+	VkFormat format;
+	VkImageTiling tiling;
+	VkImageUsageFlags usage;
+	VkMemoryPropertyFlags memProps;
+};
+
+// Creates a VkImage object and allocates memory for it 
+VkResult CreateImage( CreateImageProperties& props,
+	VkImage& image, VkDeviceMemory& imgMemory,
+	VulkanDevice& device );

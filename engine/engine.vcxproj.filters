@@ -111,6 +111,24 @@
     <ClCompile Include="vulkanPipelineHelpers.cpp">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="libs\imgui.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\imgui_demo.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\imgui_draw.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\imgui_widgets.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="debugOverlay.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkanDevice.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libs\sol.hpp">
@@ -195,6 +213,30 @@
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
     <ClInclude Include="vulkanPipelineHelpers.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\imconfig.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\imgui.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\imgui_internal.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\imstb_rectpack.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\imstb_textedit.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\imstb_truetype.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="debugOverlay.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanDevice.hpp">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
   </ItemGroup>

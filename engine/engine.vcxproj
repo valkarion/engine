@@ -224,10 +224,15 @@
     <ClCompile Include="components.cpp" />
     <ClCompile Include="cvar.cpp" />
     <ClCompile Include="cvarSystem.cpp" />
+    <ClCompile Include="debugOverlay.cpp" />
     <ClCompile Include="entityManager.cpp" />
     <ClCompile Include="fileSystem.cpp" />
     <ClCompile Include="frameCounter.cpp" />
     <ClCompile Include="inputSystem.cpp" />
+    <ClCompile Include="libs\imgui.cpp" />
+    <ClCompile Include="libs\imgui_demo.cpp" />
+    <ClCompile Include="libs\imgui_draw.cpp" />
+    <ClCompile Include="libs\imgui_widgets.cpp" />
     <ClCompile Include="loggers.cpp" />
     <ClCompile Include="luaClasses.cpp" />
     <ClCompile Include="luaFunctions.cpp" />
@@ -241,6 +246,7 @@
     <ClCompile Include="vulkanBuffer.cpp" />
     <ClCompile Include="vulkanCommon.cpp" />
     <ClCompile Include="vulkanDebugger.cpp" />
+    <ClCompile Include="vulkanDevice.cpp" />
     <ClCompile Include="vulkanPipelineHelpers.cpp" />
     <ClCompile Include="vulkanSwapchain.cpp" />
   </ItemGroup>
@@ -250,11 +256,18 @@
     <ClInclude Include="components.hpp" />
     <ClInclude Include="cvar.hpp" />
     <ClInclude Include="cvarSystem.hpp" />
+    <ClInclude Include="debugOverlay.hpp" />
     <ClInclude Include="entityManager.hpp" />
     <ClInclude Include="fileSystem.hpp" />
     <ClInclude Include="frameCounter.hpp" />
     <ClInclude Include="idManager.hpp" />
     <ClInclude Include="inputSystem.hpp" />
+    <ClInclude Include="libs\imconfig.h" />
+    <ClInclude Include="libs\imgui.h" />
+    <ClInclude Include="libs\imgui_internal.h" />
+    <ClInclude Include="libs\imstb_rectpack.h" />
+    <ClInclude Include="libs\imstb_textedit.h" />
+    <ClInclude Include="libs\imstb_truetype.h" />
     <ClInclude Include="libs\sol.hpp" />
     <ClInclude Include="libs\stb_image.h" />
     <ClInclude Include="loggers.hpp" />
@@ -270,6 +283,7 @@
     <ClInclude Include="vulkanBuffer.hpp" />
     <ClInclude Include="vulkanCommon.hpp" />
     <ClInclude Include="vulkanDebugger.hpp" />
+    <ClInclude Include="vulkanDevice.hpp" />
     <ClInclude Include="vulkanPipelineHelpers.hpp" />
     <ClInclude Include="vulkanSwapchain.hpp" />
     <ClInclude Include="vulkanVertex.hpp" />

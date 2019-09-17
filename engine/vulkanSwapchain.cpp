@@ -1,5 +1,6 @@
 #include "vulkanSwapchain.hpp"
 #include "vulkanCommon.hpp"
+#include "vulkanDevice.hpp"
 
 VkSurfaceFormatKHR VulkanSwapchain::chooseSwapChainSurfaceFormat()
 {
@@ -50,7 +51,7 @@ VkPresentModeKHR VulkanSwapchain::chooseSwapChainPresentMode()
 	return chosenMode;
 }
 
-void VulkanSwapchain::getSwapChainSupportDetails()
+void VulkanSwapchain::getSwapChainSupportDetails( VkPhysicalDevice physicalDevice )
 {
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR( physicalDevice,
 		surface, &surfaceCapabilites );
@@ -79,9 +80,8 @@ void VulkanSwapchain::getSwapChainSupportDetails()
 
 bool VulkanSwapchain::canDeviceUseSwapchain( VkPhysicalDevice device, VkSurfaceKHR surface )
 {
-	physicalDevice = device;
 	this->surface = surface;
-	getSwapChainSupportDetails();
+	getSwapChainSupportDetails( device );
 
 	return !formats.empty() && !presentModes.empty();
 }
@@ -109,9 +109,10 @@ VkResult VulkanSwapchain::createSwapChain()
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	// check how to handle queue family interation with the swapchain 
-	bool singleQueueFamily = graphicsQueueIndex == presentQueueIndex;
+	bool singleQueueFamily = device->queueFamilies.graphics.value() == device->queueFamilies.presentation.value();
 	uint32_t queueFamilyIndecies[] = {
-		graphicsQueueIndex, presentQueueIndex
+		device->queueFamilies.graphics.value(), 
+		device->queueFamilies.presentation.value()
 	};
 
 	if ( singleQueueFamily )
@@ -134,12 +135,12 @@ VkResult VulkanSwapchain::createSwapChain()
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	VKCHECK( vkCreateSwapchainKHR( logicalDevice, &createInfo, nullptr, &swapChain ) );
+	VKCHECK( vkCreateSwapchainKHR( device->logicalDevice, &createInfo, nullptr, &swapChain ) );
 	
 	// get the images 
-	vkGetSwapchainImagesKHR( logicalDevice, swapChain, &imgCount, nullptr );
+	vkGetSwapchainImagesKHR( device->logicalDevice, swapChain, &imgCount, nullptr );
 	images.resize( imgCount );
-	vkGetSwapchainImagesKHR( logicalDevice, swapChain, &imgCount, images.data() );
+	vkGetSwapchainImagesKHR( device->logicalDevice, swapChain, &imgCount, images.data() );
 
 	return VK_SUCCESS;
 }
@@ -150,7 +151,7 @@ VkResult VulkanSwapchain::createSwapChainImageViews()
 
 	for ( size_t i = 0; i < images.size(); i++ )
 	{
-		VKCHECK( CreateImageView( logicalDevice, images[i],
+		VKCHECK( CreateImageView( device->logicalDevice, images[i],
 			format.format, VK_IMAGE_ASPECT_COLOR_BIT, &imageViews[i] ) );
 	}
 
@@ -169,9 +170,9 @@ void VulkanSwapchain::shutdown()
 {
 	for ( auto& it : imageViews )
 	{
-		vkDestroyImageView( logicalDevice, it, nullptr );
+		vkDestroyImageView( device->logicalDevice, it, nullptr );
 	}
 
 	// this also removes the images.
-	vkDestroySwapchainKHR( logicalDevice, swapChain, nullptr );
+	vkDestroySwapchainKHR( device->logicalDevice, swapChain, nullptr );
 }

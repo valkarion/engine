@@ -2,32 +2,21 @@
 
 #include <memory>
 #include <map>
-#include <optional>
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
 
 #include "vulkanDebugger.hpp"
+#include "vulkanDevice.hpp"
 #include "vulkanBuffer.hpp"
 #include "vulkanVertex.hpp"
 #include "vulkanSwapchain.hpp"
+#include "debugOverlay.hpp"
 
 #include "idManager.hpp"
 
 struct Mesh;
-
-// indecies of the queues that can handle commands we need
-struct QueueFamilyIndicies
-{
-	// graphical commands 
-	std::optional<uint32_t> graphics;
-
-	// drawing on surface commands
-	std::optional<uint32_t> presentation;
-
-	bool isValid() const;
-};
 
 /*
 	UBO is a global variable that will be visible during shader stages
@@ -36,16 +25,6 @@ struct UniformBufferObject
 {
 	// this is now a dummy.
 	glm::mat4 dummy;
-};
-
-// holds handles to texture and a descriptor used during rendering
-struct VulkanTexture
-{
-	VkImage							image;
-	VkImageView						view;
-	VkDeviceMemory					memory;
-
-	VkDescriptorSet					descriptor;
 };
 
 // contains information about a Mesh that is used during drawing
@@ -74,9 +53,6 @@ public:
 	GLFWwindow*						window;
 	uint64_t						renderedFrameCount;
 
-// the following is setup (more-or-less) in order. 
-	bool							useValidationLayers;
-
 // main vulkan handle
 	VkInstance						vkInstance;
 	std::vector<const char*>		getInstanceExtensions();
@@ -84,25 +60,16 @@ public:
 
 // debugger is only setup in debug mode 
 	VulkanDebugger					debugger;
+	DebugOverlay					debugOverlay;
 
-	// the surface we'll draw to 
+	VulkanDevice					device;
+
+// the surface we'll draw to 
 	VkSurfaceKHR					surface;
+	VkQueue							graphicsQueue;
 	VkQueue							presentQueue;
 	VkResult						createSurface();
-
-// the videocard 
-	VkPhysicalDevice				physicalDevice;
-	QueueFamilyIndicies				queueFamilies;
-	void							findQueueFamilies( VkPhysicalDevice );
-	bool							checkForSupportedExtensions( VkPhysicalDevice device );
-	bool							isPhysicalDeviceSuitable( VkPhysicalDevice device );
-	VkResult						createVkPhysicalDevice();
-
-// vulkan handle to the gpu 
-	VkQueue							graphicsQueue;
-	VkDevice						logicalDevice;
-	VkResult						createVkLogicalDevice();
-
+	
 // swapchain 
 	VulkanSwapchain					swapchain;
 
@@ -113,9 +80,6 @@ public:
 // graphics pipeline
 	VkPipeline						graphicsPipeline;
 	VkPipelineLayout				pipelineLayout;
-	VkResult						createShaderModule(
-		const std::vector<char>& code, VkShaderModule* module );
-
 	VkResult						createGraphicsPipeline();
 
 // framebuffers
@@ -137,24 +101,18 @@ public:
 	void							drawFrame();
 
 //	buffers 
-	// buffers require certain type(s) of memory(s), this will find it 
-	uint32_t						findMemoryType( uint32_t filter, VkMemoryPropertyFlags flags );
 	VulkanBuffer					vertexBuffer;
 	VulkanBuffer					indexBuffer;	
 	VulkanBuffer					dynamicIndexBuffer;
-	std::vector<VulkanBuffer>		uniformBuffers;
+	std::vector<VulkanBuffer>		uniformBuffers;	
+	// holds model matricies 
+	VulkanBuffer					transformBuffer;
 	
 	VulkanBuffer					stagingBuffer;
 	VkResult						createStagingBuffer();
 	void							copyStagingBuffer( VulkanBuffer& dest, size_t size, size_t offset );
-
-	// holds model matricies 
-	VulkanBuffer					transformBuffer;
-	VkResult						createTransformBuffer();
 	
-	// abstract helper for all buffer creation process
-	VkResult						createBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
-										VkMemoryPropertyFlags memFlags, VulkanBuffer& buffer );
+	VkResult						createTransformBuffer();
 	VkResult						createVertexBuffer();
 	VkResult						createIndexBuffer();
 	VkResult						createDynamicIndexBuffer();
@@ -170,32 +128,19 @@ public:
 	VkResult						createDescriptorSetLayout();
 	VkResult						createDescriptorPool();
 	VkResult						createUBODescritptorSet();
-
-// image helper 
-	struct CreateImageProperties
-	{
-		uint32_t width; 
-		uint32_t height;
-		VkFormat format; 
-		VkImageTiling tiling;
-		VkImageUsageFlags usage;
-		VkMemoryPropertyFlags memProps;		
-	};
-
-	VkResult						createImage( CreateImageProperties& props, 
-		VkImage& image,	VkDeviceMemory& imgMemory );
-
+	
 // texture loading
 	std::map<std::string, VulkanTexture> textures;
 
 	VkSampler						textureSampler;
 	VkResult						createTextureSampler();
 
+	void							copyBufferToImage( VkBuffer buffer, VkImage image,
+										uint32_t width, uint32_t height );
+
 	void							loadTexture( const std::string& name );
 	void							transitionImageLayout( VkImage image, VkFormat format,
 										VkImageLayout oldLayout, VkImageLayout newLayout );
-	void							copyBufferToImage( VkBuffer buffer, VkImage image,
-										uint32_t width,	uint32_t height );
 
 // depth buffering
 	VkImage							depthImage;
@@ -209,8 +154,8 @@ public:
 // models 
 	std::map<std::string, RenderModel>	models;
 	void loadModel( const std::string& objName );
-
 public:
+	void initDebugOverlays();
 	void init();
 	void shutdown();
 

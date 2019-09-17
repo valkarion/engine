@@ -1,13 +1,25 @@
 #include "vulkanPipelineHelpers.hpp"
+#include "vulkanCommon.hpp"
+#include "fileSystem.hpp"
 
-VkPipelineShaderStageCreateInfo CreatePipelineShaderStageCreateInfo( const VkShaderModule shaderModule,
-	VkShaderStageFlagBits stages, const char* entryPoint )
+VkPipelineShaderStageCreateInfo CreatePipelineShaderStageCreateInfo( const char* path, 
+	VkShaderStageFlagBits stages, VkDevice device )
 {
+	std::vector<char> code = ReadBinaryFile( path );
+
+	VkShaderModuleCreateInfo smci = {};
+	smci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	smci.codeSize = code.size();
+	smci.pCode = (const uint32_t*)code.data();
+
+	VkShaderModule module;
+	VKCHECK( vkCreateShaderModule( device, &smci, nullptr, &module ) );
+
 	VkPipelineShaderStageCreateInfo sci = {};
 	sci.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	sci.stage = stages;
-	sci.module = shaderModule;
-	sci.pName = entryPoint;
+	sci.module = module;
+	sci.pName = "main";
 
 	return sci;
 }

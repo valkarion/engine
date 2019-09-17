@@ -12,7 +12,8 @@
 */
 
 // shader stage infos tell the pipeline in which stage it should run the shader code
-VkPipelineShaderStageCreateInfo CreatePipelineShaderStageCreateInfo( const VkShaderModule shaderModule, VkShaderStageFlagBits stages, const char* entryPoint );
+VkPipelineShaderStageCreateInfo CreatePipelineShaderStageCreateInfo(
+	const char* path, VkShaderStageFlagBits stages, VkDevice device );
 
 // input attribute describes the size and location of information within a given structure
 VkVertexInputAttributeDescription CreateVertexInputAttributeDescription( uint32_t bindingNumber, uint32_t location, VkFormat typeFormat, uint32_t offset );

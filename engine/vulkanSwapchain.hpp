@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan.hpp>
 
+class VulkanDevice;
+
 class VulkanSwapchain
 {
 	// metadata about all the stuff the chain can do 
@@ -12,17 +14,14 @@ class VulkanSwapchain
 	VkSurfaceFormatKHR				chooseSwapChainSurfaceFormat();
 	VkPresentModeKHR				chooseSwapChainPresentMode();
 
-	void							getSwapChainSupportDetails();
+	void							getSwapChainSupportDetails( VkPhysicalDevice physicalDevice );
 
 	VkResult						createSwapChainImageViews();
 	VkResult						createSwapChain();
 public:
 // external dependencies 
-	VkDevice						logicalDevice;
-	VkPhysicalDevice				physicalDevice;
+	VulkanDevice*					device;
 	VkSurfaceKHR					surface;
-	uint32_t						graphicsQueueIndex;
-	uint32_t						presentQueueIndex;
 
 	VkSwapchainKHR					swapChain;
 	VkSurfaceFormatKHR				format;

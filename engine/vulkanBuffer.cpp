@@ -1,4 +1,6 @@
 #include "vulkanBuffer.hpp"
+#include "vulkanCommon.hpp"
+#include "vulkanDevice.hpp"
 #include "loggers.hpp"
 
 void* VulkanBuffer::allocate( size_t memSize )
@@ -62,4 +64,54 @@ void VulkanBuffer::destroy()
 	{
 		vkFreeMemory( device, memory, nullptr );
 	}
+}
+
+uint32_t FindMemoryType( uint32_t filter, VkMemoryPropertyFlags flags, VkPhysicalDevice physicalDevice )
+{
+	VkPhysicalDeviceMemoryProperties memProps = {};
+	vkGetPhysicalDeviceMemoryProperties( physicalDevice, &memProps );
+
+	for ( uint32_t i = 0; i < memProps.memoryTypeCount; i++ )
+	{
+		bool validMemoryType = filter & ( 1 << i );
+		bool validProperties = ( ( memProps.memoryTypes[i].propertyFlags
+			& flags ) == flags );
+
+		if ( validMemoryType && validProperties )
+		{
+			return i;
+		}
+	}
+
+	WriteToErrorLog( "Failed to find memory in Renderer::findMemoryType" );
+	exit( -1 );
+}
+
+VkResult CreateBuffer( VkDeviceSize size, VkBufferUsageFlags useFlags,
+	VkMemoryPropertyFlags memFlags, VulkanBuffer& buffer, VulkanDevice& device )
+{
+	VkBufferCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	createInfo.size = size;
+	createInfo.usage = useFlags;
+	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	VKCHECK( vkCreateBuffer( device.logicalDevice, &createInfo, nullptr, &buffer.buffer ) );
+
+	VkMemoryRequirements memReq = {};
+	vkGetBufferMemoryRequirements( device.logicalDevice, buffer.buffer, &memReq );
+
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memReq.size;
+	allocInfo.memoryTypeIndex = FindMemoryType( memReq.memoryTypeBits, memFlags, device.physicalDevice );
+
+	VKCHECK( vkAllocateMemory( device.logicalDevice, &allocInfo, nullptr, &buffer.memory ) );
+	VKCHECK( vkBindBufferMemory( device.logicalDevice, buffer.buffer, buffer.memory, 0 ) );
+
+	buffer.device = device.logicalDevice;
+	buffer.data = nullptr;
+	buffer.size = allocInfo.allocationSize;
+
+	return VK_SUCCESS;
 }
