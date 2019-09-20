@@ -43,6 +43,12 @@ public:
 // vulkan handle to the gpu 
 	VkDevice			logicalDevice;
 
+// have a separate command pool/buffer for quick one time stuff
+	VkCommandPool		commandPool;
+	void				createCommandPool();
+	VkCommandBuffer		createOneTimeCommandBuffer();
+	void				destroyOneTimeCommandBuffer( VkCommandBuffer buffer, VkQueue poolQueue );
+
 	void init( VulkanSwapchain& swapchain );
 	void shutdown();
 };

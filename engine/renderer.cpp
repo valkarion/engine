@@ -88,8 +88,7 @@ VkResult Renderer::createSurface()
 }
 
 VkResult Renderer::createGraphicsPipeline()
-{	
-	
+{		
 	VkPipelineShaderStageCreateInfo vStageCreateInfo =
 		CreatePipelineShaderStageCreateInfo(
 			"shaders\\compiled\\default.vspv",
@@ -470,6 +469,8 @@ void Renderer::draw()
 			vkCmdDrawIndexed( cmdBuf, (uint32_t)mesh->vertecies.size(), 1, 0, 0, 0 );
 		}
 	}
+
+	debugOverlay.update( cmdBuf );
 }
 
 void Renderer::endDraw()
@@ -596,7 +597,7 @@ VkResult Renderer::createStagingBuffer()
 
 void Renderer::copyStagingBuffer( VulkanBuffer& dest, size_t size, size_t offset )
 {
-	VkCommandBuffer cmdBuffer = beginOneTimeCommands();
+	VkCommandBuffer cmdBuffer = device.createOneTimeCommandBuffer();
 
 	VkBufferCopy copy = {};
 	copy.size = size;
@@ -604,14 +605,16 @@ void Renderer::copyStagingBuffer( VulkanBuffer& dest, size_t size, size_t offset
 	copy.dstOffset = offset;
 	vkCmdCopyBuffer( cmdBuffer, stagingBuffer.buffer, dest.buffer, 1, &copy );
 
-	endOneTimeCommands( cmdBuffer );
+	device.destroyOneTimeCommandBuffer( cmdBuffer, graphicsQueue );
 }
 
 VkResult Renderer::createDescriptorPool()
 {
 	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
+	// UBO descriptor
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 	poolSizes[0].descriptorCount = (uint32_t)swapchain.images.size();
+	// Image Descriptor
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizes[1].descriptorCount = MAX_DESCRIPTORS;
 
@@ -726,11 +729,12 @@ void Renderer::loadTexture( const std::string& name )
 
 	CreateImage( imageProps, texture.image, texture.memory, device );
 
-	transitionImageLayout( texture.image, imageProps.format, VK_IMAGE_LAYOUT_UNDEFINED,
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
+	TransitionImageLayout( texture.image, imageProps.format, VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &device, graphicsQueue );
 
 // copy the host visible memory data into device-only visible memory for better performance
-	copyBufferToImage( stagingBuffer.buffer, texture.image, img->width, img->height );
+	CopyBufferToImage( stagingBuffer.buffer, texture.image, img->width, img->height,
+		&device, graphicsQueue );
 
 // create image view
 	CreateImageView( device.logicalDevice, texture.image, VK_FORMAT_R8G8B8A8_UNORM,
@@ -762,103 +766,6 @@ void Renderer::loadTexture( const std::string& name )
 	vkUpdateDescriptorSets( device.logicalDevice, 1, &textureWrite, 0, nullptr );
 
 	stagingBuffer.destroy();
-}
-
-VkCommandBuffer Renderer::beginOneTimeCommands()
-{
-	VkCommandBufferAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = commandPool;
-	allocInfo.commandBufferCount = 1;
-
-	VkCommandBuffer commandBuffer;
-	vkAllocateCommandBuffers( device.logicalDevice, &allocInfo, &commandBuffer );
-
-	VkCommandBufferBeginInfo beginInfo = {};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	vkBeginCommandBuffer( commandBuffer, &beginInfo );
-
-	return commandBuffer;
-}
-
-void Renderer::endOneTimeCommands( VkCommandBuffer cmdBuffer )
-{
-	vkEndCommandBuffer( cmdBuffer );
-
-	VkSubmitInfo submitInfo = {};	
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &cmdBuffer;
-
-	vkQueueSubmit( graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE );
-	vkQueueWaitIdle( graphicsQueue );
-
-	vkFreeCommandBuffers( device.logicalDevice, commandPool, 1, &cmdBuffer );
-}
-
-void Renderer::transitionImageLayout( VkImage image, VkFormat format,
-	VkImageLayout oldLayout, VkImageLayout newLayout )
-{
-	VkCommandBuffer cmdBuffer = beginOneTimeCommands();
-
-	VkImageMemoryBarrier memoryBarrier = {};
-	memoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	memoryBarrier.oldLayout = oldLayout;
-	memoryBarrier.newLayout = newLayout;
-	memoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	memoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	memoryBarrier.image = image;
-	memoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	memoryBarrier.subresourceRange.baseMipLevel = 0;
-	memoryBarrier.subresourceRange.levelCount = 1;
-	memoryBarrier.subresourceRange.baseArrayLayer = 0;
-	memoryBarrier.subresourceRange.layerCount = 1;
-	memoryBarrier.srcAccessMask = 0;
-	memoryBarrier.dstAccessMask = 0;
-
-	VkPipelineStageFlags sourceFlags, destFlags;
-
-	if( oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL )
-	{
-		memoryBarrier.srcAccessMask = 0;
-		memoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-		sourceFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		destFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	}
-	else if( oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL )
-	{
-		memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-		sourceFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		destFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	}
-	else if( oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL )
-	{
-		memoryBarrier.srcAccessMask = 0;
-		memoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-		sourceFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		destFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	}
-	else
-	{
-		WriteToErrorLog( "Failed to create transitional image layout" );
-	}
-
-	vkCmdPipelineBarrier( cmdBuffer,
-		sourceFlags, destFlags,
-		0,
-		0, nullptr,
-		0, nullptr,
-		1, &memoryBarrier );
-
-
-	endOneTimeCommands( cmdBuffer );
 }
 
 VkResult Renderer::createTextureSampler()
@@ -943,8 +850,8 @@ VkResult Renderer::createDepthResources()
 	VKCHECK( CreateImageView( device.logicalDevice, depthImage, 
 		depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, &depthImageView ) );
 
-	transitionImageLayout( depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
-		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
+	TransitionImageLayout( depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, &device, graphicsQueue );
 
 	return VK_SUCCESS;
 }
@@ -983,27 +890,13 @@ void Renderer::loadModel( const std::string& objName )
 	models[objName] = renderModel;
 }
 
-void Renderer::copyBufferToImage( VkBuffer buffer, VkImage image, uint32_t width, uint32_t height )
-{
-	VkCommandBuffer cmdBuffer = beginOneTimeCommands();
-
-	VkBufferImageCopy region = {};
-
-	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	region.imageSubresource.layerCount = 1;
-	region.imageExtent.width = width;
-	region.imageExtent.height = height;
-	region.imageExtent.depth = 1;
-
-	vkCmdCopyBufferToImage( cmdBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		1, &region );
-
-	endOneTimeCommands( cmdBuffer );
-}
-
-
 void Renderer::initDebugOverlays()
 {
+	debugOverlay.display = true;
+	debugOverlay.device = &device;
+	debugOverlay.graphicsQueue = graphicsQueue;
+	debugOverlay.renderPass = renderPass;
+	debugOverlay.init();
 }
 
 void Renderer::init()
@@ -1043,6 +936,7 @@ void Renderer::init()
 	VKCHECK( createDynamicIndexBuffer() );
 	VKCHECK( createTransformBuffer() );
 	VKCHECK( createUniformBuffers() );
+
 	stagingBuffer.map();
 	dynamicIndexBuffer.map();
 	transformBuffer.map();
@@ -1063,6 +957,8 @@ void Renderer::shutdown()
 		vkDestroyImage( device.logicalDevice, it.second.image, nullptr );
 		vkFreeMemory( device.logicalDevice, it.second.memory, nullptr );
 	}
+	
+	debugOverlay.shutdown();
 
 	vkDestroyImageView( device.logicalDevice, depthImageView, nullptr );
 	vkDestroyImage( device.logicalDevice, depthImage, nullptr );
@@ -1072,6 +968,7 @@ void Renderer::shutdown()
 	vkDestroySemaphore( device.logicalDevice, renderFinishedSemaphore, nullptr );
 
 	vkDestroyCommandPool( device.logicalDevice, commandPool, nullptr );
+	vkDestroyCommandPool( device.logicalDevice, device.commandPool, nullptr );
 
 	for( auto& it : frameBuffers )
 	{
@@ -1107,5 +1004,6 @@ void Renderer::shutdown()
 	debugger.shutdown();
 
 	vkDestroySurfaceKHR( vkInstance, surface, nullptr );
+		
 	vkDestroyInstance( vkInstance, nullptr );
 }

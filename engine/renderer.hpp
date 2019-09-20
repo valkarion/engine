@@ -89,8 +89,6 @@ public:
 // command pools 
 	VkCommandPool					commandPool;
 	std::vector<VkCommandBuffer>	commandBuffers;
-	VkCommandBuffer 				beginOneTimeCommands();
-	void							endOneTimeCommands( VkCommandBuffer cmdBuffer );
 	VkResult						createCommandPool();
 	VkResult						createCommandBuffers();
 
@@ -134,13 +132,8 @@ public:
 
 	VkSampler						textureSampler;
 	VkResult						createTextureSampler();
-
-	void							copyBufferToImage( VkBuffer buffer, VkImage image,
-										uint32_t width, uint32_t height );
-
+	
 	void							loadTexture( const std::string& name );
-	void							transitionImageLayout( VkImage image, VkFormat format,
-										VkImageLayout oldLayout, VkImageLayout newLayout );
 
 // depth buffering
 	VkImage							depthImage;
