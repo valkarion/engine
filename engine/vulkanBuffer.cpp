@@ -53,6 +53,17 @@ void VulkanBuffer::unmap()
 	}
 }
 
+void VulkanBuffer::flush()
+{
+	VkMappedMemoryRange range = {};
+	range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+	range.memory = memory;
+	range.size = VK_WHOLE_SIZE;
+	range.offset = 0;
+
+	vkFlushMappedMemoryRanges( device, 1, &range );
+}
+
 void VulkanBuffer::destroy()
 {
 	if ( buffer )

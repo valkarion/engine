@@ -4,6 +4,70 @@
 #include "vulkanPipelineHelpers.hpp"
 #include <algorithm>
 
+bool DebugOverlay::checkBuffers()
+{
+	ImDrawData* drawData = ImGui::GetDrawData();
+
+	VkDeviceSize vSize = drawData->TotalVtxCount * sizeof( ImDrawVert );
+	VkDeviceSize iSize = drawData->TotalIdxCount * sizeof( ImDrawIdx );
+
+	bool buffersRebuilt = false;
+
+	if ( vSize == 0 || iSize == 0 )
+	{
+		return buffersRebuilt;
+	}
+
+	// update buffer sizes if necessary
+	if ( vertexBuffer.buffer == VK_NULL_HANDLE || vertexCount != drawData->TotalVtxCount )
+	{
+		vertexBuffer.unmap();
+		vertexBuffer.destroy();
+		CreateBuffer( vSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, vertexBuffer, *device );
+
+		vertexBuffer.map();
+
+		vertexCount = drawData->TotalVtxCount;
+		buffersRebuilt = true;
+	}
+
+	if ( indexBuffer.buffer == VK_NULL_HANDLE || indexCount != drawData->TotalIdxCount )
+	{
+		indexBuffer.unmap();
+		indexBuffer.destroy();
+		CreateBuffer( iSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, indexBuffer, *device );
+
+		indexBuffer.map();
+
+		indexCount = drawData->TotalIdxCount;
+		buffersRebuilt = true;
+	}
+
+	// upload data to buffer
+	vertexBuffer.offset = 0;
+	indexBuffer.offset = 0;
+
+	for ( int i = 0; i < drawData->CmdListsCount; i++ )
+	{
+		ImDrawList* commands = drawData->CmdLists[i];
+		size_t vAllocSize = commands->VtxBuffer.Size * sizeof( ImDrawVert );
+		size_t iAllocSize = commands->IdxBuffer.Size * sizeof( ImDrawIdx );
+
+		ImDrawVert* vData = (ImDrawVert*)vertexBuffer.allocate( vAllocSize );
+		ImDrawIdx* iData = (ImDrawIdx*)indexBuffer.allocate( iAllocSize );
+
+		memcpy( vData, commands->VtxBuffer.Data, vAllocSize );
+		memcpy( iData, commands->IdxBuffer.Data, iAllocSize );
+	}
+
+	vertexBuffer.flush();
+	indexBuffer.flush();
+
+	return !buffersRebuilt;
+}
+
 void DebugOverlay::createFontResources()
 {
 	ImGui::CreateContext();
@@ -228,13 +292,8 @@ void DebugOverlay::createPipeline()
 	vkDestroyShaderModule( device->logicalDevice, fShader.module, nullptr );
 }
 
-void DebugOverlay::update( VkCommandBuffer commandBuffer )
+void DebugOverlay::draw( VkCommandBuffer commandBuffer )
 {
-	if ( !display )
-	{
-		return;
-	}
-
 	ImDrawData* drawData = ImGui::GetDrawData();
 	if ( drawData == nullptr || drawData->CmdListsCount == 0 )
 	{
@@ -250,17 +309,18 @@ void DebugOverlay::update( VkCommandBuffer commandBuffer )
 	VkRect2D scissor = {};
 	scissor.extent = { (uint32_t)viewport.width, (uint32_t)viewport.height };
 
+	vkCmdBindDescriptorSets( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		graphicsPipelineLayout, 0, 1, &descriptorSet, 0, nullptr );
+	vkCmdBindPipeline( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		graphicsPipeline );
+
 	vkCmdSetScissor( commandBuffer, 0, 1, &scissor );
 	vkCmdSetViewport( commandBuffer, 0, 1, &viewport );
 
-	vkCmdBindPipeline( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		graphicsPipeline );
-	vkCmdBindDescriptorSets( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		graphicsPipelineLayout, 0, 1, &descriptorSet, 0, nullptr );
 
 	pushConstants.scale = glm::vec2( 1.f, 1.f );
 	pushConstants.translate = glm::vec3( -1.f );
-	vkCmdPushConstants( commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS,
+	vkCmdPushConstants( commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 		0, sizeof( OverlayConstants ), &pushConstants );
 
 	int32_t vertexOffset = 0;
@@ -268,11 +328,11 @@ void DebugOverlay::update( VkCommandBuffer commandBuffer )
 
 	VkDeviceSize offset = 0;
 	vkCmdBindVertexBuffers( commandBuffer, 0, 1, &vertexBuffer.buffer, &offset );
-	vkCmdBindIndexBuffer( commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
+	vkCmdBindIndexBuffer( commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16 );
 
 	for ( size_t i = 0; i < drawData->CmdListsCount; i++ )
 	{
-		ImDrawList* commands = drawData->CmdLists[i];		
+		ImDrawList* commands = drawData->CmdLists[i];
 		for ( size_t j = 0; j < commands->CmdBuffer.Size; j++ )
 		{
 			ImDrawCmd* cmd = &commands->CmdBuffer[i];
@@ -294,6 +354,33 @@ void DebugOverlay::update( VkCommandBuffer commandBuffer )
 	}
 }
 
+void DebugOverlay::update( VkCommandBuffer commandBuffer )
+{
+	if ( !display )
+	{
+		return;
+	}
+
+	ImGui::GetIO().DisplaySize = ImVec2( 1280, 800 );
+
+	ImGui::NewFrame();
+	ImGui::SetNextWindowSize( ImVec2( 200, 200 ), ImGuiCond_FirstUseEver );
+	ImGui::Begin( "Fuck my life." );
+	ImGui::Text( "Please work." );
+	ImGui::End();
+
+	ImGui::SetNextWindowPos( ImVec2( 10, 10 ), ImGuiCond_FirstUseEver );
+	ImGui::ShowDemoWindow();
+
+	ImGui::Render();
+	
+	if ( checkBuffers() )
+	{
+		draw( commandBuffer );
+	}
+	
+}
+
 void DebugOverlay::init()
 {
 	createFontResources();
@@ -302,6 +389,9 @@ void DebugOverlay::init()
 
 void DebugOverlay::shutdown()
 {
+	vertexBuffer.destroy();
+	indexBuffer.destroy();
+
 	vkDestroyDescriptorSetLayout( device->logicalDevice, descriptorSetLayout, nullptr );
 	vkDestroyDescriptorPool( device->logicalDevice, descriptorPool, nullptr );
 	vkDestroySampler( device->logicalDevice, fontSampler, nullptr );

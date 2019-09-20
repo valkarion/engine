@@ -22,6 +22,7 @@ public:
 	void*			allocate( size_t memSize );
 	VkResult		map();
 	void			unmap();
+	void			flush();
 	void			destroy();
 };
 
