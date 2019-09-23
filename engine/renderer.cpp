@@ -88,7 +88,7 @@ VkResult Renderer::createSurface()
 }
 
 VkResult Renderer::createGraphicsPipeline()
-{		
+{
 	VkPipelineShaderStageCreateInfo vStageCreateInfo =
 		CreatePipelineShaderStageCreateInfo(
 			"shaders\\compiled\\default.vspv",
@@ -102,9 +102,9 @@ VkResult Renderer::createGraphicsPipeline()
 	VkPipelineShaderStageCreateInfo shaderStages[] = {
 		vStageCreateInfo, fStageCreateInfo
 	};
-	
+
 	// what is the format of the vertex input data? 
-	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};	
+	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
 
 	std::vector<VkVertexInputAttributeDescription> attributes;
 	std::vector<VkVertexInputBindingDescription> bindings;
@@ -133,26 +133,31 @@ VkResult Renderer::createGraphicsPipeline()
 	vertexInputCreateInfo.pVertexBindingDescriptions = bindings.data();
 
 	// the kind of geometry will be drawn from the vertecies
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = 
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo =
 		CreatePipelineInputAssemblyStateCreateInfo( VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST );
 
 	VkViewport viewport;
 	VkRect2D scissor;
-	VkPipelineViewportStateCreateInfo viewportCreateInfo = 
+	VkPipelineViewportStateCreateInfo viewportCreateInfo =
 		CreatePipelineViewportStateCreateInfo( viewport, scissor,
 			swapchain.extent.width, swapchain.extent.height );
 
-	VkPipelineRasterizationStateCreateInfo rasterCreateInfo = 
-		CreatePipelineRasterizationStateCreateInfo( VK_POLYGON_MODE_FILL, 
+	VkPipelineRasterizationStateCreateInfo rasterCreateInfo =
+		CreatePipelineRasterizationStateCreateInfo( VK_POLYGON_MODE_FILL,
 			VK_CULL_MODE_BACK_BIT );
 
 	VkPipelineMultisampleStateCreateInfo multisampleCreateInfo =
 		CreatePipelineMultisampleStateCreateInfo();
 
 	VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo =
-		CreatePipelineDepthStencilStateCreateInfo();
+		CreatePipelineDepthStencilStateCreateInfo( VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS );
 
-	VkPipelineColorBlendAttachmentState colorBlendAttachment;
+	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+	colorBlendAttachment.colorWriteMask =
+		VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+		VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	colorBlendAttachment.blendEnable = VK_FALSE;
+
 	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo =
 		CreatePipelineColorBlendStateCreateInfo( colorBlendAttachment );
 	
@@ -248,7 +253,6 @@ VkResult Renderer::createRenderPass()
 	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
 		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 	
-
 	std::array<VkAttachmentDescription, 2> attachmentDescriptions = {
 		colorAttachment, depthAttachment };
 
@@ -346,7 +350,7 @@ void Renderer::beginDraw()
 	renderPassBeginInfo.renderArea.extent = swapchain.extent;
 	renderPassBeginInfo.renderArea.offset = VkOffset2D{ 0, 0 };
 
-	VkClearValue colorClearValue = { 0.0f, 0.0f, 0.0f, 0.0f };
+	VkClearValue colorClearValue = { 0.0f, 0.0f, 0.0f, 1.0f };
 	VkClearValue depthClearValue = { 1.f, 0.f };
 
 	std::array<VkClearValue, 2> clearValues = {
@@ -469,8 +473,6 @@ void Renderer::draw()
 			vkCmdDrawIndexed( cmdBuf, (uint32_t)mesh->vertecies.size(), 1, 0, 0, 0 );
 		}
 	}
-
-	debugOverlay.update( cmdBuf );
 }
 
 void Renderer::endDraw()
@@ -524,6 +526,7 @@ void Renderer::drawFrame()
 {
 	beginDraw();
 	draw();
+	debugOverlay.update( commandBuffers[currentImageIndex] );
 	endDraw();
 }
 

@@ -61,7 +61,6 @@ VkResult CreateImage( CreateImageProperties& props, VkImage& image,
 	return VK_SUCCESS;
 }
 
-
 void TransitionImageLayout( VkImage image, VkFormat format,
 	VkImageLayout oldLayout, VkImageLayout newLayout, VulkanDevice* device, VkQueue queue )
 {
@@ -120,10 +119,8 @@ void TransitionImageLayout( VkImage image, VkFormat format,
 		0, nullptr,
 		1, &memoryBarrier );
 
-
 	device->destroyOneTimeCommandBuffer( cmdBuffer, queue );
 }
-
 
 void CopyBufferToImage( VkBuffer buffer, VkImage image,
 	uint32_t width, uint32_t height, VulkanDevice* device, VkQueue queue )

@@ -4,6 +4,8 @@
 #include "vulkanPipelineHelpers.hpp"
 #include <algorithm>
 
+#include "renderer.hpp"
+
 bool DebugOverlay::checkBuffers()
 {
 	ImDrawData* drawData = ImGui::GetDrawData();
@@ -26,6 +28,7 @@ bool DebugOverlay::checkBuffers()
 		CreateBuffer( vSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, vertexBuffer, *device );
 
+		vertexBuffer.unmap();
 		vertexBuffer.map();
 
 		vertexCount = drawData->TotalVtxCount;
@@ -70,9 +73,6 @@ bool DebugOverlay::checkBuffers()
 
 void DebugOverlay::createFontResources()
 {
-	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
-
 	ImGuiIO& io = ImGui::GetIO();
 
 	// setup font 
@@ -81,7 +81,7 @@ void DebugOverlay::createFontResources()
 	int texHeight;
 	io.Fonts->AddFontFromFileTTF( "core\\Roboto-Medium.ttf", 16.f );
 	io.Fonts->GetTexDataAsRGBA32( &fData, &texWidth, &texHeight );
-	VkDeviceSize fSize = texWidth * texHeight * 4; // 4 - RGBA
+	VkDeviceSize fSize = texWidth * texHeight * 4 * sizeof( char );
 
 	CreateImageProperties imageProps = {};
 	imageProps.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -115,6 +115,9 @@ void DebugOverlay::createFontResources()
 	CopyBufferToImage( stagingBuffer.buffer, fontTexture.image, texWidth,
 		texHeight, device, graphicsQueue );
 
+	TransitionImageLayout( fontTexture.image, imageProps.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, device, graphicsQueue );
+
 	stagingBuffer.destroy();
 
 	// create sampler to read from image 
@@ -126,7 +129,8 @@ void DebugOverlay::createFontResources()
 	sci.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sci.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sci.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sci.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	sci.maxAnisotropy = 1.f;
+	sci.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
 	VKCHECK( vkCreateSampler( device->logicalDevice, &sci, nullptr, &fontSampler ) );
 
@@ -206,12 +210,15 @@ void DebugOverlay::createPipeline()
 
 	VkPipelineColorBlendAttachmentState cbas = {};
 	cbas.blendEnable = VK_TRUE;
-	cbas.alphaBlendOp = VK_BLEND_OP_ADD;
-	cbas.colorBlendOp = VK_BLEND_OP_ADD;
+
 	cbas.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
 		VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	
+	cbas.colorBlendOp = VK_BLEND_OP_ADD;
 	cbas.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 	cbas.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+	cbas.alphaBlendOp = VK_BLEND_OP_ADD;
 	cbas.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	cbas.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 
@@ -219,7 +226,7 @@ void DebugOverlay::createPipeline()
 		CreatePipelineColorBlendStateCreateInfo( cbas );
 
 	VkPipelineDepthStencilStateCreateInfo depthStencilState =
-		CreatePipelineDepthStencilStateCreateInfo();
+		CreatePipelineDepthStencilStateCreateInfo( VK_FALSE, VK_FALSE, VK_COMPARE_OP_LESS_OR_EQUAL );
 
 	VkPipelineMultisampleStateCreateInfo multisampleState =
 		CreatePipelineMultisampleStateCreateInfo();
@@ -284,6 +291,7 @@ void DebugOverlay::createPipeline()
 	gpci.subpass = 0;
 	gpci.layout = graphicsPipelineLayout;
 	gpci.renderPass = renderPass;
+	gpci.basePipelineIndex = -1;
 
 	VKCHECK( vkCreateGraphicsPipelines( device->logicalDevice, VK_NULL_HANDLE, 1,
 		&gpci, nullptr, &graphicsPipeline ) );
@@ -317,8 +325,8 @@ void DebugOverlay::draw( VkCommandBuffer commandBuffer )
 	vkCmdSetScissor( commandBuffer, 0, 1, &scissor );
 	vkCmdSetViewport( commandBuffer, 0, 1, &viewport );
 
-
-	pushConstants.scale = glm::vec2( 1.f, 1.f );
+	ImGuiIO& io = ImGui::GetIO();
+	pushConstants.scale = glm::vec2( 2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y );
 	pushConstants.translate = glm::vec3( -1.f );
 	vkCmdPushConstants( commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 		0, sizeof( OverlayConstants ), &pushConstants );
@@ -326,16 +334,21 @@ void DebugOverlay::draw( VkCommandBuffer commandBuffer )
 	int32_t vertexOffset = 0;
 	int32_t indexOffset = 0;
 
-	VkDeviceSize offset = 0;
-	vkCmdBindVertexBuffers( commandBuffer, 0, 1, &vertexBuffer.buffer, &offset );
+	if ( drawData->CmdListsCount == 0 )
+	{
+		return;
+	}
+
+	VkDeviceSize offset[1] = { 0 };
+	vkCmdBindVertexBuffers( commandBuffer, 0, 1, &vertexBuffer.buffer, offset );
 	vkCmdBindIndexBuffer( commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16 );
 
 	for ( size_t i = 0; i < drawData->CmdListsCount; i++ )
 	{
 		ImDrawList* commands = drawData->CmdLists[i];
-		for ( size_t j = 0; j < commands->CmdBuffer.Size; j++ )
+		for ( int32_t j = 0; j < commands->CmdBuffer.Size; j++ )
 		{
-			ImDrawCmd* cmd = &commands->CmdBuffer[i];
+			ImDrawCmd* cmd = &commands->CmdBuffer[j];
 
 			VkRect2D scissor;
 			scissor.offset.x = std::max( int32_t( cmd->ClipRect.x ), 0 );
@@ -361,34 +374,38 @@ void DebugOverlay::update( VkCommandBuffer commandBuffer )
 		return;
 	}
 
-	ImGui::GetIO().DisplaySize = ImVec2( 1280, 800 );
-
 	ImGui::NewFrame();
-	ImGui::SetNextWindowSize( ImVec2( 200, 200 ), ImGuiCond_FirstUseEver );
-	ImGui::Begin( "Fuck my life." );
-	ImGui::Text( "Please work." );
+	
+	ImGui::Begin( "Debug Overlay", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings );
+	ImGui::Text( "%d", Renderer::instance()->renderedFrameCount );
 	ImGui::End();
 
-	ImGui::SetNextWindowPos( ImVec2( 10, 10 ), ImGuiCond_FirstUseEver );
-	ImGui::ShowDemoWindow();
-
 	ImGui::Render();
-	
+
+	// Render to generate draw buffers
+	ImGui::Render();
+
 	if ( checkBuffers() )
 	{
 		draw( commandBuffer );
-	}
-	
+	}	
 }
 
 void DebugOverlay::init()
 {
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::GetIO().DisplaySize = ImVec2( window_width.floatValue, window_height.floatValue );
+	ImGui::GetIO().DisplayFramebufferScale = ImVec2( 1.f, 1.f );
+
 	createFontResources();
 	createPipeline();
 }
 
 void DebugOverlay::shutdown()
 {
+	ImGui::DestroyContext();
+
 	vertexBuffer.destroy();
 	indexBuffer.destroy();
 

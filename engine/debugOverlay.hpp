@@ -23,20 +23,20 @@ class DebugOverlay
 public:
 // dependencies 	
 	VulkanDevice*			device;
-	VkQueue					graphicsQueue;
-	VkRenderPass			renderPass;
+	VkQueue					graphicsQueue			= VK_NULL_HANDLE;
+	VkRenderPass			renderPass				= VK_NULL_HANDLE;
 
 	bool					display;
 
 	OverlayConstants		pushConstants;
-	VkPipelineLayout		graphicsPipelineLayout;
-	VkPipeline				graphicsPipeline;
+	VkPipelineLayout		graphicsPipelineLayout	= VK_NULL_HANDLE;
+	VkPipeline				graphicsPipeline		= VK_NULL_HANDLE;
 
 	VulkanTexture			fontTexture;
-	VkSampler				fontSampler;
-	VkDescriptorSet			descriptorSet;
-	VkDescriptorSetLayout	descriptorSetLayout;
-	VkDescriptorPool		descriptorPool;
+	VkSampler				fontSampler				= VK_NULL_HANDLE;
+	VkDescriptorSet			descriptorSet			= VK_NULL_HANDLE;
+	VkDescriptorSetLayout	descriptorSetLayout		= VK_NULL_HANDLE;
+	VkDescriptorPool		descriptorPool			= VK_NULL_HANDLE;
 
 	VulkanBuffer			indexBuffer;
 	VulkanBuffer			vertexBuffer;

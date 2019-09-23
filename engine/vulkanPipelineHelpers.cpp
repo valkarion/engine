@@ -113,28 +113,25 @@ VkPipelineMultisampleStateCreateInfo CreatePipelineMultisampleStateCreateInfo()
 	return msc;
 }
 
-VkPipelineDepthStencilStateCreateInfo CreatePipelineDepthStencilStateCreateInfo()
+VkPipelineDepthStencilStateCreateInfo CreatePipelineDepthStencilStateCreateInfo(
+	VkBool32 depthTestEnable,
+	VkBool32 depthWriteEnable,
+	VkCompareOp depthCompareOp )
 {
 	VkPipelineDepthStencilStateCreateInfo dsci = {};
 	
 	dsci.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	dsci.depthTestEnable = VK_TRUE;
-	dsci.depthWriteEnable = VK_TRUE;
-	dsci.depthCompareOp = VK_COMPARE_OP_LESS;
-	dsci.depthBoundsTestEnable = VK_FALSE;
-	dsci.stencilTestEnable = VK_FALSE;
+	dsci.depthTestEnable = depthTestEnable;
+	dsci.depthWriteEnable = depthWriteEnable;
+	dsci.depthCompareOp = depthCompareOp;
+	dsci.front = dsci.back;
+	dsci.back.compareOp = VK_COMPARE_OP_ALWAYS;
 
 	return dsci;
 }
 
 VkPipelineColorBlendStateCreateInfo CreatePipelineColorBlendStateCreateInfo( VkPipelineColorBlendAttachmentState& attachmentState )
 {
-	attachmentState = {};
-	attachmentState.colorWriteMask =
-		VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-		VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	attachmentState.blendEnable = VK_FALSE;
-
 	VkPipelineColorBlendStateCreateInfo cbsci = {};
 
 	cbsci.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

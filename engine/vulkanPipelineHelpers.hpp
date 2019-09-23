@@ -34,7 +34,7 @@ VkPipelineRasterizationStateCreateInfo CreatePipelineRasterizationStateCreateInf
 VkPipelineMultisampleStateCreateInfo CreatePipelineMultisampleStateCreateInfo();
 
 // depth stencil defines how to discard fragments that are above or below other fragments
-VkPipelineDepthStencilStateCreateInfo CreatePipelineDepthStencilStateCreateInfo();
+VkPipelineDepthStencilStateCreateInfo CreatePipelineDepthStencilStateCreateInfo( VkBool32 depthTestEnable, VkBool32 depthWriteEnable, VkCompareOp depthCompareOp );
 
 // What color combinations of the base RGBA colors should be displayed? This function will create a default RGBA display
 VkPipelineColorBlendStateCreateInfo CreatePipelineColorBlendStateCreateInfo( VkPipelineColorBlendAttachmentState& attachmentState );
