@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "libs/sol.hpp"
+#include "utils.hpp"
 
 #include <memory>
 #include <array>
@@ -14,10 +15,11 @@ struct GLFWwindow;
 
 enum class enu_KEY_STATE
 {
-	not_pressed,
-	pressed,
-	held,
-	released
+	not_pressed	= 0,
+	
+	pressed		= 1,
+	held		= 2,
+	released	= 4, 
 };
 
 enum class enu_MOUSE_STATE
@@ -38,7 +40,14 @@ enum class enu_MOUSE_STATE
 struct InputKeyState
 {
 	int				key;
-	enu_KEY_STATE	state;
+	enu_KEY_STATE	state;	
+};
+
+struct KeyboardFunctionArgs
+{
+	std::string function	= UNSET_S;
+// when to use the function?
+	uint32_t	fireFlags	= 0;
 };
 
 class InputSystem
@@ -49,7 +58,7 @@ class InputSystem
 	std::map<std::string, sol::function> inputFunctions;
 
 // keys and their associated function's names 
-	std::array<std::string, GLFW_KEY_LAST> mappedKeyboardFunction;
+	std::array<KeyboardFunctionArgs, GLFW_KEY_LAST> mappedKeyboardFunction;
 
 // mouse state function's 
 	std::array<std::string, (size_t)enu_MOUSE_STATE::size> mappedMouseFunctions;

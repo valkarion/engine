@@ -381,6 +381,7 @@ void DebugOverlay::update( VkCommandBuffer commandBuffer )
 	Camera* cam				= Camera::instance();
 	PlayerController* pc	= PlayerController::instance();
 	TransformComponent* tc	= EntityManager::instance()->get<TransformComponent>( pc->getPlayerId() );
+	RigidbodyComponent* rc  = EntityManager::instance()->get<RigidbodyComponent>( pc->getPlayerId() );
 
 	ImGui::NewFrame();
 	
@@ -398,6 +399,9 @@ void DebugOverlay::update( VkCommandBuffer commandBuffer )
 	
 	ImGui::Text( "Player facing direction:\n x:\t%f\n y:\t%f\n z:\t%f",
 		tc->facingDirection.x, tc->facingDirection.y, tc->facingDirection.z );
+	
+	ImGui::Text( "Clipping: %s", ( rc->collidable ) ? "on" : "off" );	
+	ImGui::Text( "Gravity:  %s", ( rc->affectedByGravity ) ? "affected" : "unaffected" );
 
 	ImGui::End();
 

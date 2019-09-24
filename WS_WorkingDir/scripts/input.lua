@@ -19,22 +19,23 @@ data:extend("input", {
 		GetPlayerController():jump()
 	end, 
 	
-	noclip = function () 
+	toggle_clipping = function () 
 		local id = GetPlayerController().playerID
-		GetRigidbodyComponent(id).collidable = false 
+		GetRigidbodyComponent(id).collidable = not GetRigidbodyComponent(id).collidable
 	end,
 	
-	nogravity = function () 
+	toggle_gravity = function () 
 		local id = GetPlayerController().playerID
-		GetRigidbodyComponent(id).affectedByGravity = false 
+		GetRigidbodyComponent(id).affectedByGravity = not GetRigidbodyComponent(id).affectedByGravity
 	end, 
 	
 	toggle_debug_overlay = function () 
 		ToggleDebugOverlay()
 	end, 
 	
-	mouse_movement = function ( delta ) 
-		DebugPrint("x: " .. delta.x .. "y: " .. delta.y )
+	mouse_movement = function ( delta )
+		GetCamera():turn( delta )
+		GetPlayerController():turn( delta ) 
 	end 
 })
 
@@ -50,9 +51,9 @@ data:extend("keymap", {
 	{"m_move", 	"mouse_movement"},
 	
 -- meta 
-	{"f6", 		"noclip"},
-	{"f7", 		"nogravity"},
+	{"f6", 		"toggle_clipping",		"onRelease"},
+	{"f7", 		"toggle_gravity", 		"onRelease"},
 	
 -- debug 
-	{"f10", 	"toggle_debug_overlay"}
+	{"f10", 	"toggle_debug_overlay", "onRelease"}
 })

@@ -15,49 +15,32 @@ const float moveSpeed = 1.f;
 
 void PlayerController::setPosition( glm::vec3 position )
 {
-	if ( attachedEntity == UNSET_ID )
+	if ( transform )
 	{
-		return;
-	}
-
-	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
-	if ( tc )
-	{
-		tc->position = position;
+		transform->position = position;
 	}
 }
 
 void PlayerController::setFacingDirection( glm::vec3 direction )
 {
-	if ( attachedEntity == UNSET_ID )
+	if ( transform )
 	{
-		return;
-	}
-
-	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
-	if ( tc )
-	{
-		tc->facingDirection = direction;
+		transform->facingDirection = direction;
 	}
 }
 
 void PlayerController::displace( glm::vec3 movement )
 {
-	if ( attachedEntity == UNSET_ID )
+	if ( transform )
 	{
-		return;
-	}
-
-	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
-	if ( tc )
-	{
-		tc->position += movement;
+		transform->position += movement;
 	}
 }
 
 void PlayerController::setEntity( const E_ID id )
 {
 	attachedEntity = id;
+	transform = EntityManager::instance()->get<TransformComponent>( id );
 }
 
 void PlayerController::forward()
@@ -80,37 +63,34 @@ void PlayerController::backward()
 
 void PlayerController::strafeLeft()
 {
-	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
-	RigidbodyComponent* rc = EntityManager::instance()->get<RigidbodyComponent>( attachedEntity );
-	if ( tc != nullptr && rc != nullptr )
+	if ( transform )
 	{
-		glm::vec3 strafe = glm::cross( tc->facingDirection, 
+		glm::vec3 strafe = glm::cross( transform->facingDirection,
 			Camera::instance()->up );
 
-		tc->position -= glm::normalize( strafe ) * moveSpeed;
+		transform->position -= glm::normalize( strafe ) * moveSpeed;
 	}
 }
 
 void PlayerController::strafeRight()
-{
-	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
-	RigidbodyComponent* rc = EntityManager::instance()->get<RigidbodyComponent>( attachedEntity );
-	if ( tc != nullptr && rc != nullptr )
+{	
+	if ( transform )
 	{
-		glm::vec3 strafe = glm::cross( tc->facingDirection,
+		glm::vec3 strafe = glm::cross( transform->facingDirection,
 			Camera::instance()->up );
 
-		tc->position += glm::normalize( strafe ) * moveSpeed;
+		transform->position += glm::normalize( strafe ) * moveSpeed;
 	}
+}
+
+void PlayerController::turn( glm::vec2 delta )
+{
+
 }
 
 void PlayerController::jump()
 {
-	RigidbodyComponent* rc = EntityManager::instance()->get<RigidbodyComponent>( attachedEntity );
-	if ( rc )
-	{
-		//rc->velocity += glm::vec3( 0.f, 10.f, 0.f );
-	}
+	
 }
 
 E_ID PlayerController::getPlayerId()

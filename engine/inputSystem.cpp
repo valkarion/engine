@@ -2,7 +2,6 @@
 #include "application.hpp"
 #include "camera.hpp"
 #include "loggers.hpp"
-#include "utils.hpp"
 #include <GLFW/glfw3.h>
 
 std::unique_ptr<InputSystem> InputSystem::_instance = std::make_unique<InputSystem>();
@@ -38,21 +37,14 @@ void cursor_callback( GLFWwindow* win, double xpos, double ypos )
 	is->mousePrev = is->mouseCurrent;
 	is->mouseCurrent = glm::vec2( (float)xpos, (float)ypos );
 
-	if( is->mouseCurrent != is->mousePrev )
+	if ( glm::distance( is->mousePrev, is->mouseCurrent ) > 1.f )
 	{
-		float deltax = is->mouseCurrent.x - is->mousePrev.x;
-		float deltay = is->mouseCurrent.y - is->mousePrev.y;	
-
-		Camera::instance()->turn( glm::vec2( deltax, deltay ) );
-
 		is->setMouseState( enu_MOUSE_STATE::moved, true );
 	}
 }
 
 void InputSystem::init( GLFWwindow* window )
 {	
-	mappedKeyboardFunction.fill( UNSET_S );
-
 	glfwSetKeyCallback( window, key_callback );
 	glfwSetCursorPosCallback( window, cursor_callback );
 
@@ -87,13 +79,23 @@ void InputSystem::update()
 		switch ( keyStates[i] )
 		{
 			case enu_KEY_STATE::pressed:
-				inputFunctions[mappedKeyboardFunction[i]]();
+				if ( mappedKeyboardFunction[i].fireFlags & (uint32_t)enu_KEY_STATE::pressed )
+				{
+					inputFunctions[mappedKeyboardFunction[i].function]();					
+				}
 				keyStates[i] = enu_KEY_STATE::held;
 				break;
 			case enu_KEY_STATE::held:
-				inputFunctions[mappedKeyboardFunction[i]]();
+				if ( mappedKeyboardFunction[i].fireFlags & (uint32_t)enu_KEY_STATE::held )
+				{
+					inputFunctions[mappedKeyboardFunction[i].function]();
+				}
 				break;
 			case enu_KEY_STATE::released:
+				if ( mappedKeyboardFunction[i].fireFlags & (uint32_t)enu_KEY_STATE::released )
+				{
+					inputFunctions[mappedKeyboardFunction[i].function]();
+				}
 				keyStates[i] = enu_KEY_STATE::not_pressed;
 				break;
 			default: break;
@@ -105,7 +107,7 @@ void InputSystem::update()
 	{
 		float deltax = mouseCurrent.x - mousePrev.x;
 		float deltay = mouseCurrent.y - mousePrev.y;
-		glm::vec3 delta( deltax, deltay, 0.f );
+		glm::vec2 delta( deltax, deltay );
 
 		inputFunctions[mappedMouseFunctions[(size_t)enu_MOUSE_STATE::moved]]( delta );
 		mouseState[(size_t)enu_MOUSE_STATE::moved] = 0;
@@ -114,7 +116,7 @@ void InputSystem::update()
 
 bool InputSystem::hasCommandBound( const uint32_t keyCode )
 {
-	return mappedKeyboardFunction[keyCode] != UNSET_S;
+	return mappedKeyboardFunction[keyCode].function != UNSET_S;
 }
 
 int StringToGLFWKeyCode( const std::string& key )
@@ -222,13 +224,39 @@ void InputSystem::setupInputCommands( sol::table& keymapTable )
 		sol::table row = input.second;
 
 		std::string key = row[1];
-		std::string fnName = row[2];
+		std::string fnName = row[2];		
+
+	// only fire the event on a special occasion
+		KeyboardFunctionArgs args;
+		args.function = fnName;
+
+		if ( row[3].valid() )
+		{
+			std::string state = row[3];
+
+			if ( state == "onRelease" )
+			{
+				args.fireFlags = (uint32_t)enu_KEY_STATE::released;
+			}
+			else if ( state == "onHeld" )
+			{
+				args.fireFlags = (uint32_t)enu_KEY_STATE::held;
+			}
+			else
+			{
+				args.fireFlags = (uint32_t)enu_KEY_STATE::pressed;
+			}
+		} 
+		else
+		{
+			args.fireFlags = 7;
+		}
 
 	// is it a keyboard function? 
 		int keyCode = StringToGLFWKeyCode( key );
 		if ( keyCode != GLFW_KEY_UNKNOWN )
 		{
-			mappedKeyboardFunction[keyCode] = fnName;
+			mappedKeyboardFunction[keyCode] = args;
 			continue;
 		}
 

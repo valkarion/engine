@@ -3,6 +3,8 @@
 #include "utils.hpp"
 #include "entityManager.hpp"
 #include "components.hpp"
+#include "playerController.hpp"
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -30,8 +32,14 @@ void Camera::turn( glm::vec2 delta )
 	glm::vec3 strafe	= glm::cross( direction, up );
 	glm::mat4 rotation	= glm::mat4( glm::rotate( -delta.x * sensitivity, up ) *
 		glm::rotate( -delta.y * sensitivity, strafe ) );
-
-	direction = glm::mat3( rotation ) * direction;
+	
+	glm::vec3 new_direction = glm::mat3( rotation ) * direction;
+	
+	// check if the camera overturns when looking up or down 
+	if ( new_direction.z * direction.z > 0 )
+	{
+		direction = new_direction;
+	}
 
 	up = glm::cross( strafe, direction );
 }
@@ -66,7 +74,8 @@ void Camera::update()
 		if ( tc )
 		{
 			position = tc->position;
-			tc->facingDirection = direction;
+			// direction = tc->facingDirection;
+			PlayerController::instance()->setFacingDirection( direction );
 		}
 	}
 }
