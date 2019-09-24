@@ -32,14 +32,15 @@ void Camera::turn( glm::vec2 delta )
 	glm::vec3 strafe	= glm::cross( direction, up );
 	glm::mat4 rotation	= glm::mat4( glm::rotate( -delta.x * sensitivity, up ) *
 		glm::rotate( -delta.y * sensitivity, strafe ) );
-	
-	glm::vec3 new_direction = glm::mat3( rotation ) * direction;
-	
+		
 	// check if the camera overturns when looking up or down 
-	if ( new_direction.z * direction.z > 0 )
-	{
-		direction = new_direction;
-	}
+	// glm::vec3 new_direction = glm::mat3( rotation ) * direction;
+	// if ( new_direction.z * direction.z > 0 )
+	// {
+	// 	direction = new_direction;
+	// }
+
+	direction = glm::mat3( rotation ) * direction;
 
 	up = glm::cross( strafe, direction );
 }
@@ -74,7 +75,6 @@ void Camera::update()
 		if ( tc )
 		{
 			position = tc->position;
-			// direction = tc->facingDirection;
 			PlayerController::instance()->setFacingDirection( direction );
 		}
 	}

@@ -313,8 +313,8 @@ void DebugOverlay::draw( VkCommandBuffer commandBuffer )
 	}
 
 	VkViewport viewport = {};
-	viewport.width = window_width.intValue;
-	viewport.height = window_height.intValue;
+	viewport.width = window_width.floatValue;
+	viewport.height = window_height.floatValue;
 	viewport.minDepth = 0.f;
 	viewport.maxDepth = 1.f;
 

@@ -25,6 +25,10 @@ public:
 	glm::vec3 rotation;
 	glm::vec3 scale;
 	glm::vec3 facingDirection;
+	   
+// these are frame-by-frame forces that the physics system
+// will handle and null after use 
+	glm::vec3 impulseForces;
 
 	TransformComponent();
 	~TransformComponent();

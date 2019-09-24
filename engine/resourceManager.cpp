@@ -67,7 +67,7 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 		{
 			int vert = shape.mesh.num_face_vertices[fv];
 
-			glm::vec4 faceVertexIndecies = { -1, -1, -1, -1 };
+			MeshFace faceVertexIndecies = { -1, -1, -1 };
 			for ( size_t v = 0; v < vert; v++ )
 			{
 				tinyobj::index_t idx = shape.mesh.indices[indexOffset + v];
@@ -99,8 +99,6 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 
 				mesh.vertecies.push_back( vertex );
 				mesh.indicies.push_back( (uint32_t)mesh.indicies.size() );
-				mesh.trueIndecies.push_back( (uint32_t)idx.vertex_index );
-
 // compiler throws a warning about conversion to glm's weird type casting, but it's okay here.
 #pragma warning( push )
 #pragma warning( disable: 4244 4267 )
@@ -109,9 +107,19 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 #pragma warning( pop )
 			}
 
-			mesh.faces.push_back( faceVertexIndecies );
-			
+			mesh.faces.push_back( faceVertexIndecies ); 
+
 			indexOffset += vert;
+		}
+
+		for ( int i = 0; i < attribute.vertices.size(); i += 3 )
+		{			
+			glm::vec3 v;
+			v.x = attribute.vertices[i];
+			v.y = attribute.vertices[i + 1];
+			v.z = attribute.vertices[i + 2];
+
+			mesh.points.push_back( v );
 		}
 		
 		if ( !materials.empty() )

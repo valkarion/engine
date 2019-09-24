@@ -11,14 +11,13 @@ local tc 		= AddTransformComponent( player )
 local rbc 		= AddRigidbodyComponent( player )
 local mc		= AddMeshComponent( player ) 
 mc.meshName 	= "nullmesh"
-tc.scale		= vec3:new(5.0, 5.0, 5.0) 
 
 -- Setup Controller 
 GetPlayerController():setEntity( player ) 
 GetPlayerController():setFacingDirection( vec3:new( 0, 0, 1 ) )
 GetCamera():attachEntity( player )
 
-local test_scene = false 
+local test_scene = true 
 
 if test_scene then 
 	SetActiveScene("test_scene")

@@ -25,7 +25,8 @@ void PlayerController::setFacingDirection( glm::vec3 direction )
 {
 	if ( transform )
 	{
-		transform->facingDirection = direction;
+		transform->facingDirection = glm::vec3( direction.x, 0.f, direction.z );
+		transform->rotation = direction;
 	}
 }
 
@@ -48,7 +49,7 @@ void PlayerController::forward()
 	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
 	if ( tc )
 	{
-		tc->position += tc->facingDirection * moveSpeed;
+		tc->impulseForces += tc->facingDirection * moveSpeed;
 	}
 }
 
@@ -57,7 +58,7 @@ void PlayerController::backward()
 	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
 	if ( tc )
 	{
-		tc->position -= tc->facingDirection * moveSpeed;
+		tc->impulseForces -= tc->facingDirection * moveSpeed;
 	}
 }
 
@@ -68,7 +69,7 @@ void PlayerController::strafeLeft()
 		glm::vec3 strafe = glm::cross( transform->facingDirection,
 			Camera::instance()->up );
 
-		transform->position -= glm::normalize( strafe ) * moveSpeed;
+		transform->impulseForces -= glm::normalize( strafe ) * moveSpeed;
 	}
 }
 
@@ -79,7 +80,7 @@ void PlayerController::strafeRight()
 		glm::vec3 strafe = glm::cross( transform->facingDirection,
 			Camera::instance()->up );
 
-		transform->position += glm::normalize( strafe ) * moveSpeed;
+		transform->impulseForces += glm::normalize( strafe ) * moveSpeed;
 	}
 }
 
@@ -90,7 +91,7 @@ void PlayerController::turn( glm::vec2 delta )
 
 void PlayerController::jump()
 {
-	
+	transform->impulseForces += glm::vec3( 0.f, 10.f, 0.f );
 }
 
 E_ID PlayerController::getPlayerId()

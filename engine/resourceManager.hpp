@@ -32,14 +32,36 @@ struct MaterialRange
 	uint32_t	range = 0;
 };
 
+struct MeshFace
+{
+	uint32_t x, y, z;
+
+	uint32_t& operator []( const size_t index )
+	{
+		assert( index < 3 );
+
+		switch ( index )
+		{
+			case 0: return x; break;
+			case 1: return y; break;
+			case 2: return z; break;
+			default: 
+				return x;
+				break;
+		}
+	}
+};
+
 struct Mesh
 {
+// Use these for rending 
 	std::vector<Vertex>			vertecies;
 	std::vector<uint32_t>		indicies;
-
-	std::vector<glm::vec4>		faces;
 	std::vector<MaterialRange>	materialFaceIndexRanges;
-	std::vector<uint32_t>		trueIndecies;
+	
+// Use these for physics
+	std::vector<MeshFace>		faces;
+	std::vector<glm::vec3>		points;
 
 	// bounding box range 
 	glm::vec3 topLeftNear;

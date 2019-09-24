@@ -65,38 +65,44 @@ bool RayTriangleIntersection( const glm::vec3& p, const glm::vec3& dir,
 	return false;
 }
 
-bool PhysicsSystem::checkWorldCollision( E_ID world, E_ID  ent, float deltaSeconds, glm::vec3& forceVector )
+bool PhysicsSystem::checkWorldCollision( const E_ID world, const E_ID ent, 
+	const glm::vec3& impulseForces, glm::vec3& forceVector )
 {
+// DEBUG
+	collided = false;
+
 	MeshComponent* mc = EntityManager::instance()->get<MeshComponent>( world );
 	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( ent );
+	RigidbodyComponent* rc = EntityManager::instance()->get<RigidbodyComponent>( ent );
 
 	const Mesh* m = ResourceManager::instance()->getMesh( mc->meshName );
 	
-	glm::vec3 deltaGravity = ( gravity * deltaSeconds );
-
-	for ( const glm::vec4& f : m->faces )
+	for ( const MeshFace f : m->faces )
 	{
-		std::array<glm::vec3, 3> face = { m->vertecies[f.r].position,
-			m->vertecies[f.g].position,	m->vertecies[f.b].position
+		std::array<glm::vec3, 3> face = {
+			m->points[f.x], m->points[f.y], m->points[f.z]
 		};
 
 		glm::vec3 ip;
-		if ( RayTriangleIntersection( tc->position, glm::normalize( deltaGravity ), face, ip ) )
+		if ( RayTriangleIntersection( tc->position, glm::normalize( impulseForces ), face, ip ) )
 		{				
-			float glen = glm::distance( glm::vec3( 0.f, 0.f, 0.f ), deltaGravity );
+			float glen = glm::distance( glm::vec3( 0.f, 0.f, 0.f ), impulseForces );
 			glm::vec3 delta = ip - tc->position;
-			float iplen = glm::distance( delta, deltaGravity );
-
+			float iplen = glm::distance( glm::vec3( 0.f, 0.f, 0.f ), delta );
+			
 			// clip the force vector
-			if ( iplen < glen )
-			{		
+			if ( iplen <= glen )
+			{	
+				collided = true;
+				collisionTriangle = face;
+								
 				forceVector = glm::vec3( 0.f, 0.f, 0.f );
 				return true;
 			}			
 		}
 	}
 
-	forceVector = deltaGravity;
+	forceVector = impulseForces;
 	return false;
 }
 
@@ -142,12 +148,23 @@ void PhysicsSystem::update( const float deltaSeconds )
 			continue;
 		}
 
-		glm::vec3 clippedForceVector;
-		checkWorldCollision( scene->world, ent, time, clippedForceVector );
-
+		glm::vec3 forces = tc->impulseForces;
 		if ( rbc->affectedByGravity )
 		{
-			tc->position += clippedForceVector;
+			forces += deltaSeconds * gravity;
 		}
+
+		glm::vec3 clippedForceVector;
+		if ( rbc->collidable && glm::length(forces) > 0.0001f )
+		{
+			checkWorldCollision( scene->world, ent, forces, clippedForceVector );
+		}
+		else
+		{
+			clippedForceVector = forces;
+		}
+
+		tc->position += clippedForceVector;
+		tc->impulseForces = glm::vec3( 0.f );
 	}
 };

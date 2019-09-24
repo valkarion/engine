@@ -36,6 +36,26 @@ data:extend("input", {
 	mouse_movement = function ( delta )
 		GetCamera():turn( delta )
 		GetPlayerController():turn( delta ) 
+	end,
+	
+	look_up = function () 	
+		GetCamera():turn( vec2:new(0.0, -1.0) )
+		GetPlayerController():turn( vec2:new(0.0, -1.0) )
+	end, 
+	
+	look_down = function ()
+		GetCamera():turn( vec2:new(0.0, 1.0) )
+		GetPlayerController():turn( vec2:new(0.0, 1.0) )  
+	end,
+	
+	turn_left = function ()
+		GetCamera():turn( vec2:new(-1.0, 0.0) )
+		GetPlayerController():turn( vec2:new(-1.0, 0.0) )
+	end, 
+	
+	turn_right = function () 	
+		GetCamera():turn( vec2:new(1.0, 0.0) )
+		GetPlayerController():turn( vec2:new(1.0, 0.0) )  
 	end 
 })
 
@@ -46,6 +66,11 @@ data:extend("keymap", {
 	{"s", 		"move_backward"},
 	{"d", 		"strafe_right"},
 	{"space", 	"jump"}, 
+	
+	{"up", 		"look_up"},
+	{"down", 	"look_down"},
+	{"left", 	"turn_left"},
+	{"right", 	"turn_right"},	
 	
 -- mouse controls 
 	{"m_move", 	"mouse_movement"},

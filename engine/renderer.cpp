@@ -474,9 +474,9 @@ glm::mat4x4 GetModelMatrix( TransformComponent* transform )
 	model = glm::translate( model, transform->position );
 
 	// rotate 
-	model = glm::rotate( model, transform->rotation.x, glm::vec3( 1.f, 0.f, 0.f ) );
-	model = glm::rotate( model, transform->rotation.y, glm::vec3( 0.f, 1.f, 0.f ) );
-	model = glm::rotate( model, transform->rotation.z, glm::vec3( 0.f, 0.f, 1.f ) );
+	// model = glm::rotate( model, transform->rotation.x, glm::vec3( 1.f, 0.f, 0.f ) );
+	// model = glm::rotate( model, transform->rotation.y, glm::vec3( 0.f, 1.f, 0.f ) );
+	// model = glm::rotate( model, transform->rotation.z, glm::vec3( 0.f, 0.f, 1.f ) );
 	
 	// scaling 
 	model = glm::scale( model, transform->scale );
