@@ -120,7 +120,7 @@ bool Application::init()
 	sol::table iTable = LuaStateController::instance()->getDataTable( "input" );
 	InputSystem::instance()->setupInputFunctions( iTable );
 	sol::table kTable = LuaStateController::instance()->getDataTable( "keymap" );
-	InputSystem::instance()->setupKeyboardCommands( kTable );
+	InputSystem::instance()->setupInputCommands( kTable );
 
 	Camera::instance()->initCamera();
 

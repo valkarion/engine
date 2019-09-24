@@ -87,6 +87,25 @@ VkResult Renderer::createSurface()
 	return glfwCreateWindowSurface( vkInstance, window, nullptr, &surface );
 }
 
+VkResult Renderer::createPipelineLayout()
+{
+
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
+	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutCreateInfo.setLayoutCount = 1;
+	pipelineLayoutCreateInfo.pSetLayouts = &textureLayout;
+
+	// Push Constant description
+	VkPushConstantRange range = {};
+	range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	range.offset = 0;
+	range.size = sizeof( glm::mat4x4 );
+	pipelineLayoutCreateInfo.pPushConstantRanges = &range;
+	pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+
+	return vkCreatePipelineLayout( device.logicalDevice, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout );
+}
+
 VkResult Renderer::createGraphicsPipeline()
 {
 	VkPipelineShaderStageCreateInfo vStageCreateInfo =
@@ -157,24 +176,9 @@ VkResult Renderer::createGraphicsPipeline()
 		VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
 		VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachment.blendEnable = VK_FALSE;
-
+	
 	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo =
 		CreatePipelineColorBlendStateCreateInfo( colorBlendAttachment );
-	
-	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
-	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutCreateInfo.setLayoutCount = 1;
-	pipelineLayoutCreateInfo.pSetLayouts = &textureLayout;
-	
-	// Push Constant description
-	VkPushConstantRange range = {};
-	range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	range.offset = 0;
-	range.size = sizeof( glm::mat4x4 );
-	pipelineLayoutCreateInfo.pPushConstantRanges = &range;
-	pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
-
-	VKCHECK( vkCreatePipelineLayout( device.logicalDevice, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout ) );
 	
 	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {};
 	graphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -194,6 +198,105 @@ VkResult Renderer::createGraphicsPipeline()
 
 	VKCHECK( vkCreateGraphicsPipelines( device.logicalDevice, VK_NULL_HANDLE, 1,
 		&graphicsPipelineCreateInfo, nullptr, &graphicsPipeline ) );
+
+	vkDestroyShaderModule( device.logicalDevice, vStageCreateInfo.module, nullptr );
+	vkDestroyShaderModule( device.logicalDevice, fStageCreateInfo.module, nullptr );
+
+	return VK_SUCCESS;
+}
+
+VkResult Renderer::createWireframePipeline()
+{
+	VkPipelineShaderStageCreateInfo vStageCreateInfo =
+		CreatePipelineShaderStageCreateInfo(
+			"shaders\\compiled\\default.vspv",
+			VK_SHADER_STAGE_VERTEX_BIT, device.logicalDevice );
+
+	VkPipelineShaderStageCreateInfo fStageCreateInfo =
+		CreatePipelineShaderStageCreateInfo(
+			"shaders\\compiled\\default.fspv",
+			VK_SHADER_STAGE_FRAGMENT_BIT, device.logicalDevice );
+
+	VkPipelineShaderStageCreateInfo shaderStages[] = {
+		vStageCreateInfo, fStageCreateInfo
+	};
+
+	// what is the format of the vertex input data? 
+	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
+
+	std::vector<VkVertexInputAttributeDescription> attributes;
+	std::vector<VkVertexInputBindingDescription> bindings;
+
+	attributes = {
+		CreateVertexInputAttributeDescription( 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof( Vertex, Vertex::position ) ),
+		CreateVertexInputAttributeDescription( 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof( Vertex, Vertex::color ) ),
+		CreateVertexInputAttributeDescription( 0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof( Vertex, Vertex::textureCoordinates ) ),
+
+		// These four create a matrix on the shader side, but there is no valid matrix format on the C++ side
+		CreateVertexInputAttributeDescription( 1, 3, VK_FORMAT_R32G32B32A32_SFLOAT, 0 ),
+		CreateVertexInputAttributeDescription( 1, 4, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof( glm::vec4 ) ),
+		CreateVertexInputAttributeDescription( 1, 5, VK_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof( glm::vec4 ) ),
+		CreateVertexInputAttributeDescription( 1, 6, VK_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof( glm::vec4 ) )
+	};
+
+	bindings = {
+		CreateVertexInputBindingDescription( 0, sizeof( Vertex ), VK_VERTEX_INPUT_RATE_VERTEX ),
+		CreateVertexInputBindingDescription( 1, sizeof( glm::mat4x4 ), VK_VERTEX_INPUT_RATE_INSTANCE )
+	};
+
+	vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertexInputCreateInfo.vertexAttributeDescriptionCount = (uint32_t)attributes.size();
+	vertexInputCreateInfo.pVertexAttributeDescriptions = attributes.data();
+	vertexInputCreateInfo.vertexBindingDescriptionCount = (uint32_t)bindings.size();
+	vertexInputCreateInfo.pVertexBindingDescriptions = bindings.data();
+
+	// the kind of geometry will be drawn from the vertecies
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo =
+		CreatePipelineInputAssemblyStateCreateInfo( VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST );
+
+	VkViewport viewport;
+	VkRect2D scissor;
+	VkPipelineViewportStateCreateInfo viewportCreateInfo =
+		CreatePipelineViewportStateCreateInfo( viewport, scissor,
+			swapchain.extent.width, swapchain.extent.height );
+
+	VkPipelineRasterizationStateCreateInfo rasterCreateInfo =
+		CreatePipelineRasterizationStateCreateInfo( VK_POLYGON_MODE_LINE,
+			VK_CULL_MODE_NONE );
+
+	VkPipelineMultisampleStateCreateInfo multisampleCreateInfo =
+		CreatePipelineMultisampleStateCreateInfo();
+
+	VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo =
+		CreatePipelineDepthStencilStateCreateInfo( VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS );
+
+	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+	colorBlendAttachment.colorWriteMask =
+		VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+		VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	colorBlendAttachment.blendEnable = VK_FALSE;
+
+	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo =
+		CreatePipelineColorBlendStateCreateInfo( colorBlendAttachment );
+
+	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {};
+	graphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	graphicsPipelineCreateInfo.stageCount = 2;
+	graphicsPipelineCreateInfo.pStages = shaderStages;
+	graphicsPipelineCreateInfo.pVertexInputState = &vertexInputCreateInfo;
+	graphicsPipelineCreateInfo.pInputAssemblyState = &inputAssemblyCreateInfo;
+	graphicsPipelineCreateInfo.pViewportState = &viewportCreateInfo;
+	graphicsPipelineCreateInfo.pRasterizationState = &rasterCreateInfo;
+	graphicsPipelineCreateInfo.pMultisampleState = &multisampleCreateInfo;
+	graphicsPipelineCreateInfo.pDepthStencilState = &depthStencilCreateInfo;
+	graphicsPipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
+	graphicsPipelineCreateInfo.layout = pipelineLayout;
+	graphicsPipelineCreateInfo.renderPass = renderPass;
+	graphicsPipelineCreateInfo.subpass = 0;
+	graphicsPipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+	VKCHECK( vkCreateGraphicsPipelines( device.logicalDevice, VK_NULL_HANDLE, 1,
+		&graphicsPipelineCreateInfo, nullptr, &wireframePipeline ) );
 
 	vkDestroyShaderModule( device.logicalDevice, vStageCreateInfo.module, nullptr );
 	vkDestroyShaderModule( device.logicalDevice, fStageCreateInfo.module, nullptr );
@@ -422,8 +525,8 @@ void Renderer::draw()
 
 	for ( auto& ent : SceneManager::instance()->getActiveScene()->entities )
 	{
-		MeshComponent* meshComponent	= em->get<MeshComponent>( ent );
-		if ( !meshComponent )
+		MeshComponent* meshComponent = em->get<MeshComponent>( ent );
+		if ( !meshComponent || meshComponent->meshName == UNSET_S )
 		{
 			continue;
 		}
@@ -431,13 +534,20 @@ void Renderer::draw()
 		const Mesh* mesh				= rm->getMesh( meshComponent->meshName );
 		const RenderModel& model		= models[meshComponent->meshName];
 
-		offsets[0]		= model.vertexOffset;
-		transformOffset	= transformBuffer.offset;
+		offsets[0]						= model.vertexOffset;
+		transformOffset					= transformBuffer.offset;
 
-		glm::mat4x4* modelMatrix	= ( glm::mat4x4* )transformBuffer.allocate( sizeof( glm::mat4x4 ) );
-		*modelMatrix				= GetModelMatrix( em->get<TransformComponent>( ent ) );
+		glm::mat4x4* modelMatrix		= ( glm::mat4x4* )transformBuffer.allocate( sizeof( glm::mat4x4 ) );
+		*modelMatrix					= GetModelMatrix( em->get<TransformComponent>( ent ) );
 
-		vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
+		if ( meshComponent->meshName != "nullmesh" )
+		{
+			vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
+		}
+		else
+		{
+			vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, wireframePipeline );
+		}
 
 		vkCmdBindVertexBuffers( cmdBuf, 1, 1, &transformBuffer.buffer, &transformOffset );
 		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
@@ -905,7 +1015,7 @@ void Renderer::initDebugOverlays()
 void Renderer::init()
 {
 	renderedFrameCount = 0;
-
+	
 	VKCHECK( createVkInstance() );
 
 	debugger.instance = vkInstance;
@@ -927,7 +1037,11 @@ void Renderer::init()
 	VKCHECK( createRenderPass() );
 	
 	VKCHECK( createDescriptorSetLayout() );
+	
+	VKCHECK( createPipelineLayout() );
 	VKCHECK( createGraphicsPipeline() );
+	VKCHECK( createWireframePipeline() );
+	
 	VKCHECK( createCommandPool() );
 	VKCHECK( createDepthResources() );
 	VKCHECK( createFrameBuffers() );
@@ -979,6 +1093,7 @@ void Renderer::shutdown()
 	}
 
 	vkDestroyPipeline( device.logicalDevice, graphicsPipeline, nullptr );
+	vkDestroyPipeline( device.logicalDevice, wireframePipeline, nullptr );
 	vkDestroyPipelineLayout( device.logicalDevice, pipelineLayout, nullptr );
 	vkDestroyRenderPass( device.logicalDevice, renderPass, nullptr );
 

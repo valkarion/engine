@@ -1,13 +1,17 @@
 SetWindowName("Walking Simulator")
 SetCVar("print_fps", 1)
 
+-- load everything 
 LoadAllTextures()
 LoadAllModels()
 
 -- Create player 
-local player = CreateEntity()
-AddTransformComponent( player ) 
-local rbc = AddRigidbodyComponent( player )
+local player 	= CreateEntity()
+local tc 		= AddTransformComponent( player ) 
+local rbc 		= AddRigidbodyComponent( player )
+local mc		= AddMeshComponent( player ) 
+mc.meshName 	= "nullmesh"
+tc.scale		= vec3:new(5.0, 5.0, 5.0) 
 
 -- Setup Controller 
 GetPlayerController():setEntity( player ) 

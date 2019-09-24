@@ -79,8 +79,11 @@ public:
 
 // graphics pipeline
 	VkPipeline						graphicsPipeline;
+	VkPipeline						wireframePipeline;
 	VkPipelineLayout				pipelineLayout;
+	VkResult						createPipelineLayout();
 	VkResult						createGraphicsPipeline();
+	VkResult						createWireframePipeline();
 
 // framebuffers
 	std::vector<VkFramebuffer>		frameBuffers;

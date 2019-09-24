@@ -7,8 +7,7 @@
 	submodules. Since the states are baked into the pipelines
 	multiple pipelines are required to do different kinds of rending, 
 	therefore its submodules must be parameterized differently.
-	These are it's helper functions. Most of the things are still baked 
-	but for wireframe and polygon rendering we need different things.
+	These are it's helper functions.
 */
 
 // shader stage infos tell the pipeline in which stage it should run the shader code

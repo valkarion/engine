@@ -4,7 +4,11 @@
 #include "vulkanPipelineHelpers.hpp"
 #include <algorithm>
 
+#include "playerController.hpp"
+#include "camera.hpp"
 #include "renderer.hpp"
+#include "entityManager.hpp"
+#include "components.hpp"
 
 bool DebugOverlay::checkBuffers()
 {
@@ -373,18 +377,32 @@ void DebugOverlay::update( VkCommandBuffer commandBuffer )
 	{
 		return;
 	}
+	
+	Camera* cam				= Camera::instance();
+	PlayerController* pc	= PlayerController::instance();
+	TransformComponent* tc	= EntityManager::instance()->get<TransformComponent>( pc->getPlayerId() );
 
 	ImGui::NewFrame();
 	
-	ImGui::Begin( "Debug Overlay", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings );
-	ImGui::Text( "%d", Renderer::instance()->renderedFrameCount );
+	ImGui::SetNextWindowSize( ImVec2( 200.f, 350.f ) );
+	ImGui::Begin( "Debug Overlay", nullptr, ImGuiWindowFlags_NoSavedSettings );	
+	
+	ImGui::Text( "Camera position:\n x:\t%f\n y:\t%f\n z:\t%f",
+		cam->position.x, cam->position.y, cam->position.z );
+	
+	ImGui::Text( "Camera look at:\n x:\t%f\n y:\t%f\n z:\t%f",
+		cam->direction.x, cam->direction.y, cam->direction.z );
+	
+	ImGui::Text( "Player position:\n x:\t%f\n y:\t%f\n z:\t%f",
+		tc->position.x, tc->position.y, tc->position.z );
+	
+	ImGui::Text( "Player facing direction:\n x:\t%f\n y:\t%f\n z:\t%f",
+		tc->facingDirection.x, tc->facingDirection.y, tc->facingDirection.z );
+
 	ImGui::End();
 
 	ImGui::Render();
-
-	// Render to generate draw buffers
-	ImGui::Render();
-
+	
 	if ( checkBuffers() )
 	{
 		draw( commandBuffer );

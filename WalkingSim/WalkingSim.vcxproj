@@ -75,7 +75,8 @@
     <LibraryPath>d:\libs\Luax64\lib;d:\libs\boost_1_69_0\stage\lib;d:\VulkanSDK\1.1.77.0\Lib;d:\libs\glfw-3.2.1\lib-vc2015;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>d:\libs\Luax64\include;$(IncludePath)</IncludePath>
+    <IncludePath>d:\libs\Luax64\include;d:\libs\boost_1_69_0;d:\VulkanSDK\1.1.77.0\Include;d:\libs\glfw-3.2.1\include;d:\libs\glm;$(IncludePath)</IncludePath>
+    <LibraryPath>d:\libs\Luax64\lib;d:\libs\boost_1_69_0\stage\lib;d:\VulkanSDK\1.1.77.0\Lib;d:\libs\glfw-3.2.1\lib-vc2015;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -122,6 +123,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)engine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

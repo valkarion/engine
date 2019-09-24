@@ -34,6 +34,7 @@ void cursor_callback( GLFWwindow* win, double xpos, double ypos )
 {
 	InputSystem* is = InputSystem::instance();
 	
+// check move
 	is->mousePrev = is->mouseCurrent;
 	is->mouseCurrent = glm::vec2( (float)xpos, (float)ypos );
 
@@ -42,7 +43,9 @@ void cursor_callback( GLFWwindow* win, double xpos, double ypos )
 		float deltax = is->mouseCurrent.x - is->mousePrev.x;
 		float deltay = is->mouseCurrent.y - is->mousePrev.y;	
 
-		Camera::instance()->turn( glm::vec2( deltax, deltay ) );		
+		Camera::instance()->turn( glm::vec2( deltax, deltay ) );
+
+		is->setMouseState( enu_MOUSE_STATE::moved, true );
 	}
 }
 
@@ -66,8 +69,14 @@ void InputSystem::setKeyState( const int key, const enu_KEY_STATE state )
 	}
 }
 
+void InputSystem::setMouseState( const enu_MOUSE_STATE state, bool active )
+{
+	mouseState.set( (size_t)state, active );
+}
+
 void InputSystem::update()
 {
+//	keyboard
 	for( uint32_t i = 0; i < (uint32_t)keyStates.size(); i++ )
 	{
 		if( !hasCommandBound( i ) )
@@ -89,6 +98,17 @@ void InputSystem::update()
 				break;
 			default: break;
 		}
+	}
+
+// mouse 
+	if ( mouseState[(size_t)enu_MOUSE_STATE::moved] )
+	{
+		float deltax = mouseCurrent.x - mousePrev.x;
+		float deltay = mouseCurrent.y - mousePrev.y;
+		glm::vec3 delta( deltax, deltay, 0.f );
+
+		inputFunctions[mappedMouseFunctions[(size_t)enu_MOUSE_STATE::moved]]( delta );
+		mouseState[(size_t)enu_MOUSE_STATE::moved] = 0;
 	}
 }
 
@@ -166,6 +186,16 @@ int StringToGLFWKeyCode( const std::string& key )
 	return result;
 }
 
+enu_MOUSE_STATE StringToMouseState( const std::string& key )
+{
+	if ( key == "m_move" )
+	{
+		return enu_MOUSE_STATE::moved;
+	}
+
+	return enu_MOUSE_STATE::unset;
+}
+
 void InputSystem::setupInputFunctions( sol::table& inputTable )
 {
 	for ( const auto& fn : inputTable )
@@ -185,7 +215,7 @@ void InputSystem::setupInputFunctions( sol::table& inputTable )
 	}
 }
 
-void InputSystem::setupKeyboardCommands( sol::table& keymapTable )
+void InputSystem::setupInputCommands( sol::table& keymapTable )
 {
 	for ( const auto& input : keymapTable )
 	{
@@ -194,15 +224,24 @@ void InputSystem::setupKeyboardCommands( sol::table& keymapTable )
 		std::string key = row[1];
 		std::string fnName = row[2];
 
+	// is it a keyboard function? 
 		int keyCode = StringToGLFWKeyCode( key );
-		if ( keyCode == GLFW_KEY_UNKNOWN )
-		{
-			WriteToErrorLog( "Unrecognised input key: %s", 
-				key.c_str() );
-		}
-		else
+		if ( keyCode != GLFW_KEY_UNKNOWN )
 		{
 			mappedKeyboardFunction[keyCode] = fnName;
+			continue;
 		}
+
+	// is it a mouse function? 
+		enu_MOUSE_STATE mouseCode = StringToMouseState( key );
+		if ( mouseCode != enu_MOUSE_STATE::unset )
+		{
+			mappedMouseFunctions[(size_t)mouseCode] = fnName;
+			continue;
+		}
+
+	// it's Superman! Well it's an error. 
+		WriteToErrorLog( "Unrecognised input key: %s",
+			key.c_str() );
 	}
 }

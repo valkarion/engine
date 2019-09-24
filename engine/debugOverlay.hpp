@@ -16,18 +16,6 @@ struct OverlayConstants
 
 class DebugOverlay
 {
-	void createFontResources();
-	void createPipeline();
-	bool checkBuffers();
-	void draw( VkCommandBuffer commandBuffer );
-public:
-// dependencies 	
-	VulkanDevice*			device;
-	VkQueue					graphicsQueue			= VK_NULL_HANDLE;
-	VkRenderPass			renderPass				= VK_NULL_HANDLE;
-
-	bool					display;
-
 	OverlayConstants		pushConstants;
 	VkPipelineLayout		graphicsPipelineLayout	= VK_NULL_HANDLE;
 	VkPipeline				graphicsPipeline		= VK_NULL_HANDLE;
@@ -43,6 +31,19 @@ public:
 
 	uint32_t				vertexCount;
 	uint32_t				indexCount;
+
+	void					createFontResources();
+	void					createPipeline();
+	bool					checkBuffers();
+	void					draw( VkCommandBuffer commandBuffer );
+
+public:
+// dependencies 	
+	VulkanDevice*			device = nullptr;
+	VkQueue					graphicsQueue = VK_NULL_HANDLE;
+	VkRenderPass			renderPass = VK_NULL_HANDLE;
+
+	bool display;
 
 	void init();
 	void update( VkCommandBuffer commandBuffer );

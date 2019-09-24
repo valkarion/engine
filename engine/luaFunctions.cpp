@@ -34,6 +34,7 @@ void DebugPrint( sol::object obj )
 {
 	PrintToOutputWindow( obj.as<std::string>() );
 }
+
 void LoadAllTextures()
 {
 	std::vector<std::string> textures = GetFilesInDirectory( "textures", "png" );
@@ -53,6 +54,7 @@ void LoadAllTextures()
 		}
 	}
 }
+
 void LoadAllModels()
 {
 	std::vector<std::string> models = GetFilesInDirectory( "models", "obj" );
@@ -71,6 +73,12 @@ void LoadAllModels()
 			WriteToErrorLog( "ResourceManager::loadMesh failed to load obj file: %s", mdl.c_str() );
 		}
 	}
+}
+
+void ToggleDebugOverlay()
+{
+	Renderer::instance()->debugOverlay.display =
+		!Renderer::instance()->debugOverlay.display;
 }
 
 // utils
@@ -153,6 +161,7 @@ void LuaStateController::registerFunctions()
 	state["DebugPrint"] = DebugPrint;
 	state["LoadAllModels"] = LoadAllModels;
 	state["LoadAllTextures"] = LoadAllTextures;
+	state["ToggleDebugOverlay"] = ToggleDebugOverlay;
 
 	state["SetWindowName"] = SetWindowTitle;
 	state["SetCVar"] = SetCVar;

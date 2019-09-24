@@ -20,7 +20,7 @@ void AddInputCommands()
 	sol::table keymap = LuaStateController::instance()->getDataTable( "keymap" );
 
 	InputSystem::instance()->setupInputFunctions( input );
-	InputSystem::instance()->setupKeyboardCommands( keymap );
+	InputSystem::instance()->setupInputCommands( keymap );
 }
 
 void SetupBasicScene()
