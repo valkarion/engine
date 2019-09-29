@@ -75,12 +75,6 @@ void LoadAllModels()
 	}
 }
 
-void ToggleDebugOverlay()
-{
-	Renderer::instance()->debugOverlay.display =
-		!Renderer::instance()->debugOverlay.display;
-}
-
 // utils
 void SetWindowTitle( const std::string& title )
 {
@@ -161,7 +155,6 @@ void LuaStateController::registerFunctions()
 	state["DebugPrint"] = DebugPrint;
 	state["LoadAllModels"] = LoadAllModels;
 	state["LoadAllTextures"] = LoadAllTextures;
-	state["ToggleDebugOverlay"] = ToggleDebugOverlay;
 
 	state["SetWindowName"] = SetWindowTitle;
 	state["SetCVar"] = SetCVar;

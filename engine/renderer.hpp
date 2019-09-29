@@ -39,8 +39,9 @@ struct RenderModel
 
 /*
 	The Renderer works as a fully working base class for displaying 
-	basic geometry with default shaders, and has extensionpoints for 
-	derived functionalities provided via protected virtual functions. 
+	basic geometry with default shaders, and has extension points for 
+	derived functionalities provided via public/protected virtual 
+	functions. 
 	
 	Important: When creating a derived class, setInstanceType must be 
 	called before Application::init() in the child project.
@@ -50,6 +51,7 @@ class Renderer
 {
 	static std::unique_ptr<Renderer> _instance;
 
+protected:
 	uint32_t						currentImageIndex;
 
 	const VulkanTexture*			getTexture( const std::string& name ) const;
@@ -59,7 +61,6 @@ class Renderer
 	// ends the render pass and submits commands to the GPU
 	void							endDraw();
 
-protected:
 	// calls drawing functions on the Scene entities 
 	virtual void					draw();
 
@@ -163,11 +164,8 @@ public:
 	GLFWwindow*						window;
 	uint64_t						renderedFrameCount;
 
-	DebugOverlay					debugOverlay;
-
-	void							initDebugOverlays();
 	void							init();
-	void							drawFrame();
+	virtual void					drawFrame();
 	void							shutdown();
 
 	void							loadModel( const std::string& objName );

@@ -642,7 +642,6 @@ void Renderer::drawFrame()
 {
 	beginDraw();
 	draw();
-	debugOverlay.update( commandBuffers[currentImageIndex] );
 	endDraw();
 }
 
@@ -1009,15 +1008,6 @@ void Renderer::loadModel( const std::string& objName )
 	models[objName] = renderModel;
 }
 
-void Renderer::initDebugOverlays()
-{
-	debugOverlay.display = true;
-	debugOverlay.device = &device;
-	debugOverlay.graphicsQueue = graphicsQueue;
-	debugOverlay.renderPass = renderPass;
-	debugOverlay.init();
-}
-
 void Renderer::childInit() {}
 void Renderer::childShutdown() {}
 
@@ -1072,8 +1062,6 @@ void Renderer::init()
 	VKCHECK( createCommandBuffers() );
 	VKCHECK( createSemaphores() );
 
-	initDebugOverlays();
-
 	childInit();
 }
 
@@ -1088,8 +1076,6 @@ void Renderer::shutdown()
 		vkFreeMemory( device.logicalDevice, it.second.memory, nullptr );
 	}
 	
-	debugOverlay.shutdown();
-
 	vkDestroyImageView( device.logicalDevice, depthImageView, nullptr );
 	vkDestroyImage( device.logicalDevice, depthImage, nullptr );
 	vkFreeMemory( device.logicalDevice, depthImageMemory, nullptr );

@@ -16,6 +16,7 @@ struct OverlayConstants
 
 class DebugOverlay
 {
+protected:
 	OverlayConstants		pushConstants;
 	VkPipelineLayout		graphicsPipelineLayout	= VK_NULL_HANDLE;
 	VkPipeline				graphicsPipeline		= VK_NULL_HANDLE;
@@ -35,7 +36,7 @@ class DebugOverlay
 	void					createFontResources();
 	void					createPipeline();
 	bool					checkBuffers();
-	void					draw( VkCommandBuffer commandBuffer );
+	virtual void			draw( VkCommandBuffer commandBuffer );
 
 public:
 // dependencies 	
@@ -46,6 +47,6 @@ public:
 	bool display;
 
 	void init();
-	void update( VkCommandBuffer commandBuffer );
+	virtual void			update( VkCommandBuffer commandBuffer );
 	void shutdown();
 };

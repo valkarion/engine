@@ -5,6 +5,8 @@
 #include "renderer.hpp"
 #include "wsRenderer.hpp"
 
+void RegisterLuaFunctions();
+
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd
 )
 {
@@ -12,8 +14,10 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	if ( Application::instance()->init() )
 	{
+		RegisterLuaFunctions();
+
 		LuaStateController::instance()->safeRunScriptFile( "startup.lua" );
-		
+				
 		Application::instance()->run();
 	}
 		

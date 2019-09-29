@@ -134,6 +134,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="wsLuaFunctions.cpp" />
     <ClCompile Include="wsRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
