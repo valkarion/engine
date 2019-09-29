@@ -63,7 +63,7 @@ struct Mesh
 	std::vector<MeshFace>		faces;
 	std::vector<glm::vec3>		points;
 
-	// bounding box range 
+// bounding box range 
 	glm::vec3 topLeftNear;
 	glm::vec3 botRightFar;
 };

@@ -4,6 +4,7 @@
 #include "camera.hpp"
 
 #include <glm/gtx/rotate_vector.hpp>
+#include <algorithm>
 
 std::unique_ptr<PlayerController> PlayerController::_instance = std::make_unique<PlayerController>();
 PlayerController* PlayerController::instance()
@@ -26,7 +27,6 @@ void PlayerController::setFacingDirection( glm::vec3 direction )
 	if ( transform )
 	{
 		transform->facingDirection = glm::vec3( direction.x, 0.f, direction.z );
-		transform->rotation = direction;
 	}
 }
 
@@ -91,7 +91,14 @@ void PlayerController::turn( glm::vec2 delta )
 
 void PlayerController::jump()
 {
-	transform->impulseForces += glm::vec3( 0.f, 10.f, 0.f );
+	if ( transform )
+	{
+		RigidbodyComponent* rbc =  EntityManager::instance()->get<RigidbodyComponent>( attachedEntity );
+		if ( rbc && std::abs( rbc->velocity.y ) < 0.001f )
+		{
+			transform->impulseForces += glm::vec3( 0.f, 60.f, 0.f );
+		}
+	}
 }
 
 E_ID PlayerController::getPlayerId()

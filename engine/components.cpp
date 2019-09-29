@@ -48,6 +48,4 @@ RigidbodyComponent::RigidbodyComponent() :
 	affectedByGravity( false )
 {}
 
-RigidbodyComponent::~RigidbodyComponent() {
-	int a = 2; a;
-}
+RigidbodyComponent::~RigidbodyComponent() {}

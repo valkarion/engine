@@ -11,8 +11,7 @@ PhysicsSystem* PhysicsSystem::instance()
 	return _instance.get();
 }
 
-//const glm::vec3 gravity = glm::vec3( 0.f, 0.f, 0.f );
-const glm::vec3 gravity = glm::vec3( 0.f, -9.81f, 0.f );
+const glm::vec3 gravity = glm::vec3( 0.f, -40.f, 0.f );
 
 // update clamps for debugging and startup
 const float maxTime = 1.f;
@@ -86,17 +85,18 @@ bool PhysicsSystem::checkWorldCollision( const E_ID world, const E_ID ent,
 		glm::vec3 ip;
 		if ( RayTriangleIntersection( tc->position, glm::normalize( impulseForces ), face, ip ) )
 		{				
-			float glen = glm::distance( glm::vec3( 0.f, 0.f, 0.f ), impulseForces );
+			float glen = glm::length( impulseForces );
 			glm::vec3 delta = ip - tc->position;
-			float iplen = glm::distance( glm::vec3( 0.f, 0.f, 0.f ), delta );
+			float iplen = glm::length( delta );
 			
 			// clip the force vector
 			if ( iplen <= glen )
 			{	
 				collided = true;
 				collisionTriangle = face;
-								
+
 				forceVector = glm::vec3( 0.f, 0.f, 0.f );
+				//forceVector = ip - tc->position;
 				return true;
 			}			
 		}
@@ -166,5 +166,7 @@ void PhysicsSystem::update( const float deltaSeconds )
 
 		tc->position += clippedForceVector;
 		tc->impulseForces = glm::vec3( 0.f );
+
+		rbc->velocity = clippedForceVector;
 	}
 };

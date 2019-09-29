@@ -17,7 +17,7 @@ GetPlayerController():setEntity( player )
 GetPlayerController():setFacingDirection( vec3:new( 0, 0, 1 ) )
 GetCamera():attachEntity( player )
 
-local test_scene = true 
+local test_scene = false  
 
 if test_scene then 
 	SetActiveScene("test_scene")
