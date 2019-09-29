@@ -37,21 +37,35 @@ struct RenderModel
 	uint32_t indexOffset;
 };
 
+/*
+	The Renderer works as a fully working base class for displaying 
+	basic geometry with default shaders, and has extensionpoints for 
+	derived functionalities provided via protected virtual functions. 
+	
+	Important: When creating a derived class, setInstanceType must be 
+	called before Application::init() in the child project.
+*/
+
 class Renderer
 {
 	static std::unique_ptr<Renderer> _instance;
 
 	uint32_t						currentImageIndex;
-	
-	void							beginDraw();
-	void							draw();
-	void							endDraw();
 
 	const VulkanTexture*			getTexture( const std::string& name ) const;
 
-public:
-	GLFWwindow*						window;
-	uint64_t						renderedFrameCount;
+	// begins the main rederpass 
+	void							beginDraw();
+	// ends the render pass and submits commands to the GPU
+	void							endDraw();
+
+protected:
+	// calls drawing functions on the Scene entities 
+	virtual void					draw();
+
+// manage the lifetime of children resources here 
+	virtual void					childInit();
+	virtual void					childShutdown();
 
 // main vulkan handle
 	VkInstance						vkInstance;
@@ -60,7 +74,6 @@ public:
 
 // debugger is only setup in debug mode 
 	VulkanDebugger					debugger;
-	DebugOverlay					debugOverlay;
 
 	VulkanDevice					device;
 
@@ -99,7 +112,6 @@ public:
 	VkSemaphore						imageAvailableSemaphore;
 	VkSemaphore						renderFinishedSemaphore;
 	VkResult						createSemaphores();		
-	void							drawFrame();
 
 //	buffers 
 	VulkanBuffer					vertexBuffer;
@@ -135,8 +147,6 @@ public:
 
 	VkSampler						textureSampler;
 	VkResult						createTextureSampler();
-	
-	void							loadTexture( const std::string& name );
 
 // depth buffering
 	VkImage							depthImage;
@@ -148,12 +158,28 @@ public:
 	VkResult						createDepthResources();
 
 // models 
-	std::map<std::string, RenderModel>	models;
-	void loadModel( const std::string& objName );
+	std::map<std::string, RenderModel>	models;	
 public:
-	void initDebugOverlays();
-	void init();
-	void shutdown();
+	GLFWwindow*						window;
+	uint64_t						renderedFrameCount;
+
+	DebugOverlay					debugOverlay;
+
+	void							initDebugOverlays();
+	void							init();
+	void							drawFrame();
+	void							shutdown();
+
+	void							loadModel( const std::string& objName );
+	void							loadTexture( const std::string& name );
+
+	template <typename T> void setInstanceType()
+	{
+		static_assert( std::is_base_of<Renderer, T>::value, 
+			"Renderer::setInstanceType: Given type must have Renderer as a base." );
+
+		_instance = std::make_unique<T>();
+	}
 
 	static Renderer*	instance();
 };

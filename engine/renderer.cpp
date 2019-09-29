@@ -28,10 +28,16 @@
 #define STAGING_BUFFER_SIZE_MB	128
 #define MAX_DESCRIPTORS			256	// each texture has it's own descriptor
 
-std::unique_ptr<Renderer> Renderer::_instance = std::make_unique<Renderer>();
+std::unique_ptr<Renderer> Renderer::_instance = nullptr;
 
 Renderer* Renderer::instance()
 {
+	// no child override 
+	if ( _instance == nullptr )
+	{
+		_instance = std::make_unique<Renderer>();
+	}
+
 	return _instance.get();
 }
 
@@ -1012,6 +1018,9 @@ void Renderer::initDebugOverlays()
 	debugOverlay.init();
 }
 
+void Renderer::childInit() {}
+void Renderer::childShutdown() {}
+
 void Renderer::init()
 {
 	renderedFrameCount = 0;
@@ -1064,10 +1073,14 @@ void Renderer::init()
 	VKCHECK( createSemaphores() );
 
 	initDebugOverlays();
+
+	childInit();
 }
 
 void Renderer::shutdown()
 {
+	childShutdown();
+
 	for ( auto& it : textures )
 	{
 		vkDestroyImageView( device.logicalDevice, it.second.view, nullptr );

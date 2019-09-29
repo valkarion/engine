@@ -1,6 +1,7 @@
 ﻿- Miért így lett kialakítva a project struktúra?	
 	ha az engine egy lib, akkor kívülről könnyebben használható az applikációk által
 	és könnyebben lehet egy teszt frameworköt köréhúzni.
+
 ######################################################################
 - Nem lehet boost::lockfree::queue-kat listába létrehozni
 - Hogyan kell változó kapacitású queue-t létrehozni, 
@@ -48,3 +49,22 @@
 	vulkan a megjelenítéshez viszont a descriptornak szüksége van egy textúra image viewra.
 	- A megoldás: Minden egyes textúrának külön Image/ImageView/Descriptort létrehozni, 
 	ezeket bindolni render időben a különböző objektumokhoz
+
+#####################################################################
+Mi egy jó megoldás a statikus osztályok példányainak leszármaztatására? 
+	- Ami működik az egy, setInstanceType metódus deklarálása, amit inicializálás előtt
+	meghív a gyermek project és a saját leszármaztatott típusát hozza létre. 
+	- El lehet gondolkodni azon hogy egy alapvető renderer is hasonló módon keszüljön e el, lenne a 
+	Renderer osztály és létezne egy Default renderer, így a Renderer osztály egy vékony statikus 
+	"interface"-ként működhetne. Ez jó lenne abból a szempontból hogy a renderer.pp header file így 
+	nagyon apró lenne, ami sose baj, viszont a leszármaztatott renderereknek sok hasonló dolgot kéne 
+	újra deklarálniuk. Ha ez egy komolyabb szoftver lenne akkor ezt kéne használni rendes 
+	leszármaztatásokkal, viszont nekünk elég ha a rajzoló függvényeket írjuk jelenleg felül, 
+	ez a legegyszerűbb és leggyorsabb megoldás. 
+
+####################################################################
+Modularizált statikus osztályok: 
+	A Banshee engine a singleton osztályait egy Module ősosztályon keresztül kezeli. 
+	Ez azt jelenti hogy minden osztály képes adni egy közös interfacet. Ez hasznos lenne itt arra 
+	hogy minden osztálynak lennének ilyen felülírható definiciói. Ez jelenleg nem kell, valószínüleg 
+	a fejlesztés ideje alatt nem is fog, de továbbfejlesztési ötletnek jó.
