@@ -7,8 +7,7 @@
 
 void RegisterLuaFunctions();
 
-int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd
-)
+int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
 {
 	Renderer::instance()->setInstanceType<WsRenderer>();
 
