@@ -133,7 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="wsMain.cpp" />
     <ClCompile Include="wsLuaFunctions.cpp" />
     <ClCompile Include="wsRenderer.cpp" />
   </ItemGroup>

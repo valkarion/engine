@@ -19,14 +19,14 @@ void WsOverlay::update( VkCommandBuffer commandBuffer )
 
 	ImGui::NewFrame();
 
-	ImGui::SetNextWindowSize( ImVec2( 200.f, 350.f ) );
+	ImGui::SetNextWindowSize( ImVec2( 200.f, 450.f ) );
 	ImGui::Begin( "Debug Overlay", nullptr, ImGuiWindowFlags_NoSavedSettings );
 
 	ImGui::Text( "Camera position:\n x:\t%f\n y:\t%f\n z:\t%f",
-		cam->position.x, cam->position.y, cam->position.z );
+		cam->getPosition().x, cam->getPosition().y, cam->getPosition().z );
 
 	ImGui::Text( "Camera look at:\n x:\t%f\n y:\t%f\n z:\t%f",
-		cam->direction.x, cam->direction.y, cam->direction.z );
+		cam->getDirection().x, cam->getDirection().y, cam->getDirection().z );
 
 	ImGui::Text( "Player position:\n x:\t%f\n y:\t%f\n z:\t%f",
 		tc->position.x, tc->position.y, tc->position.z );
@@ -36,6 +36,9 @@ void WsOverlay::update( VkCommandBuffer commandBuffer )
 
 	ImGui::Text( "Clipping: %s", ( rc->collidable ) ? "on" : "off" );
 	ImGui::Text( "Gravity:  %s", ( rc->affectedByGravity ) ? "affected" : "unaffected" );
+
+	ImGui::Text( "Rotation:\n x:\t%f\n y:\t%f\n z:\t%f",
+		tc->rotation.x, tc->rotation.y, tc->rotation.z );
 
 	ImGui::End();
 

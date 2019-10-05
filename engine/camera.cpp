@@ -32,13 +32,6 @@ void Camera::turn( glm::vec2 delta )
 	glm::vec3 strafe	= glm::cross( direction, up );
 	glm::mat4 rotation	= glm::mat4( glm::rotate( -delta.x * sensitivity, up ) *
 		glm::rotate( -delta.y * sensitivity, strafe ) );
-		
-	// check if the camera overturns when looking up or down 
-	// glm::vec3 new_direction = glm::mat3( rotation ) * direction;
-	// if ( new_direction.z * direction.z > 0 )
-	// {
-	// 	direction = new_direction;
-	// }
 
 	direction = glm::mat3( rotation ) * direction;
 
@@ -48,11 +41,6 @@ void Camera::turn( glm::vec2 delta )
 void Camera::setAspect( float ratio )
 {
 	aspect = ratio;
-}
-
-void Camera::setPosition( glm::vec3 p )
-{
-	position = p;
 }
 
 void Camera::attachEntity( E_ID who )
@@ -94,6 +82,31 @@ glm::mat4 Camera::getProjection()
 	proj[1][1] *= -1; // vulkan specific flip; would be upside down otherwise
 
 	return proj;
+}
+
+glm::vec3 Camera::getUp()
+{
+	return up;
+}
+
+glm::vec3 Camera::getPosition()
+{
+	return position;
+}
+
+glm::vec3 Camera::getDirection()
+{
+	return direction;
+}
+
+void Camera::setDirection( glm::vec3 d )
+{
+	direction = d;
+}
+
+void Camera::setPosition( glm::vec3 p )
+{
+	position = p;
 }
 
 void Camera::initCamera()

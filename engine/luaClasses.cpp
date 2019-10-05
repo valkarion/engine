@@ -80,19 +80,12 @@ void LCamera( sol::state& l )
 	l.new_usertype<Camera>("Camera", 
 		"displace", &Camera::displace, 
 		"turn", &Camera::turn,
-		"setPosition", &Camera::setPosition,
-		"getPosition", [&]() -> glm::vec3 
-		{
-			return Camera::instance()->position;
-		},
-		"getDirection", [&]() -> glm::vec3
-		{
-			return Camera::instance()->direction;
-		},
-		"getUp", [&]() -> glm::vec3
-		{
-			return Camera::instance()->up;
-		},
+		
+		"position", sol::property(&Camera::getPosition, 
+			&Camera::setPosition),
+		"direction", sol::property( &Camera::getDirection,
+			&Camera::setDirection ),
+
 		"attachEntity", [&]( Camera* cam, E_ID obj )
 		{
 			E_ID id = obj;

@@ -473,21 +473,29 @@ void Renderer::beginDraw()
 		VK_SUBPASS_CONTENTS_INLINE );
 }
 
+#include <glm/gtx/euler_angles.hpp>
+
 glm::mat4x4 GetModelMatrix( TransformComponent* transform )
-{	glm::mat4x4 model( 1.f );
+{	
+	glm::mat4x4 model( 1.f );
 	
 	// displacement
-	model = glm::translate( model, transform->position );
+	glm::mat4 translation = glm::translate( model, transform->position );
+	
+	uint64_t frameCount = Renderer::instance()->renderedFrameCount;
+	float angle = float( frameCount % ( 3600 ) ) / 10.f;
 
-	// rotate 
-	// model = glm::rotate( model, transform->rotation.x, glm::vec3( 1.f, 0.f, 0.f ) );
-	// model = glm::rotate( model, transform->rotation.y, glm::vec3( 0.f, 1.f, 0.f ) );
-	// model = glm::rotate( model, transform->rotation.z, glm::vec3( 0.f, 0.f, 1.f ) );
+	// rotation
+	glm::quat quat = glm::quat( glm::vec3( glm::radians( angle ),
+		transform->rotation.y, transform->rotation.z ) );
+	glm::mat4 rotation = glm::toMat4( quat );
+	   
 	
+
 	// scaling 
-	model = glm::scale( model, transform->scale );
+	glm::mat4x4 scale = glm::scale( glm::mat4( 1.f ), transform->scale );
 	
-	return model;
+	return translation * rotation * scale;
 }
 
 const VulkanTexture* Renderer::getTexture( const std::string& name ) const
@@ -537,6 +545,11 @@ void Renderer::draw()
 			continue;
 		}
 
+		if ( SceneManager::instance()->getActiveScene()->world == ent )
+		{
+			continue;
+		}
+
 		const Mesh* mesh				= rm->getMesh( meshComponent->meshName );
 		const RenderModel& model		= models[meshComponent->meshName];
 
@@ -545,7 +558,7 @@ void Renderer::draw()
 
 		glm::mat4x4* modelMatrix		= ( glm::mat4x4* )transformBuffer.allocate( sizeof( glm::mat4x4 ) );
 		*modelMatrix					= GetModelMatrix( em->get<TransformComponent>( ent ) );
-
+		
 		if ( meshComponent->meshName != "nullmesh" )
 		{
 			vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );

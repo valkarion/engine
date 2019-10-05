@@ -14,6 +14,23 @@ PlayerController* PlayerController::instance()
 
 const float moveSpeed = 1.f;
 
+
+float Angle( const glm::vec2& base, const glm::vec2 v )
+{
+	float dot = glm::dot( base, v );
+	float det = base.x * v.y - base.y * v.x;
+	return glm::degrees( std::atan2f( det, dot ) );
+}
+
+glm::vec3 CalcEulerAngles( glm::vec3 orientation )
+{
+	float x = Angle( glm::vec2( 1.f, 0.f ), glm::vec2( orientation.z, orientation.y ) );
+	float y = Angle( glm::vec2( 1.f, 0.f ), glm::vec2( orientation.x, orientation.z ) );
+	float z = Angle( glm::vec2( 1.f, 0.f ), glm::vec2( orientation.x, orientation.y ) );
+
+	return glm::vec3( x, y, z );
+}
+
 void PlayerController::setPosition( glm::vec3 position )
 {
 	if ( transform )
@@ -26,7 +43,7 @@ void PlayerController::setFacingDirection( glm::vec3 direction )
 {
 	if ( transform )
 	{
-		transform->facingDirection = glm::vec3( direction.x, 0.f, direction.z );
+		transform->facingDirection = glm::vec3( direction.x, direction.y, direction.z );
 	}
 }
 
@@ -67,7 +84,7 @@ void PlayerController::strafeLeft()
 	if ( transform )
 	{
 		glm::vec3 strafe = glm::cross( transform->facingDirection,
-			Camera::instance()->up );
+			Camera::instance()->getUp() );
 
 		transform->impulseForces -= glm::normalize( strafe ) * moveSpeed;
 	}
@@ -78,15 +95,45 @@ void PlayerController::strafeRight()
 	if ( transform )
 	{
 		glm::vec3 strafe = glm::cross( transform->facingDirection,
-			Camera::instance()->up );
+			Camera::instance()->getUp() );
 
 		transform->impulseForces += glm::normalize( strafe ) * moveSpeed;
 	}
 }
 
+// todo: EVERYTHING in here
 void PlayerController::turn( glm::vec2 delta )
 {
+	if ( transform )
+	{
+		glm::vec3 rot;
 
+		if ( delta.y != 0.f )
+		{
+			rot.x = Angle( glm::vec2( 1.f, 0.f ), glm::vec2( transform->facingDirection.z,
+				transform->facingDirection.y ) );
+
+			if ( rot.x < 0 )
+			{
+				rot.x = 360.f + rot.x;
+			}
+			
+			transform->rotation.x = rot.x;
+		}
+
+		if ( delta.x != 0.f )
+		{
+			rot.y = Angle( glm::vec2( 1.f, 0.f ), glm::vec2( transform->facingDirection.x,
+				transform->facingDirection.z ) );
+
+			if ( rot.y < 0 )
+			{
+				rot.y = 360.f + rot.y;
+			}
+
+			transform->rotation.y = rot.y;
+		}
+	}
 }
 
 void PlayerController::jump()

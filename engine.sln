@@ -16,6 +16,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WalkingSim", "WalkingSim\Wa
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tetris", "Tetris\Tetris.vcxproj", "{9B9A95B2-B996-4781-A2F6-BC64595F1F85}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AD65A3C5-A746-4C2C-9214-A7ED6C1CD11D} = {AD65A3C5-A746-4C2C-9214-A7ED6C1CD11D}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

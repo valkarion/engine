@@ -113,7 +113,7 @@ void T_Renderer()
 	glm::vec3 position = ResourceManager::instance()->getMesh( mesh->meshName )->vertecies[0].position;
 	tc->scale = glm::vec3( 0.5f, 0.5f, 0.5f );
 
-	Camera::instance()->position = 0.5f * position;
+	Camera::instance()->setPosition( 0.5f * position );
 	
 	Application::instance()->run();
 }
