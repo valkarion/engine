@@ -116,12 +116,12 @@ VkResult Renderer::createGraphicsPipeline()
 {
 	VkPipelineShaderStageCreateInfo vStageCreateInfo =
 		CreatePipelineShaderStageCreateInfo(
-			"shaders\\compiled\\default.vspv",
+			"core\\default.vspv",
 			VK_SHADER_STAGE_VERTEX_BIT, device.logicalDevice );
 
 	VkPipelineShaderStageCreateInfo fStageCreateInfo =
 		CreatePipelineShaderStageCreateInfo(
-			"shaders\\compiled\\default.fspv",
+			"core\\default.fspv",
 			VK_SHADER_STAGE_FRAGMENT_BIT, device.logicalDevice );
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = {
@@ -215,12 +215,12 @@ VkResult Renderer::createWireframePipeline()
 {
 	VkPipelineShaderStageCreateInfo vStageCreateInfo =
 		CreatePipelineShaderStageCreateInfo(
-			"shaders\\compiled\\default.vspv",
+			"core\\default.vspv",
 			VK_SHADER_STAGE_VERTEX_BIT, device.logicalDevice );
 
 	VkPipelineShaderStageCreateInfo fStageCreateInfo =
 		CreatePipelineShaderStageCreateInfo(
-			"shaders\\compiled\\default.fspv",
+			"core\\default.fspv",
 			VK_SHADER_STAGE_FRAGMENT_BIT, device.logicalDevice );
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = {

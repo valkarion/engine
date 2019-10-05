@@ -8,7 +8,7 @@ struct Type {																\
 		int	gen;															\
 		Type( const Base v ) : v( v ), gen( -1 ) {};						\
 		Type( const Base v, const int gen ) : v( v ), gen( gen ){};			\
-		Type() : v(){};														\
+		Type() : v( -1 ), gen(-1){};										\
 		Type( const Type& rhs ) : v( rhs.v ), gen( rhs.gen ){}				\
 		Type& operator=( const Type& rhs ) {								\
 			v = rhs.v; gen = rhs.gen; return *this;							\

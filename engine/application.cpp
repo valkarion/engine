@@ -117,10 +117,18 @@ bool Application::init()
 	Renderer::instance()->loadTexture( "notexture" );
 
 	InputSystem::instance()->init( Renderer::instance()->window );
+	
 	sol::table iTable = LuaStateController::instance()->getDataTable( "input" );
-	InputSystem::instance()->setupInputFunctions( iTable );
-	sol::table kTable = LuaStateController::instance()->getDataTable( "keymap" );
-	InputSystem::instance()->setupInputCommands( kTable );
+	if ( iTable != sol::nil )
+	{
+		InputSystem::instance()->setupInputFunctions( iTable );
+	}
+
+	sol::table kTable = LuaStateController::instance()->getDataTable( "keymap" );	
+	if ( kTable != sol::nil )
+	{
+		InputSystem::instance()->setupInputCommands( kTable );
+	}
 
 	Camera::instance()->initCamera();
 
