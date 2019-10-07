@@ -4,9 +4,8 @@ data:extend("scenes", {
 		
 		-- events specific to certain scenes 
 		events = {
-			scene_enter = function () 
-				-- GetTetrisBoard():update( GetLastFrameTime() )
-				DebugPrint("Alma")
+			post_input = function () 
+				GetTetrisBoard():update( GetLastFrameTime() )				
 			end,
 		}
 	}

@@ -4,7 +4,7 @@ void FrameCounter::update()
 {
 	lastFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(
 		( std::chrono::high_resolution_clock::now() - fixPoint ) ).count();
-
+	
 	deltaTime += lastFrameTime;
 	fixPoint = std::chrono::high_resolution_clock::now();
 

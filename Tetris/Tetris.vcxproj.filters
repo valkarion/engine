@@ -15,21 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tetField.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="tetMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tetRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tetBoard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="tetField.hpp">
+    <ClInclude Include="tetRenderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tetRenderer.hpp">
+    <ClInclude Include="tetBoard.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

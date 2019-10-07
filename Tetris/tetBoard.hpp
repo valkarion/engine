@@ -39,19 +39,19 @@ enum class enu_BLOCK_TYPE
 };
 
 // 2D field 
-using Field_t = std::vector<std::vector<Cell>>;
+using Board_t = std::vector<std::vector<Cell>>;
 
 /*
 	This is the gameplay area, blocks will fall from here
 */
-class Field
+class Board
 {
 	uint32_t		width;
 	uint32_t		height;
 
-	static std::unique_ptr<Field> _instance;
+	static std::unique_ptr<Board> _instance;
 public:
-	Field_t			field;
+	Board_t			field;
 	
 	float			timeSinceMove;
 	float			forceMoveTime;
@@ -66,5 +66,7 @@ public:
 	void			update( const float deltatime );	
 	void			setAreaSize( const uint32_t width, const uint32_t height );
 
-	static Field*	instance();
+	void			initialize();
+
+	static Board*	instance();
 };

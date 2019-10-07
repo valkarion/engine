@@ -129,12 +129,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="tetBoard.cpp" />
     <ClCompile Include="tetMain.cpp" />
-    <ClCompile Include="tetField.cpp" />
     <ClCompile Include="tetRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="tetField.hpp" />
+    <ClInclude Include="tetBoard.hpp" />
     <ClInclude Include="tetRenderer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

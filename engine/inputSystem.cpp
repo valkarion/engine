@@ -2,6 +2,7 @@
 #include "application.hpp"
 #include "camera.hpp"
 #include "loggers.hpp"
+#include "utils.hpp"
 #include <GLFW/glfw3.h>
 
 std::unique_ptr<InputSystem> InputSystem::_instance = std::make_unique<InputSystem>();
@@ -51,6 +52,8 @@ void InputSystem::init( GLFWwindow* window )
 	double mx, my;
 	glfwGetCursorPos( window, &mx, &my );
 	mouseCurrent = mousePrev = glm::vec2( (float)mx, (float)my );
+
+	mappedMouseFunctions.fill( UNSET_S );
 }
 
 void InputSystem::setKeyState( const int key, const enu_KEY_STATE state )
@@ -108,8 +111,12 @@ void InputSystem::update()
 		float deltax = mouseCurrent.x - mousePrev.x;
 		float deltay = mouseCurrent.y - mousePrev.y;
 		glm::vec2 delta( deltax, deltay );
+		
+		if ( mappedMouseFunctions[(size_t)enu_MOUSE_STATE::moved] != UNSET_S )
+		{
+			inputFunctions[mappedMouseFunctions[(size_t)enu_MOUSE_STATE::moved]]( delta );
+		}
 
-		inputFunctions[mappedMouseFunctions[(size_t)enu_MOUSE_STATE::moved]]( delta );
 		mouseState[(size_t)enu_MOUSE_STATE::moved] = 0;
 	}
 }
