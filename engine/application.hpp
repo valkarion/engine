@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include "frameCounter.hpp"
 
 /*
 	Application - This class handles the gameloop, window 
@@ -9,12 +10,16 @@ class Application
 {
 	static std::unique_ptr<Application> _instance;
 
+	FrameCounter		frameCounter;
+
 	bool				exitGame;
 	bool				initGLFW();
 	
 	void				shutdown();
 public:
 	void				loadLuaData();
+
+	float				getLastFrameTime() const;
 
 	bool				init();
 	void				run();

@@ -59,10 +59,12 @@ struct Type {																\
 
 // physical id. - this is what the user interacts
 STRONG_TYPEDEF( E_ID, long );
-// logial id. - used inside the EntityManager 
+// logial id.	- used inside the EntityManager 
 STRONG_TYPEDEF( Vi_ID, long );
-// scene id. - for the SceneManager 
+// scene id.	- for the SceneManager 
 STRONG_TYPEDEF( SC_ID, long );
+// event id.	- these are passed to the event manager class to fire events
+STRONG_TYPEDEF( EVENT_ID, long );
 
 template <typename T> class IdManager
 {

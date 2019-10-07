@@ -1,7 +1,6 @@
 #include <Windows.h>
 
 #include "cvar.hpp"
-#include "frameCounter.hpp"
 #include "application.hpp"
 #include "cvarSystem.hpp"
 #include "loggers.hpp"
@@ -14,11 +13,13 @@
 #include "sceneManager.hpp"
 #include "camera.hpp"
 #include "physicsSystem.hpp"
+#include "eventManager.hpp"
 
 CVar window_width(	"window_width",		"1280" );
 CVar window_height(	"window_height",	"800" );
 CVar window_title(	"window_title",		"No Name Engine" );
 CVar print_fps(		"print_fps",		"0" );
+CVar use_physics(	"physics",			"1" );
 
 std::unique_ptr<Application> Application::_instance = std::make_unique<Application>();
 
@@ -91,6 +92,11 @@ void Application::loadLuaData()
 	}
 }
 
+float Application::getLastFrameTime() const
+{
+	return frameCounter.lastFrameTimeInSeconds();
+}
+
 bool Application::init()
 {
 	CVarSystem::instance()->registerStaticCVars();
@@ -146,7 +152,6 @@ void SetWindowDebugTitle( GLFWwindow* window, int frameRate )
 
 void Application::run()
 {
-	FrameCounter frameCounter;
 	frameCounter.update();
 
 	while( !exitGame && !glfwWindowShouldClose( Renderer::instance()->window ) )
@@ -156,8 +161,11 @@ void Application::run()
 		InputSystem::instance()->update();
 
 	// Systems
-		PhysicsSystem::instance()->update( 
-			frameCounter.lastFrameTimeInSeconds() );
+		if ( use_physics.intValue != 0 )
+		{
+			PhysicsSystem::instance()->update(
+				frameCounter.lastFrameTimeInSeconds() );
+		}
 
 		Camera::instance()->update();
 
@@ -187,6 +195,8 @@ void Application::shutdown()
 	Renderer::instance()->shutdown();
 	   
 	ResourceManager::instance()->shutdown();
+
+	EventManager::instance()->shutdown();
 
 	glfwDestroyWindow( Renderer::instance()->window );
 	glfwTerminate();

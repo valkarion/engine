@@ -226,6 +226,7 @@
     <ClCompile Include="cvarSystem.cpp" />
     <ClCompile Include="debugOverlay.cpp" />
     <ClCompile Include="entityManager.cpp" />
+    <ClCompile Include="eventManager.cpp" />
     <ClCompile Include="fileSystem.cpp" />
     <ClCompile Include="frameCounter.cpp" />
     <ClCompile Include="inputSystem.cpp" />
@@ -258,6 +259,7 @@
     <ClInclude Include="cvarSystem.hpp" />
     <ClInclude Include="debugOverlay.hpp" />
     <ClInclude Include="entityManager.hpp" />
+    <ClInclude Include="eventManager.hpp" />
     <ClInclude Include="fileSystem.hpp" />
     <ClInclude Include="frameCounter.hpp" />
     <ClInclude Include="idManager.hpp" />

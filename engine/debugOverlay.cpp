@@ -249,11 +249,11 @@ void DebugOverlay::createPipeline()
 	dynamicStates.dynamicStateCount = 2;
 
 	VkPipelineShaderStageCreateInfo vShader = CreatePipelineShaderStageCreateInfo(
-		"shaders\\compiled\\uioverlay.vspv", VK_SHADER_STAGE_VERTEX_BIT, device->logicalDevice
+		"core\\uioverlay.vspv", VK_SHADER_STAGE_VERTEX_BIT, device->logicalDevice
 	);
 
 	VkPipelineShaderStageCreateInfo fShader = CreatePipelineShaderStageCreateInfo(
-		"shaders\\compiled\\uioverlay.fspv", VK_SHADER_STAGE_FRAGMENT_BIT, device->logicalDevice
+		"core\\uioverlay.fspv", VK_SHADER_STAGE_FRAGMENT_BIT, device->logicalDevice
 	);
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaders = {

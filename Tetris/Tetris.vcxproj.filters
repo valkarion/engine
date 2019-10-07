@@ -21,7 +21,7 @@
     <ClCompile Include="tetMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tetComponent.cpp">
+    <ClCompile Include="tetRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="tetField.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tetComponent.hpp">
+    <ClInclude Include="tetRenderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
