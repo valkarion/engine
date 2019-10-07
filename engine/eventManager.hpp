@@ -4,6 +4,7 @@
 #include <map>
 #include "libs/sol.hpp"
 #include "idManager.hpp"
+#include "events.hpp"
 
 class EventManager
 {

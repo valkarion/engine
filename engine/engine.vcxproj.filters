@@ -132,6 +132,9 @@
     <ClCompile Include="eventManager.cpp">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libs\sol.hpp">
@@ -244,6 +247,12 @@
     </ClInclude>
     <ClInclude Include="eventManager.hpp">
       <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="enum.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="events.hpp">
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

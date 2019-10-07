@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include "application.hpp"
 #include "tetRenderer.hpp"
+#include "luaStateController.hpp"
 
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
 {
@@ -10,6 +11,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	{
 		return -1;
 	}
+
+	LuaStateController::instance()->safeRunScriptFile( "startup.lua" );
 
 	Application::instance()->run();
 

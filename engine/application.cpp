@@ -88,6 +88,23 @@ void Application::loadLuaData()
 			Scene* scene = SceneManager::instance()->getScene( id );
 			scene->name = name;
 			scene->worldObjName = s["world"].get_or<std::string>( UNSET_S );
+
+			if ( s["events"] )
+			{
+				for ( const auto& evt : s["events"].get<sol::table>() )
+				{
+					std::string evtName = evt.first.as<std::string>();
+					sol::function evtFn = evt.second.as<sol::function>();
+
+					enu_EVENT_TYPE type = enums::enu_EVENT_TYPE_fromString( evtName );
+					if ( type != enu_EVENT_TYPE::unset )
+					{
+						scene->sceneEvents[type].push_back(
+							EventManager::instance()->add( evtFn )
+						);
+					}
+				}
+			}
 		}
 	}
 }
@@ -159,6 +176,8 @@ void Application::run()
 	// Input 
 		glfwPollEvents();
 		InputSystem::instance()->update();
+
+		SceneManager::instance()->fireSceneEvents( enu_EVENT_TYPE::post_input );
 
 	// Systems
 		if ( use_physics.intValue != 0 )

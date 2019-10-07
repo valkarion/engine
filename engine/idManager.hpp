@@ -98,11 +98,11 @@ public:
 	static void reset()
 	{
 		_freeIds = {};
-		_lastAssigned = {};
+		_lastAssigned = 0;
 	}
 };
 
-template<typename T>	T IdManager<T>::_lastAssigned = {};
+template<typename T>	T IdManager<T>::_lastAssigned = 0;
 template<typename T>	std::deque<T> IdManager<T>::_freeIds = {};
 
 #define IDGET(type)		IdManager<type>::getNewId()

@@ -3,6 +3,7 @@
 #include <vector>
 #include "idManager.hpp"
 #include "utils.hpp"
+#include "eventManager.hpp"
 
 /*
 	Scenes are bascially maps, they contain entities, triggers 
@@ -21,4 +22,8 @@ public:
 	E_ID world = UNSET_ID;
 
 	std::vector<E_ID> entities;
+
+	// scene specific events
+	std::map<enu_EVENT_TYPE,
+		std::vector<EVENT_ID>> sceneEvents;
 };

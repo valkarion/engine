@@ -244,6 +244,7 @@
     <ClCompile Include="resourceManager.cpp" />
     <ClCompile Include="sceneManager.cpp" />
     <ClCompile Include="taskScheduler.cpp" />
+    <ClCompile Include="utils.cpp" />
     <ClCompile Include="vulkanBuffer.cpp" />
     <ClCompile Include="vulkanCommon.cpp" />
     <ClCompile Include="vulkanDebugger.cpp" />
@@ -259,7 +260,9 @@
     <ClInclude Include="cvarSystem.hpp" />
     <ClInclude Include="debugOverlay.hpp" />
     <ClInclude Include="entityManager.hpp" />
+    <ClInclude Include="enum.hpp" />
     <ClInclude Include="eventManager.hpp" />
+    <ClInclude Include="events.hpp" />
     <ClInclude Include="fileSystem.hpp" />
     <ClInclude Include="frameCounter.hpp" />
     <ClInclude Include="idManager.hpp" />

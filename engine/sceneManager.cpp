@@ -38,7 +38,11 @@ Scene* SceneManager::setActiveScene( SC_ID id )
 {
 	if ( scenes.count( id ) != 0 )
 	{
+		fireSceneEvents( enu_EVENT_TYPE::scene_leave );
+
 		activeScene = id;
+		
+		fireSceneEvents( enu_EVENT_TYPE::scene_enter );
 	}
 
 	return getActiveScene();
@@ -64,6 +68,22 @@ Scene* SceneManager::getScene( const std::string& name )
 	}
 
 	return nullptr;
+}	
+
+void SceneManager::fireSceneEvents( enu_EVENT_TYPE type )
+{
+	if ( activeScene != UNSET_ID )
+	{
+		Scene* sc = getActiveScene();
+
+		if ( sc->sceneEvents.count( type ) != 0 )
+		{
+			for ( const EVENT_ID& id : sc->sceneEvents[type] )
+			{
+				EventManager::instance()->fire( id );
+			}
+		}
+	}
 }
 
 void SceneManager::shutdown()

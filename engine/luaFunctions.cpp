@@ -10,6 +10,7 @@
 #include "components.hpp"
 #include "resourceManager.hpp"
 #include "playerController.hpp"
+#include "application.hpp"
 
 extern CVar window_title;
 
@@ -34,7 +35,6 @@ void DebugPrint( sol::object obj )
 {
 	PrintToOutputWindow( obj.as<std::string>() );
 }
-
 void LoadAllTextures()
 {
 	std::vector<std::string> textures = GetFilesInDirectory( "textures", "png" );
@@ -54,7 +54,6 @@ void LoadAllTextures()
 		}
 	}
 }
-
 void LoadAllModels()
 {
 	std::vector<std::string> models = GetFilesInDirectory( "models", "obj" );
@@ -87,6 +86,10 @@ void SetCVar( const std::string& cvar, sol::object value )
 	{
 		cv->setValue( value.as<std::string>() );
 	}
+}
+float GetLastFrameTime()
+{
+	return Application::instance()->getLastFrameTime();
 }
 
 // gameplay logic 
@@ -145,6 +148,8 @@ E_ID CreateEntity()
 	return EntityManager::instance()->addEntity();
 }
 
+
+
 // these are ducttape, find a fancy way to make these
 COMPONENT_PROPERTIES( TransformComponent );
 COMPONENT_PROPERTIES( MeshComponent );
@@ -158,6 +163,7 @@ void LuaStateController::registerFunctions()
 
 	state["SetWindowName"] = SetWindowTitle;
 	state["SetCVar"] = SetCVar;
+	state["GetLastFrameTime"] = GetLastFrameTime;
 
 	state["SetActiveScene"] = SetActiveScene;
 	state["AddEntityToScene"] = AddEntityToScene;
