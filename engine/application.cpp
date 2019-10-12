@@ -41,7 +41,7 @@ bool Application::initGLFW()
 
 	if( r->window == nullptr )
 	{
-		WriteToErrorLog( "Failed to create window." );
+		Logger::WriteToErrorLog( "Failed to create window." );
 		return false;
 	}
 
@@ -80,7 +80,7 @@ void Application::loadLuaData()
 
 			if ( name == UNSET_S )
 			{
-				WriteToErrorLog( "Scenes must have a unique name property; skipping." );
+				Logger::WriteToErrorLog( "Scenes must have a unique name property; skipping." );
 				continue;
 			}						
 

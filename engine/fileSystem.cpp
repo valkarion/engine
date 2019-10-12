@@ -69,7 +69,7 @@ std::vector<char> FileSystem::ReadBinaryFile( const std::string& file )
 
 	if( !ifs.good() )
 	{
-		WriteToErrorLog( "Failed to open file: " + file );
+		Logger::WriteToErrorLog( "Failed to open file: " + file );
 		return {};
 	}
 

@@ -16,7 +16,7 @@ bool ResourceManager::loadImage( const std::string& path, const std::string& img
 {
 	if( !FileSystem::CheckFileExists( path ) )
 	{		
-		WriteToErrorLog( "Failed to open file: " + path );
+		Logger::WriteToErrorLog( "Failed to open file: " + path );
 		return false;
 	}
 	   
@@ -49,13 +49,13 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 
 	if ( !error.empty() )
 	{
-		PrintToOutputWindow( "Load Mesh Error: %s", error.c_str() );
+		Logger::PrintToOutputWindow( "Load Mesh Error: %s", error.c_str() );
 		return false;
 	}
 
 	if ( !warning.empty() )
 	{
-		PrintToOutputWindow( "Load Mesh Warning: %s", warning.c_str() );
+		Logger::PrintToOutputWindow( "Load Mesh Warning: %s", warning.c_str() );
 	}
 	
 	Mesh& mesh = meshes[objName];
@@ -67,7 +67,7 @@ bool ResourceManager::loadMesh( const std::string& path, const std::string& objN
 		{
 			int vert = shape.mesh.num_face_vertices[fv];
 
-			MeshFace faceVertexIndecies = { -1, -1, -1 };
+			MeshFace faceVertexIndecies = { 0, 0, 0 };
 			for ( size_t v = 0; v < vert; v++ )
 			{
 				tinyobj::index_t idx = shape.mesh.indices[indexOffset + v];

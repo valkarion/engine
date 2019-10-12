@@ -630,7 +630,7 @@ void Renderer::endDraw()
 	VkResult res = vkQueueSubmit( graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE );
 	if ( res != VK_SUCCESS )
 	{
-		WriteToErrorLog( "Failed to submit draw commands to the queue: " + std::to_string( res ) );
+		Logger::WriteToErrorLog( "Failed to submit draw commands to the queue: " + std::to_string( res ) );
 		exit( -1 );
 	}
 
@@ -832,7 +832,7 @@ void Renderer::loadTexture( const std::string& name )
 
 	if ( img == nullptr )
 	{
-		WriteToErrorLog( "Failed to load image %s.", name.c_str() );
+		Logger::WriteToErrorLog( "Failed to load image %s.", name.c_str() );
 		return;
 	}
 
@@ -942,7 +942,7 @@ VkFormat Renderer::findSupportedImageFormat( const std::vector<VkFormat>& candid
 		}
 	}
 
-	WriteToErrorLog( "Could not find proper format for depth buffer." );
+	Logger::WriteToErrorLog( "Could not find proper format for depth buffer." );
 	exit( -1 );
 }
 

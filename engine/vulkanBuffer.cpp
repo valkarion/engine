@@ -14,7 +14,7 @@ void* VulkanBuffer::allocate( size_t memSize )
 		// check alignment 
 		if ( alignment != 0 )
 		{
-			const int alignDiff = memSize % alignment;
+			const int alignDiff = int( memSize % alignment );
 			if ( alignDiff != 0 )
 			{
 				finalSize = memSize + alignment - alignDiff;
@@ -24,7 +24,7 @@ void* VulkanBuffer::allocate( size_t memSize )
 		// check bounds 
 		if ( offset + finalSize > size )
 		{
-			WriteToErrorLog( "Out of Buffer Memory." );
+			Logger::WriteToErrorLog( "Out of Buffer Memory." );
 			exit( -1 );
 		}
 
@@ -33,7 +33,7 @@ void* VulkanBuffer::allocate( size_t memSize )
 	}
 	else
 	{
-		WriteToErrorLog( "Tried to access unmapped buffer." );
+		Logger::WriteToErrorLog( "Tried to access unmapped buffer." );
 		exit( -1 );
 	}
 
@@ -94,7 +94,7 @@ uint32_t FindMemoryType( uint32_t filter, VkMemoryPropertyFlags flags, VkPhysica
 		}
 	}
 
-	WriteToErrorLog( "Failed to find memory in Renderer::findMemoryType" );
+	Logger::WriteToErrorLog( "Failed to find memory in Renderer::findMemoryType" );
 	exit( -1 );
 }
 

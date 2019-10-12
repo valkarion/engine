@@ -23,7 +23,7 @@ extern CVar window_height;
 {																				\
 	VkResult res = fn;															\
 	if ( res != VkResult::VK_SUCCESS ){											\
-		WriteToErrorLog( "Vulkan Error: "  #fn ": " + std::to_string( res ) +	\
+		Logger::WriteToErrorLog( "Vulkan Error: "  #fn ": " + std::to_string( res ) +	\
 		" on line: " + std::to_string(__LINE__) );								\
 		exit( -1 );																\
 	}																			\

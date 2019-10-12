@@ -7,7 +7,7 @@ CVar system_logfile( "system_logfile", "error.log" );
 
 #define MAX_LOG_SIZE 4'096
 
-void PrintToOutputWindow( const char* fmt, ... )
+void Logger::PrintToOutputWindow( const char* fmt, ... )
 {
 	va_list		args;
 	static char buffer[MAX_LOG_SIZE];
@@ -20,13 +20,13 @@ void PrintToOutputWindow( const char* fmt, ... )
 	OutputDebugString( "\n" );
 }
 
-void PrintToOutputWindow( const std::string& message )
+void Logger::PrintToOutputWindow( const std::string& message )
 {
 	OutputDebugString( message.c_str() );
 	OutputDebugString( "\n" );
 }
 
-void WriteToErrorLog( const char* fmt, ... )
+void Logger::WriteToErrorLog( const char* fmt, ... )
 {
 	va_list		args;
 	static char buffer[MAX_LOG_SIZE];
@@ -39,7 +39,7 @@ void WriteToErrorLog( const char* fmt, ... )
 	FileSystem::WriteToFile( system_logfile.value, buffer );
 }
 
-void WriteToErrorLog( const std::string& message )
+void Logger::WriteToErrorLog( const std::string& message )
 {
 	PrintToOutputWindow( message );
 	FileSystem::WriteToFile( system_logfile.value, message );

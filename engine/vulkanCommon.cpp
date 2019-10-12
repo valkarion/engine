@@ -109,7 +109,7 @@ void TransitionImageLayout( VkImage image, VkFormat format,
 	}
 	else
 	{
-		WriteToErrorLog( "Failed to create transitional image layout" );
+		Logger::WriteToErrorLog( "Failed to create transitional image layout" );
 	}
 
 	vkCmdPipelineBarrier( cmdBuffer,

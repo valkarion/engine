@@ -3,6 +3,10 @@
 #include <string>
 #include <vector>
 
+/*
+	This struct holds all the information the renderer needs to 
+	upload images to GPU memory. 
+*/
 struct ImageInfo
 {
 	uint32_t width;

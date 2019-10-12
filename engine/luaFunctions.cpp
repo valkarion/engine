@@ -33,7 +33,7 @@ state["Get"#ComponentName] = Get##ComponentName;
 // dev 
 void DebugPrint( sol::object obj )
 {
-	PrintToOutputWindow( obj.as<std::string>() );
+	Logger::PrintToOutputWindow( obj.as<std::string>() );
 }
 void LoadAllTextures()
 {
@@ -50,7 +50,7 @@ void LoadAllTextures()
 		}
 		else
 		{
-			WriteToErrorLog( "ResourceManager::loadImage failed to load image: %s", t.c_str() );
+			Logger::WriteToErrorLog( "ResourceManager::loadImage failed to load image: %s", t.c_str() );
 		}
 	}
 }
@@ -69,7 +69,7 @@ void LoadAllModels()
 		}
 		else
 		{
-			WriteToErrorLog( "ResourceManager::loadMesh failed to load obj file: %s", mdl.c_str() );
+			Logger::WriteToErrorLog( "ResourceManager::loadMesh failed to load obj file: %s", mdl.c_str() );
 		}
 	}
 }
@@ -123,7 +123,7 @@ void SetActiveScene( const std::string& name )
 	}
 	else
 	{
-		WriteToErrorLog( "Failed to set active scene: %s", name.c_str() );
+		Logger::WriteToErrorLog( "Failed to set active scene: %s", name.c_str() );
 	}
 }
 void AddEntityToScene( sol::object eid, const std::string& name )

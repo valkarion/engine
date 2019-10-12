@@ -112,7 +112,7 @@ VkResult VulkanDevice::createVkPhysicalDevice( VulkanSwapchain& swapchain )
 
 	if ( !foundValid )
 	{
-		WriteToErrorLog( "Could not find a suitable GPU." );
+		Logger::WriteToErrorLog( "Could not find a suitable GPU." );
 		exit( -1 );
 	}
 

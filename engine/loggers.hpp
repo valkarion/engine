@@ -2,9 +2,14 @@
 #include <string>
 #include <cstring>
 
+class Logger
+{
+public:
 // these overloads are for the lua side 
-void WriteToErrorLog( const std::string& message );
-void PrintToOutputWindow( const std::string& message );
+	static void WriteToErrorLog( const std::string& message );
+	static void PrintToOutputWindow( const std::string& message );
 
-void PrintToOutputWindow( const char* fmt, ... );
-void WriteToErrorLog( const char* fmt, ... );
+// these overloads for the C++ side
+	static void PrintToOutputWindow( const char* fmt, ... );
+	static void WriteToErrorLog( const char* fmt, ... );
+};

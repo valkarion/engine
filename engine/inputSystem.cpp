@@ -214,7 +214,7 @@ void InputSystem::setupInputFunctions( sol::table& inputTable )
 
 		if ( inputFunctions.count( fnName ) != 0 )
 		{
-			WriteToErrorLog( "Input function with the same name already exists: %s", 
+			Logger::WriteToErrorLog( "Input function with the same name already exists: %s",
 				fnName.c_str() );
 		}
 		else
@@ -276,7 +276,7 @@ void InputSystem::setupInputCommands( sol::table& keymapTable )
 		}
 
 	// it's Superman! Well it's an error. 
-		WriteToErrorLog( "Unrecognised input key: %s",
+		Logger::WriteToErrorLog( "Unrecognised input key: %s",
 			key.c_str() );
 	}
 }

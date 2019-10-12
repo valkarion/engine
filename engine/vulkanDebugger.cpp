@@ -9,7 +9,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 {
 	std::string msg = "validation layer: ";
 	msg += pCallbackData->pMessage;
-	PrintToOutputWindow( msg );
+	Logger::PrintToOutputWindow( msg );
 
 	return VK_FALSE;
 }
@@ -44,7 +44,7 @@ bool CheckValidationLayerSupport()
 		{
 			char buffer[256];
 			sprintf_s( buffer, 256, "Missing validation layer: %s", it );
-			PrintToOutputWindow( buffer );
+			Logger::PrintToOutputWindow( buffer );
 			allLayersSupported = false;
 		}
 	}
@@ -66,7 +66,7 @@ VkResult VulkanDebugger::initialize( bool use )
 		
 		if ( create == VK_NULL_HANDLE || destroy == VK_NULL_HANDLE )
 		{
-			PrintToOutputWindow( "Could not find debug lifetime functions" );
+			Logger::PrintToOutputWindow( "Could not find debug lifetime functions" );
 			return VK_ERROR_EXTENSION_NOT_PRESENT;
 		}
 
