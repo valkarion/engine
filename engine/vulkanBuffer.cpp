@@ -1,7 +1,7 @@
 #include "vulkanBuffer.hpp"
 #include "vulkanCommon.hpp"
 #include "vulkanDevice.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 
 void* VulkanBuffer::allocate( size_t memSize )
 {

@@ -9,7 +9,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 #include "cvar.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 
 class VulkanDevice;
 

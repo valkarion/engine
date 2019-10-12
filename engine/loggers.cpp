@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include "loggers.hpp"
+#include "logger.hpp"
 #include "cvar.hpp"
 #include "fileSystem.hpp"
 

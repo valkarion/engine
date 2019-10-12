@@ -3,7 +3,7 @@
 #include "cvar.hpp"
 #include "application.hpp"
 #include "cvarSystem.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 #include "fileSystem.hpp"
 #include "renderer.hpp"
 #include "inputSystem.hpp"

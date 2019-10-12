@@ -1,5 +1,5 @@
 #include "luaStateController.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 #include "camera.hpp"
 #include "cvar.hpp"
 #include "cvarSystem.hpp"

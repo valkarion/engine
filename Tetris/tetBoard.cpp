@@ -1,5 +1,5 @@
 #include "tetBoard.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 
 std::unique_ptr<Board> Board::_instance = std::make_unique<Board>();
 Board* Board::instance()

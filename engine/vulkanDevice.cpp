@@ -1,7 +1,7 @@
 #include "vulkanDevice.hpp"
 #include "vulkanCommon.hpp"
 #include "vulkanSwapchain.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 #include <set>
 
 void VulkanDevice::findQueueFamilies( VkPhysicalDevice device )

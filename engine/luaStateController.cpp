@@ -1,5 +1,5 @@
 #include "luaStateController.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 
 std::unique_ptr<LuaStateController> LuaStateController::_instance = std::make_unique<LuaStateController>();
 LuaStateController* LuaStateController::instance()

@@ -1,5 +1,5 @@
 #include "vulkanDebugger.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

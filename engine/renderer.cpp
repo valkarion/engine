@@ -1,6 +1,6 @@
 #include "renderer.hpp"
 #include "cvar.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 #include "fileSystem.hpp"
 #include "camera.hpp"
 

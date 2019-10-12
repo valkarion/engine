@@ -1,5 +1,5 @@
 #include "fileSystem.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

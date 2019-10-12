@@ -19,7 +19,7 @@ void EntityManager::resizeComponentMap()
 
 E_ID EntityManager::addEntity()
 {
-	if ( IdManager<Vi_ID>::_freeIds.empty() )
+	if ( IdManager<Vi_ID>::freeIds.empty() )
 	{
 		resizeComponentMap();
 	}
@@ -32,7 +32,7 @@ E_ID EntityManager::addEntity()
 
 E_ID EntityManager::addEntity( const E_ID existingId )
 {
-	if ( IdManager<Vi_ID>::_freeIds.empty() )
+	if ( IdManager<Vi_ID>::freeIds.empty() )
 	{
 		resizeComponentMap();
 	}

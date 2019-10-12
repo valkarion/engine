@@ -1,6 +1,6 @@
 #include "resourceManager.hpp"
 #include "fileSystem.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>

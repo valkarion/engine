@@ -173,9 +173,6 @@
     <ClInclude Include="inputSystem.hpp">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
-    <ClInclude Include="loggers.hpp">
-      <Filter>Header Files\Core</Filter>
-    </ClInclude>
     <ClInclude Include="luaStateController.hpp">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
@@ -252,6 +249,9 @@
       <Filter>Header Files\Core</Filter>
     </ClInclude>
     <ClInclude Include="events.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="logger.hpp">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>

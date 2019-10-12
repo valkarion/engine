@@ -1,7 +1,7 @@
 #include "inputSystem.hpp"
 #include "application.hpp"
 #include "camera.hpp"
-#include "loggers.hpp"
+#include "logger.hpp"
 #include "utils.hpp"
 #include <GLFW/glfw3.h>
 
