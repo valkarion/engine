@@ -9,7 +9,7 @@
 #include <boost/algorithm/string.hpp>
 namespace fs = boost::filesystem;
 
-std::vector<std::string> GetFilesInDirectory( const std::string& path, const std::string ext )
+std::vector<std::string> FileSystem::GetFilesInDirectory( const std::string& path, const std::string ext )
 {
 	std::vector<std::string> res;
 	fs::path dir( path.c_str() );
@@ -43,7 +43,7 @@ std::vector<std::string> GetFilesInDirectory( const std::string& path, const std
 	return res;
 }
 
-bool WriteToFile( const std::string& file, const std::string& message )
+bool FileSystem::WriteToFile( const std::string& file, const std::string& message )
 {
 	fs::path p( file );
 	fs::ofstream bofs( p );
@@ -58,12 +58,12 @@ bool WriteToFile( const std::string& file, const std::string& message )
 	return false;
 }
 
-bool CheckFileExists( const std::string& file )
+bool FileSystem::CheckFileExists( const std::string& file )
 {
 	return fs::exists( file );
 };
 
-std::vector<char> ReadBinaryFile( const std::string& file )
+std::vector<char> FileSystem::ReadBinaryFile( const std::string& file )
 {
 	std::ifstream ifs( file, std::ios::ate | std::ios::binary );
 
@@ -83,7 +83,7 @@ std::vector<char> ReadBinaryFile( const std::string& file )
 	return buffer;
 }
 
-ImageInfo LoadImage( const std::string& filepath )
+ImageInfo FileSystem::LoadImage( const std::string& filepath )
 {
 	// the graphics card requires an alpha channel, even if it does not exists
 	static int forceBPP = 4;

@@ -37,7 +37,7 @@ void DebugPrint( sol::object obj )
 }
 void LoadAllTextures()
 {
-	std::vector<std::string> textures = GetFilesInDirectory( "textures", "png" );
+	std::vector<std::string> textures = FileSystem::GetFilesInDirectory( "textures", "png" );
 	
 	for ( const auto& t : textures )
 	{
@@ -56,7 +56,7 @@ void LoadAllTextures()
 }
 void LoadAllModels()
 {
-	std::vector<std::string> models = GetFilesInDirectory( "models", "obj" );
+	std::vector<std::string> models = FileSystem::GetFilesInDirectory( "models", "obj" );
 	
 	for ( const auto& mdl : models )
 	{

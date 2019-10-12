@@ -63,7 +63,7 @@ bool Application::initGLFW()
 void Application::loadLuaData()
 {
 	// run user script files 
-	std::vector<std::string> scripts = GetFilesInDirectory( "scripts", "lua" );
+	std::vector<std::string> scripts = FileSystem::GetFilesInDirectory( "scripts", "lua" );
 	for ( const auto& s : scripts )
 	{
 		LuaStateController::instance()->safeRunScriptFile( "scripts\\" + s + ".lua" );

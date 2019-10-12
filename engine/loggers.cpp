@@ -36,11 +36,11 @@ void WriteToErrorLog( const char* fmt, ... )
 	va_end( args );
 
 	PrintToOutputWindow( buffer, args );
-	WriteToFile( system_logfile.value, buffer );
+	FileSystem::WriteToFile( system_logfile.value, buffer );
 }
 
 void WriteToErrorLog( const std::string& message )
 {
 	PrintToOutputWindow( message );
-	WriteToFile( system_logfile.value, message );
+	FileSystem::WriteToFile( system_logfile.value, message );
 }

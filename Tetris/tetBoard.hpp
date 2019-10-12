@@ -9,7 +9,7 @@
 struct Cell
 {
 	bool hasEntity	= false;
-	glm::vec3 color = glm::vec3( 0.f, 0.f, 0.f );
+	int	 textureIndex;
 };
 
 enum class enu_BLOCK_TYPE
@@ -55,13 +55,14 @@ public:
 	
 	float			timeSinceMove;
 	float			forceMoveTime;
-
+	
 	void			rotateBlock();
 	void			shiftLeft();
 	void			shiftRight();
 	void			sinkBlock();
 
 	bool			checkGameOver();
+	void			spawnBlock();
 
 	void			update( const float deltatime );	
 	void			setAreaSize( const uint32_t width, const uint32_t height );

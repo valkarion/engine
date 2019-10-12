@@ -8,7 +8,7 @@ void TestImageLoad()
 	uint32_t height = 512;
 	uint32_t size = width * height * 4;
 
-	ImageInfo fileInfo = LoadImage( "test.jpg" );
+	ImageInfo fileInfo = FileSystem::LoadImage( "test.jpg" );
 
 	assert( width == fileInfo.width );
 	assert( height == fileInfo.height );

@@ -14,13 +14,13 @@ ResourceManager* ResourceManager::instance()
 
 bool ResourceManager::loadImage( const std::string& path, const std::string& imgName )
 {
-	if( !CheckFileExists( path ) )
+	if( !FileSystem::CheckFileExists( path ) )
 	{		
 		WriteToErrorLog( "Failed to open file: " + path );
 		return false;
 	}
 	   
-	ImageInfo ii = LoadImage( path );
+	ImageInfo ii = FileSystem::LoadImage( path );
 
 	Image& tex = images[imgName];
 	tex.filename = path;

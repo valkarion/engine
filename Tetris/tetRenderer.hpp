@@ -13,7 +13,7 @@ class TetRenderer : public Renderer
 	void		draw() override;
 public:
 	TetOverlay	overlay;
-
+		   
 	void		childInit() override;
 	void		childShutdown() override;
 

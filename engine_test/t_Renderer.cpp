@@ -66,7 +66,7 @@ void SetupMapScene()
 	rm->loadMesh( "..\\WS_WorkingDir\\models\\doom_E1M1.obj", "map", "..\\WS_WorkingDir\\models" );
 	ren->loadModel( "map" );
 	   
-	std::vector<std::string> textures = GetFilesInDirectory( "..\\WS_WorkingDir\\textures", "png" );
+	std::vector<std::string> textures = FileSystem::GetFilesInDirectory( "..\\WS_WorkingDir\\textures", "png" );
 	for ( const auto& t : textures )
 	{
 		char buffer[256];

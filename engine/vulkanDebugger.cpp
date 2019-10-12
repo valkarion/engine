@@ -63,7 +63,7 @@ VkResult VulkanDebugger::initialize( bool use )
 
 		create = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr( instance, "vkCreateDebugUtilsMessengerEXT" );
 		destroy = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr( instance, "vkDestroyDebugUtilsMessengerEXT" );
-
+		
 		if ( create == VK_NULL_HANDLE || destroy == VK_NULL_HANDLE )
 		{
 			PrintToOutputWindow( "Could not find debug lifetime functions" );

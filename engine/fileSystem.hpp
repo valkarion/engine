@@ -3,11 +3,6 @@
 #include <string>
 #include <vector>
 
-std::vector<std::string> GetFilesInDirectory( const std::string& path, const std::string ext = "" );
-bool WriteToFile( const std::string& file, const std::string& message );
-bool CheckFileExists( const std::string& file );
-std::vector<char> ReadBinaryFile( const std::string& file );
-
 struct ImageInfo
 {
 	uint32_t width;
@@ -15,4 +10,16 @@ struct ImageInfo
 	std::vector<char> bytes;
 };
 
-ImageInfo LoadImage( const std::string& filepath );
+class FileSystem
+{
+public:
+	static bool CheckFileExists( const std::string& file );
+
+	static std::vector<std::string> GetFilesInDirectory( const std::string& path, const std::string ext = "" );
+
+	static bool WriteToFile( const std::string& file, const std::string& message );
+	
+	static std::vector<char> ReadBinaryFile( const std::string& file );
+
+	static ImageInfo LoadImage( const std::string& filepath );
+};

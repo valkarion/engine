@@ -5,7 +5,7 @@
 VkPipelineShaderStageCreateInfo CreatePipelineShaderStageCreateInfo( const char* path, 
 	VkShaderStageFlagBits stages, VkDevice device )
 {
-	std::vector<char> code = ReadBinaryFile( path );
+	std::vector<char> code = FileSystem::ReadBinaryFile( path );
 
 	VkShaderModuleCreateInfo smci = {};
 	smci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

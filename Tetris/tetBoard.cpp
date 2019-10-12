@@ -24,12 +24,17 @@ void Board::shiftRight()
 
 void Board::sinkBlock()
 {
-	PrintToOutputWindow( "Alma" );
+	
 }
 
 bool Board::checkGameOver()
 {
 	return false;
+}
+
+void Board::spawnBlock()
+{
+	
 }
 
 void Board::update( const float deltatime )
