@@ -62,8 +62,14 @@ void TetRenderer::draw()
 	
 	VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
 	VkDeviceSize offsets[] = { 0 };
+
+	uint32_t vertexOffset = 0;
 	
 	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
+		
+	const VulkanTexture* texture = getTexture( "notexture" );
+	vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		pipelineLayout, 0, 1, &texture->descriptor, 0, &vertexOffset );
 
 	for ( size_t y = 0; y < height; y++ )
 	{
@@ -79,7 +85,9 @@ void TetRenderer::draw()
 	}
 
 	vkCmdBindIndexBuffer( commandBuffers[currentImageIndex], indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
+	vkCmdBindVertexBuffers( cmdBuf, 1, 1, &transformBuffer.buffer, offsets );
 	vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
+
 	vkCmdDrawIndexed( commandBuffers[currentImageIndex], indexCount, 1, 0, 0, 0 );
 	
 	vertexBuffer.offset = 0;
