@@ -482,15 +482,13 @@ glm::mat4x4 GetModelMatrix( TransformComponent* transform )
 	// displacement
 	glm::mat4 translation = glm::translate( model, transform->position );
 	
-	uint64_t frameCount = Renderer::instance()->renderedFrameCount;
-	float angle = float( frameCount % ( 3600 ) ) / 10.f;
+	// uint64_t frameCount = Renderer::instance()->renderedFrameCount;
+	// float angle = float( frameCount % ( 3600 ) ) / 10.f;
 
 	// rotation
-	glm::quat quat = glm::quat( glm::vec3( glm::radians( angle ),
+	glm::quat quat = glm::quat( glm::vec3( transform->rotation.x,
 		transform->rotation.y, transform->rotation.z ) );
 	glm::mat4 rotation = glm::toMat4( quat );
-	   
-	
 
 	// scaling 
 	glm::mat4x4 scale = glm::scale( glm::mat4( 1.f ), transform->scale );
@@ -519,12 +517,10 @@ void Renderer::draw()
 	// no ubo so dynamic offset is always zero 
 	uint32_t dynamicOffset = 0;
 	// insted of clearing the buffer we overwrite from the beginning 
-	transformBuffer.offset = 0;
+	modelMatrixBuffer.offset = 0;
 	// where to read transform data from the buffer for the current entity
 	VkDeviceSize transformOffset = 0;
-	// we have one vertex buffer so this is always the same
-	VkBuffer vertexBuffers[] = { vertexBuffer.buffer };
-	
+
 	VkDeviceSize offsets[] = { 0 };
 	
 	// push the static camera data into the shader data.
@@ -545,18 +541,13 @@ void Renderer::draw()
 			continue;
 		}
 
-		if ( SceneManager::instance()->getActiveScene()->world == ent )
-		{
-			continue;
-		}
-
 		const Mesh* mesh				= rm->getMesh( meshComponent->meshName );
 		const RenderModel& model		= models[meshComponent->meshName];
 
 		offsets[0]						= model.vertexOffset;
-		transformOffset					= transformBuffer.offset;
+		transformOffset					= modelMatrixBuffer.offset;
 
-		glm::mat4x4* modelMatrix		= ( glm::mat4x4* )transformBuffer.allocate( sizeof( glm::mat4x4 ) );
+		glm::mat4x4* modelMatrix		= ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
 		*modelMatrix					= GetModelMatrix( em->get<TransformComponent>( ent ) );
 		
 		if ( meshComponent->meshName != "nullmesh" )
@@ -568,8 +559,8 @@ void Renderer::draw()
 			vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, wireframePipeline );
 		}
 
-		vkCmdBindVertexBuffers( cmdBuf, 1, 1, &transformBuffer.buffer, &transformOffset );
-		vkCmdBindVertexBuffers( cmdBuf, 0, 1, vertexBuffers, offsets );
+		vkCmdBindVertexBuffers( cmdBuf, 1, 1, &modelMatrixBuffer.buffer, &transformOffset );
+		vkCmdBindVertexBuffers( cmdBuf, 0, 1, &vertexBuffer.buffer, offsets );
 		
 		if ( mesh->materialFaceIndexRanges.size() > 0 )
 		{
@@ -686,7 +677,7 @@ VkResult Renderer::createTransformBuffer()
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-	return CreateBuffer( bufferSize, flags, memProps, transformBuffer, device );
+	return CreateBuffer( bufferSize, flags, memProps, modelMatrixBuffer, device );
 }
 
 VkResult Renderer::createIndexBuffer()
@@ -1068,7 +1059,7 @@ void Renderer::init()
 
 	stagingBuffer.map();
 	dynamicIndexBuffer.map();
-	transformBuffer.map();
+	modelMatrixBuffer.map();
 	
 	VKCHECK( createDescriptorPool() );
 	VKCHECK( createUBODescritptorSet() );
@@ -1114,7 +1105,7 @@ void Renderer::shutdown()
 	vertexBuffer.destroy();
 	indexBuffer.destroy();
 	dynamicIndexBuffer.destroy();
-	transformBuffer.destroy();
+	modelMatrixBuffer.destroy();
 	stagingBuffer.destroy();
 
 	for( size_t i = 0; i < uniformBuffers.size(); i++ )

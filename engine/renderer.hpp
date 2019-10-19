@@ -119,8 +119,9 @@ protected:
 	VulkanBuffer					indexBuffer;	
 	VulkanBuffer					dynamicIndexBuffer;
 	std::vector<VulkanBuffer>		uniformBuffers;	
-	// holds model matricies 
-	VulkanBuffer					transformBuffer;
+
+	// holds the model matricies of every entity, required to pass MVP matrix
+	VulkanBuffer					modelMatrixBuffer;
 	
 	VulkanBuffer					stagingBuffer;
 	VkResult						createStagingBuffer();
