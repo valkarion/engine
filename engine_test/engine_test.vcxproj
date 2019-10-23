@@ -70,11 +70,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>d:\libs\boost_1_69_0\;d:\libs\Luax64\include;$(IncludePath)</IncludePath>
+    <IncludePath>d:\libs\boost_1_69_0\;d:\libs\Luax64\include;d:\libs\glm;$(IncludePath)</IncludePath>
     <LibraryPath>D:\libs\boost_1_69_0\stage\lib;d:\libs\Luax64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>d:\libs\boost_1_69_0\;d:\libs\Luax64\include;$(IncludePath)</IncludePath>
+    <IncludePath>d:\libs\boost_1_69_0\;d:\libs\Luax64\include;d:\libs\glm;$(IncludePath)</IncludePath>
     <LibraryPath>d:\libs\Luax64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,8 +130,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="testEntityManager.cpp" />
     <ClCompile Include="logsetup.cpp" />
-    <ClCompile Include="lua.cpp" />
+    <ClCompile Include="testLua.cpp" />
     <ClCompile Include="testMain.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

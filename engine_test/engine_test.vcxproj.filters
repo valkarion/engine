@@ -21,7 +21,10 @@
     <ClCompile Include="logsetup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lua.cpp">
+    <ClCompile Include="testLua.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testEntityManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

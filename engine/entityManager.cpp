@@ -74,4 +74,5 @@ void EntityManager::shutdown()
 	componentMap.clear();
 	virtualIds.clear();	
 	IDRESET( E_ID );
+	IDRESET( Vi_ID );
 }
