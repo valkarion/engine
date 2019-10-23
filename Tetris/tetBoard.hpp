@@ -64,6 +64,8 @@ public:
 	bool			checkGameOver();
 	void			spawnBlock();
 
+	Cell&			getCell( const int x, const int y );
+
 	void			update( const float deltatime );	
 	void			setAreaSize( const uint32_t width, const uint32_t height );
 

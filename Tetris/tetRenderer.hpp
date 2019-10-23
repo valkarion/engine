@@ -2,7 +2,10 @@
 #include "renderer.hpp"
 #include "debugOverlay.hpp"
 
+#include <glm/glm.hpp>
 #include <tuple>
+
+struct Cell;
 
 // allocated memory address from vertex and index buffer 
 // there are always 4 vertecies and 6 indecies in CCW fashion
@@ -23,7 +26,8 @@ public:
 	VulkanBuffer	dynamicVertexBuffer;
 	
 	SquareMemoryAddr_t allocSquareMemory();
-	void			setupSquare( const SquareMemoryAddr_t& memory, uint32_t indexOffset ) const;
+	void			setupSquare( const SquareMemoryAddr_t& memory, 
+		const glm::vec2& cellPosition, uint32_t indexOffset ) const;
 		   
 	void			childInit() override;
 	void			childShutdown() override;

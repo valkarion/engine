@@ -37,6 +37,12 @@ void Board::spawnBlock()
 	
 }
 
+Cell& Board::getCell( const int x, const int y )
+{
+	return field[y][x];
+}
+
+
 void Board::update( const float deltatime )
 {
 	if ( checkGameOver() )
