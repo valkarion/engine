@@ -15,33 +15,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="testMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="t_TaskScheduler.cpp">
+    <ClCompile Include="logsetup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="t_Renderer.cpp">
+    <ClCompile Include="lua.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="t_FileSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="t_LuaController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="tests.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\shaders\shader.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\shaders\shader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
 </Project>

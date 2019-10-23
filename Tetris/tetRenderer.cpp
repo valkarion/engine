@@ -70,8 +70,11 @@ SquareMemoryAddr_t TetRenderer::allocSquareMemory()
 	const uint32_t vertexCountPerSquare = 4;
 	const uint32_t indexCountPerSquare = 6;
 
-	Vertex* vertecies = (Vertex*)dynamicVertexBuffer.allocate( vertexCountPerSquare * sizeof( Vertex ) );
-	uint32_t* indecies = (uint32_t*)dynamicIndexBuffer.allocate( indexCountPerSquare * sizeof( uint32_t ) );
+	Vertex* vertecies = (Vertex*)dynamicVertexBuffer.allocate( 
+		vertexCountPerSquare * sizeof( Vertex ) );
+
+	uint32_t* indecies = (uint32_t*)dynamicIndexBuffer.allocate( 
+		indexCountPerSquare * sizeof( uint32_t ) );
 
 	return std::make_pair( vertecies, indecies );
 }
@@ -123,20 +126,25 @@ void TetRenderer::draw()
 	uint32_t vertexOffset = 0;
 	uint32_t indexOffset = 0;
 	
+	glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
+	*model = glm::mat4x4( 1.f );
+
 	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, wireframePipeline );
 	vkCmdBindVertexBuffers( cmdBuf, 1, 1, &modelMatrixBuffer.buffer, offsets );
 	vkCmdBindVertexBuffers( cmdBuf, 0, 1, &dynamicVertexBuffer.buffer, offsets );
+	vkCmdBindIndexBuffer( cmdBuf, dynamicIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
+
+	const VulkanTexture* tex = getTexture( "green" );
+	vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		pipelineLayout, 0, 1, &tex->descriptor, 0, nullptr );
 
 	const size_t board_height = board->field.size();
 	const size_t board_width = board->field[0].size();
 	
-	for ( size_t y = 0; y < board_height; y++ )
-	{
-		for ( size_t x = 0; x < board_width; x++ )
-		{
-			
-		}
-	}
+	SquareMemoryAddr_t memory = allocSquareMemory();
+	setupSquare( memory, glm::vec2( 0.f, 0.f ), 0 );
+
+	vkCmdDrawIndexed( cmdBuf, 6, 1, 0, 0, 0 );
 	
 	dynamicVertexBuffer.offset = 0;
 	dynamicIndexBuffer.offset = 0;
