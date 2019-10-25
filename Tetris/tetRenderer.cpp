@@ -30,7 +30,7 @@ void TetOverlay::update( VkCommandBuffer commandBuffer )
 
 void TetRenderer::childInit()
 {
-	overlay.display = true;
+	overlay.display = false;
 	overlay.device = &device;
 	overlay.graphicsQueue = graphicsQueue;
 	overlay.renderPass = renderPass;
@@ -79,22 +79,21 @@ SquareMemoryAddr_t TetRenderer::allocSquareMemory()
 	return std::make_pair( vertecies, indecies );
 }
 
-void TetRenderer::setupSquare( const SquareMemoryAddr_t& memory, 
-	const glm::vec2& position, uint32_t indexOffset ) const
+void TetRenderer::setupSquare( const SquareMemoryAddr_t& memory, uint32_t indexOffset ) const
 {
-	memory.first[0].position = glm::vec3( -0.5f + position.x, -0.5f + position.y, 0.f );
+	memory.first[0].position = glm::vec3( -0.5f , -0.5f , 0.f );
 	memory.first[0].color = glm::vec3( 1.f, 1.f, 1.f );
 	memory.first[0].textureCoordinates = glm::vec2( 0.f, 0.f );
 
-	memory.first[1].position = glm::vec3( 0.5f + position.x, -0.5f + position.y, 0.f );
+	memory.first[1].position = glm::vec3( 0.5f , -0.5f , 0.f );
 	memory.first[1].color = glm::vec3( 1.f, 1.f, 1.f );
 	memory.first[1].textureCoordinates = glm::vec2( 1.f, 0.f );
 
-	memory.first[2].position = glm::vec3( 0.5f + position.x, 0.5f + position.y, 0.f );
+	memory.first[2].position = glm::vec3( 0.5f , 0.5f , 0.f );
 	memory.first[2].color = glm::vec3( 1.f, 1.f, 1.f );
 	memory.first[2].textureCoordinates = glm::vec2( 1.f, 1.f );
 
-	memory.first[3].position = glm::vec3( -0.5f + position.x, 0.5f + position.y, 0.f );
+	memory.first[3].position = glm::vec3( -0.5f , 0.5f , 0.f );
 	memory.first[3].color = glm::vec3( 1.f, 1.f, 1.f );
 	memory.first[3].textureCoordinates = glm::vec2( 0.f, 1.f );
 
@@ -106,45 +105,69 @@ void TetRenderer::setupSquare( const SquareMemoryAddr_t& memory,
 	memory.second[5] = indexOffset + 0;
 }
 
+std::string TexIndexToTexName( const int index )
+{
+	static std::array<std::string, (size_t)enu_BLOCK_TYPE::size> texNames = {
+		"orange", "brown", "pink", "yellow", "blue", "green", "red"	};
+
+	return texNames[index];
+}
+
 void TetRenderer::draw()
 {
 	Camera* cam = Camera::instance();	
 	VkCommandBuffer cmdBuf = commandBuffers[currentImageIndex];
 
-	cam->setPosition( glm::vec3( 0.f, 0.f, -1.f ) );
-	cam->setDirection( glm::vec3( 0.f, 0.f, 1.f ) );
+	Board* board = Board::instance();
+	const size_t board_height = board->field.size();
+	const size_t board_width = board->field[0].size();
+
+	// set the camera to the center of the board, and back enough to see it all 
+	cam->setPosition( glm::vec3(
+		float( board_width / 2 ),
+		float( board_height / 2 ),
+		(float)board_height / 1.5f )
+	);
+
+	cam->setDirection( glm::vec3( 0.f, 0.f, -1.f ) );
 
 	// push the static camera data into the shader data.
 	glm::mat4x4 pushConstant = cam->getProjection() * cam->getView();
 	vkCmdPushConstants( cmdBuf, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 		0, sizeof( glm::mat4x4 ), &pushConstant );
-
-	Board* board = Board::instance();
-
+	
 	VkDeviceSize offsets[] = { 0 };
 	
-	uint32_t vertexOffset = 0;
-	uint32_t indexOffset = 0;
-	
-	glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
-	*model = glm::mat4x4( 1.f );
-
 	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, wireframePipeline );
 	vkCmdBindVertexBuffers( cmdBuf, 1, 1, &modelMatrixBuffer.buffer, offsets );
 	vkCmdBindVertexBuffers( cmdBuf, 0, 1, &dynamicVertexBuffer.buffer, offsets );
 	vkCmdBindIndexBuffer( cmdBuf, dynamicIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
-
-	const VulkanTexture* tex = getTexture( "green" );
-	vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipelineLayout, 0, 1, &tex->descriptor, 0, nullptr );
-
-	const size_t board_height = board->field.size();
-	const size_t board_width = board->field[0].size();
 	
-	SquareMemoryAddr_t memory = allocSquareMemory();
-	setupSquare( memory, glm::vec2( 0.f, 0.f ), 0 );
+	int nEntities = 0;
+	for ( size_t y = 0; y < board_height; y++ )
+	{
+		for ( size_t x = 0; x < board_width; x++ )
+		{
+			Cell& c = board->getCell( x, y );
+			if ( c.hasEntity )
+			{
+				SquareMemoryAddr_t memory = allocSquareMemory();
+				setupSquare( memory, nEntities * 6 );
 
-	vkCmdDrawIndexed( cmdBuf, 6, 1, 0, 0, 0 );
+				glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
+				*model = glm::mat4x4( 1.f );
+				*model = glm::translate( *model, glm::vec3( (float)x, float( y ), 0.f ) );
+				
+				const VulkanTexture* tex = getTexture( TexIndexToTexName( c.textureIndex ) );
+				vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pipelineLayout, 0, 1, &tex->descriptor, 0, nullptr );
+
+				nEntities++;
+			}
+		}
+	}
+
+	vkCmdDrawIndexed( cmdBuf, 6, nEntities, 0, 0, 0 );
 	
 	dynamicVertexBuffer.offset = 0;
 	dynamicIndexBuffer.offset = 0;

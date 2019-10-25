@@ -26,8 +26,10 @@ public:
 	VulkanBuffer	dynamicVertexBuffer;
 	
 	SquareMemoryAddr_t allocSquareMemory();
+
+	// sets up the buffer memory of the given square 
 	void			setupSquare( const SquareMemoryAddr_t& memory, 
-		const glm::vec2& cellPosition, uint32_t indexOffset ) const;
+		uint32_t indexOffset ) const;
 		   
 	void			childInit() override;
 	void			childShutdown() override;

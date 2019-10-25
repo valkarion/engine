@@ -75,7 +75,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>d:\libs\boost_1_69_0\;d:\libs\Luax64\include;d:\libs\glm;$(IncludePath)</IncludePath>
-    <LibraryPath>d:\libs\Luax64\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>d:\libs\Luax64\lib;d:\libs\boost_1_69_0\stage\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -126,7 +126,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\engine.lib;libboost_unit_test_framework-vc141-mt-x64-1_69.lib;lua5.3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
