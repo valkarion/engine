@@ -24,41 +24,10 @@ void Board::shiftRight()
 
 bool Board::trySinkBlock()
 {
-	for ( size_t y = 0; y < 4; y++ )
+	if ( !checkBlockCollision( cBlock ) )
 	{
-		for ( size_t x = 0; x < 4; x++ )
-		{
-			char c = cBlock.getCell( x, y );
-			if ( c == CELL_FILLED )
-			{
-				int target_x = cBlock.px + x;
-				int target_y = cBlock.py + y + 1;
-
-				if ( target_y >= height )
-				{ // are we on the last row?
-					return false;
-				} 
-				else if ( field[target_y][target_x].hasEntity )
-				{ // is there something under us? 
-					return false;
-				}
-			}
-		}
-	}
-
-	cBlock.py++;
-	return true;
-}
-
-bool Board::checkGameOver()
-{
-	// if there is an entity in the top row we lose 
-	for ( size_t i = 0; i < width; i++ )
-	{
-		if ( field[0][i].hasEntity )
-		{
-			return true;
-		}
+		cBlock.py++;
+		return true;
 	}
 
 	return false;
@@ -76,34 +45,14 @@ bool Board::trySpawnBlock()
 	block.getCell( 2, 1 ) = CELL_FILLED;
 	block.getCell( 2, 2 ) = CELL_FILLED;
 	block.getCell( 2, 3 ) = CELL_FILLED;
-
-
-	// check if we can spawn the block
-	for ( size_t y = 0; y < 4; y++ )
+	
+	if ( !checkBlockCollision( block ) )
 	{
-		for ( size_t x = 0; x < 4; x++ )
-		{
-			char c = block.getCell( x, y );
-			if ( c == CELL_FILLED )
-			{
-				int target_x = block.px + x;
-				int target_y = block.py + y + 1;
-
-				if ( target_y >= height )
-				{ // are we on the last row?
-					return false;
-				}
-				else if ( field[target_y][target_x].hasEntity )
-				{ // is there something under us? 
-					return false;
-				}
-			}
-		}
+		cBlock = block;
+		return true;
 	}
 
-
-	cBlock = block;
-	return true;
+	return false;
 }
 
 void Board::lockCurrentBlockInPlace()
@@ -127,10 +76,38 @@ Cell& Board::getCell( const int x, const int y )
 	return field[y][x];
 }
 
+bool Board::checkBlockCollision( CurrentBlock& b )
+{
+	// check if we can spawn the block
+	for ( size_t y = 0; y < 4; y++ )
+	{
+		for ( size_t x = 0; x < 4; x++ )
+		{
+			char c = b.getCell( x, y );
+			if ( c == CELL_FILLED )
+			{
+				size_t target_x = b.px + x;
+				size_t target_y = b.py + y + 1;
+
+				if ( target_y >= height )
+				{ // are we on the last row?
+					return true;
+				}
+				else if ( field[target_y][target_x].hasEntity )
+				{ // is there something under us? 
+					return true;
+				}
+			}
+		}
+	}
+
+	// no collision
+	return false;
+}
 
 void Board::update( const float deltatime )
 {
-	if ( checkGameOver() )
+	if ( isGameOver )
 	{
 		return;
 	}
@@ -146,7 +123,7 @@ void Board::update( const float deltatime )
 
 			if ( !trySpawnBlock() )
 			{ // game over 
-				return;
+				isGameOver = true;
 			}
 		}
 
@@ -171,4 +148,5 @@ void Board::initialize()
 	setAreaSize( 20, 50 );
 	timeSinceMove = 0.f;
 	forceMoveTime = 0.1f;
+	isGameOver = false;
 }

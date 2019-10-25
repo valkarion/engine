@@ -69,9 +69,10 @@ class Board
 
 	static std::unique_ptr<Board> _instance;
 public:
-	Board_t			field;
+	Board_t			field;	
 	CurrentBlock	cBlock;
-	
+
+	bool			isGameOver;	
 	float			timeSinceMove;
 	float			forceMoveTime;
 	
@@ -82,15 +83,17 @@ public:
 	// will lower the current block and returns true on non-blocked movement
 	bool			trySinkBlock();
 
-	bool			checkGameOver();
+	// try to make a new block, returns false if could not make new block 
 	bool			trySpawnBlock();
+
+	// when we could not sink the block it will lock it in place 
 	void			lockCurrentBlockInPlace();
 
 	Cell&			getCell( const int x, const int y );
-
+	bool			checkBlockCollision( CurrentBlock& b );
 	void			update( const float deltatime );	
-	void			setAreaSize( const uint32_t width, const uint32_t height );
 
+	void			setAreaSize( const uint32_t width, const uint32_t height );
 	void			initialize();
 
 	static Board*	instance();
