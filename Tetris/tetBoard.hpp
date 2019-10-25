@@ -2,9 +2,13 @@
 
 #include <cstdint>
 #include <vector>
-#include "idManager.hpp"
 #include <memory>
+#include <array>
 #include <glm/glm.hpp>
+#include "idManager.hpp"
+
+#define CELL_FILLED '0'
+#define CELL_FREE	'1'
 
 struct Cell
 {
@@ -41,6 +45,20 @@ enum class enu_BLOCK_TYPE
 // 2D field 
 using Board_t = std::vector<std::vector<Cell>>;
 
+// helper struct for the block we are using right now 
+struct CurrentBlock
+{
+	int px;
+	int py;
+
+	std::array<char, 16> block;
+
+	char& getCell( const size_t x, const size_t y )
+	{
+		return block[y * 4 + x];
+	}
+};
+
 /*
 	This is the gameplay area, blocks will fall from here
 */
@@ -52,6 +70,7 @@ class Board
 	static std::unique_ptr<Board> _instance;
 public:
 	Board_t			field;
+	CurrentBlock	cBlock;
 	
 	float			timeSinceMove;
 	float			forceMoveTime;
@@ -59,10 +78,13 @@ public:
 	void			rotateBlock();
 	void			shiftLeft();
 	void			shiftRight();
-	void			sinkBlock();
+
+	// will lower the current block and returns true on non-blocked movement
+	bool			trySinkBlock();
 
 	bool			checkGameOver();
-	void			spawnBlock();
+	bool			trySpawnBlock();
+	void			lockCurrentBlockInPlace();
 
 	Cell&			getCell( const int x, const int y );
 
