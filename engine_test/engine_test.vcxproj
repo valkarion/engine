@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="testEntityManager.cpp" />
     <ClCompile Include="logsetup.cpp" />
+    <ClCompile Include="testEnums.cpp" />
     <ClCompile Include="testLua.cpp" />
     <ClCompile Include="testMain.cpp" />
   </ItemGroup>

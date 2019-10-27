@@ -64,11 +64,11 @@ struct CurrentBlock
 */
 class Board
 {
+	static std::unique_ptr<Board> _instance;
+public:
 	uint32_t		width;
 	uint32_t		height;
 
-	static std::unique_ptr<Board> _instance;
-public:
 	Board_t			field;	
 	CurrentBlock	cBlock;
 
@@ -79,6 +79,7 @@ public:
 	void			rotateBlock();
 	void			shiftLeft();
 	void			shiftRight();
+	void			shiftDown();
 
 	// will lower the current block and returns true on non-blocked movement
 	bool			trySinkBlock();

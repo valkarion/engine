@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_SUITE( EntityManagerTests )
 
 BOOST_AUTO_TEST_CASE( component_registration )
 {
-	EntityManager* em = EntityManager::instance();
+	EntityManager* em = EntityManager::instance();//(1)
 	em->registerComponent<TransformComponent>();
 	em->registerComponent<MeshComponent>();
 }
@@ -18,11 +18,10 @@ BOOST_AUTO_TEST_CASE( component_registration )
 // check if entity creation works and has null components allocated for them
 BOOST_AUTO_TEST_CASE( entity_creation, 
 	// this creates dependencies between tests
-	*utf::depends_on("EntityManagerTests/component_registration") )
+	*utf::depends_on("EntityManagerTests/component_registration") ) //(2)
 {
-	EntityManager* em = EntityManager::instance();
-	em->registerComponent<TransformComponent>();
-
+	EntityManager* em = EntityManager::instance();//(1)
+	
 	E_ID id = em->addEntity();
 
 	BOOST_TEST( id.v != UNSET_ID );

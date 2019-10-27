@@ -514,8 +514,6 @@ void Renderer::draw()
 	EntityManager* em			= EntityManager::instance();
 	ResourceManager* rm			= ResourceManager::instance();
 	
-	// no ubo so dynamic offset is always zero 
-	uint32_t dynamicOffset = 0;
 	// insted of clearing the buffer we overwrite from the beginning 
 	modelMatrixBuffer.offset = 0;
 	// where to read transform data from the buffer for the current entity
@@ -568,16 +566,16 @@ void Renderer::draw()
 			for ( const auto& tex : mesh->materialFaceIndexRanges )
 			{
 				const VulkanTexture* texture = getTexture( tex.matName );
-			
-				vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-					pipelineLayout, 0, 1, &texture->descriptor, 0, &dynamicOffset );
-				
 				VkDeviceSize oldOffset = dynamicIndexBuffer.offset;
 				size_t mallocBytes = tex.range * sizeof( uint32_t );
 				void* mem = dynamicIndexBuffer.allocate( mallocBytes );
 				std::memcpy( mem, mesh->indicies.data() + tex.startIndex, mallocBytes );
 			
 				vkCmdBindIndexBuffer( cmdBuf, dynamicIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
+			
+				vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pipelineLayout, 0, 1, &texture->descriptor, 0, nullptr );
+				
 				vkCmdDrawIndexed( cmdBuf, tex.range, 1, tex.startIndex, 0, 0 );
 			}
 		}
@@ -588,7 +586,7 @@ void Renderer::draw()
 			const VulkanTexture* texture = getTexture( meshComponent->textureName );
 
 			vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
-				0, 1, &texture->descriptor, 0, &dynamicOffset );
+				0, 1, &texture->descriptor, 0, nullptr );
 
 			vkCmdDrawIndexed( cmdBuf, (uint32_t)mesh->vertecies.size(), 1, 0, 0, 0 );
 		}

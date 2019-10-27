@@ -9,17 +9,58 @@ Board* Board::instance()
 
 void Board::rotateBlock()
 {
+	if ( isGameOver )
+	{
+		return;
+	}
 
+	// make a temp 
+	CurrentBlock tempBlock;
+	tempBlock.px = cBlock.px;
+	tempBlock.py = cBlock.py;
+
+	// rotate into that temp 
+	for ( size_t y = 0; y < 4; y++ )
+	{
+		for ( size_t x = 0; x < 4; x++ )
+		{
+			tempBlock.getCell( x, y ) =
+				cBlock.getCell( 3 - y, x );
+		}
+	}
+
+	// check it 
+	if ( !checkBlockCollision( tempBlock ) )
+	{
+		// save it 
+		cBlock = tempBlock;
+	}
 }
 
 void Board::shiftLeft()
 {
-
+	if ( isGameOver )
+	{
+		return;
+	}
 }
 
 void Board::shiftRight()
 {
+	if ( isGameOver )
+	{
+		return;
+	}
+}
 
+void Board::shiftDown()
+{
+	if ( isGameOver )
+	{
+		return;
+	}
+
+	timeSinceMove += forceMoveTime;
 }
 
 bool Board::trySinkBlock()
@@ -112,17 +153,19 @@ void Board::update( const float deltatime )
 		return;
 	}
 
-	timeSinceMove += deltatime;
+	// timeSinceMove += deltatime;
 
-	// if time passed move the block down 
 	if ( timeSinceMove >= forceMoveTime )
-	{
+	{	
+		//if time passed move the block down 
 		if ( !trySinkBlock() )
-		{ // could not move block down 
+		{	
+			// could not move block down 
 			lockCurrentBlockInPlace();
 
 			if ( !trySpawnBlock() )
-			{ // game over 
+			{	
+				// game over 
 				isGameOver = true;
 			}
 		}

@@ -6,10 +6,17 @@
 #include <tuple>
 
 struct Cell;
+class Board;
 
 // allocated memory address from vertex and index buffer 
 // there are always 4 vertecies and 6 indecies in CCW fashion
-using SquareMemoryAddr_t = std::pair<Vertex*, uint32_t*>;
+// idxOffset is the starting index buffer offset position
+struct SquareMemInfo
+{
+	Vertex*		vertAddr;
+	uint32_t*	idxAddr;
+	uint32_t	idxOffset;
+};
 
 class TetOverlay : public DebugOverlay
 {
@@ -25,11 +32,16 @@ public:
 
 	VulkanBuffer	dynamicVertexBuffer;
 	
-	SquareMemoryAddr_t allocSquareMemory();
+	void			setupCellModelMatrix( const float x, const float y );
+
+	SquareMemInfo	allocSquareMemory();
+	
+	void			drawBackground( VkCommandBuffer cmdBuf, Board* board );
+	void			drawCells( VkCommandBuffer cmdBuf, Board* board );
+	void			drawCurrentBlock( VkCommandBuffer cmdBuf, Board* board );
 
 	// sets up the buffer memory of the given square 
-	void			setupSquare( const SquareMemoryAddr_t& memory, 
-		uint32_t indexOffset ) const;
+	void			setupSquare( const SquareMemInfo& memory ) const;
 		   
 	void			childInit() override;
 	void			childShutdown() override;

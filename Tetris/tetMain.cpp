@@ -12,7 +12,11 @@ void SetupLuaStuff( sol::state& state )
 	};
 
 	state.new_usertype<Board>( "Board",
-		"update", &Board::update );
+		"update", &Board::update,
+		"moveLeft", &Board::shiftLeft,
+		"moveRight", &Board::shiftRight,
+		"rotate", &Board::rotateBlock,
+		"moveDown", &Board::shiftDown );
 }
 
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )

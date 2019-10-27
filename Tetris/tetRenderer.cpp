@@ -5,7 +5,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-
 void TetOverlay::update( VkCommandBuffer commandBuffer )
 {
 	if ( !display )
@@ -48,61 +47,58 @@ void TetRenderer::childInit()
 	Camera::instance()->initCamera();
 }
 
-glm::mat4x4 GetModelMatrix( glm::vec3 position )
-{
-	glm::mat4x4 model( 1.f );
-
-	// displacement
-	glm::mat4 translation = glm::translate( model, position );
-	
-	return translation;
-}
-
 void TetRenderer::childShutdown()
 {
 	overlay.shutdown();
-
 	dynamicVertexBuffer.destroy();
 }
 
-SquareMemoryAddr_t TetRenderer::allocSquareMemory()
+SquareMemInfo TetRenderer::allocSquareMemory()
 {
 	const uint32_t vertexCountPerSquare = 4;
 	const uint32_t indexCountPerSquare = 6;
 
+	SquareMemInfo sma;
+
 	Vertex* vertecies = (Vertex*)dynamicVertexBuffer.allocate( 
 		vertexCountPerSquare * sizeof( Vertex ) );
-
+	
+	uint32_t offset = dynamicIndexBuffer.offset / sizeof( uint32_t );
+	
 	uint32_t* indecies = (uint32_t*)dynamicIndexBuffer.allocate( 
 		indexCountPerSquare * sizeof( uint32_t ) );
 
-	return std::make_pair( vertecies, indecies );
+	sma.idxAddr	= indecies;
+	sma.idxOffset = offset;
+	sma.vertAddr = vertecies;
+
+	return sma;
 }
 
-void TetRenderer::setupSquare( const SquareMemoryAddr_t& memory, uint32_t indexOffset ) const
+void TetRenderer::setupSquare( const SquareMemInfo& memory ) const
 {
-	memory.first[0].position = glm::vec3( -0.5f , -0.5f , 0.f );
-	memory.first[0].color = glm::vec3( 1.f, 1.f, 1.f );
-	memory.first[0].textureCoordinates = glm::vec2( 0.f, 0.f );
+	memory.vertAddr[0].position = glm::vec3( -0.5f , -0.5f , 0.f );
+	memory.vertAddr[0].color = glm::vec3( 1.f, 1.f, 1.f );
+	memory.vertAddr[0].textureCoordinates = glm::vec2( 0.f, 0.f );
 
-	memory.first[1].position = glm::vec3( 0.5f , -0.5f , 0.f );
-	memory.first[1].color = glm::vec3( 1.f, 1.f, 1.f );
-	memory.first[1].textureCoordinates = glm::vec2( 1.f, 0.f );
+	memory.vertAddr[1].position = glm::vec3( 0.5f , -0.5f , 0.f );
+	memory.vertAddr[1].color = glm::vec3( 1.f, 1.f, 1.f );
+	memory.vertAddr[1].textureCoordinates = glm::vec2( 1.f, 0.f );
 
-	memory.first[2].position = glm::vec3( 0.5f , 0.5f , 0.f );
-	memory.first[2].color = glm::vec3( 1.f, 1.f, 1.f );
-	memory.first[2].textureCoordinates = glm::vec2( 1.f, 1.f );
+	memory.vertAddr[2].position = glm::vec3( 0.5f , 0.5f , 0.f );
+	memory.vertAddr[2].color = glm::vec3( 1.f, 1.f, 1.f );
+	memory.vertAddr[2].textureCoordinates = glm::vec2( 1.f, 1.f );
 
-	memory.first[3].position = glm::vec3( -0.5f , 0.5f , 0.f );
-	memory.first[3].color = glm::vec3( 1.f, 1.f, 1.f );
-	memory.first[3].textureCoordinates = glm::vec2( 0.f, 1.f );
+	memory.vertAddr[3].position = glm::vec3( -0.5f , 0.5f , 0.f );
+	memory.vertAddr[3].color = glm::vec3( 1.f, 1.f, 1.f );
+	memory.vertAddr[3].textureCoordinates = glm::vec2( 0.f, 1.f );
 
-	memory.second[0] = indexOffset + 0;
-	memory.second[1] = indexOffset + 1;
-	memory.second[2] = indexOffset + 2;
-	memory.second[3] = indexOffset + 2;
-	memory.second[4] = indexOffset + 3;
-	memory.second[5] = indexOffset + 0;
+	memory.idxAddr[0] = memory.idxOffset + 0;
+	memory.idxAddr[1] = memory.idxOffset + 1;
+	memory.idxAddr[2] = memory.idxOffset + 2;
+	memory.idxAddr[3] = memory.idxOffset + 2;
+	memory.idxAddr[4] = memory.idxOffset + 3;
+	memory.idxAddr[5] = memory.idxOffset + 0;
 }
 
 std::string TexIndexToTexName( const int index )
@@ -113,53 +109,50 @@ std::string TexIndexToTexName( const int index )
 	return texNames[index];
 }
 
-void TetRenderer::draw()
+void TetRenderer::setupCellModelMatrix( const float x, const float y )
 {
-	Camera* cam = Camera::instance();	
-	VkCommandBuffer cmdBuf = commandBuffers[currentImageIndex];
+	glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
+	*model = glm::mat4x4( 1.f );
+	*model = glm::translate( *model, glm::vec3( (float)x, float( y ), 0.f ) );
+}
 
-	Board* board = Board::instance();
-	const size_t board_height = board->field.size();
-	const size_t board_width = board->field[0].size();
+void TetRenderer::drawBackground( VkCommandBuffer cmdBuf, Board* board )
+{
+	SquareMemInfo bgMem = allocSquareMemory();
+	setupSquare( bgMem );
 
-	// set the camera to the center of the board, and back enough to see it all 
-	cam->setPosition( glm::vec3(
-		float( board_width / 2 ),
-		float( board_height / 2 ),
-		(float)board_height / 1.5f )
-	);
+	glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
+	*model = glm::mat4x4( 1.f );
+	*model = glm::translate( *model, glm::vec3( board->width / 2, board->height / 2, 0.f ) );
+	*model = glm::scale( *model, glm::vec3( board->width, board->height, 0.f ) );
 
-	cam->setDirection( glm::vec3( 0.f, 0.f, -1.f ) );
+	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, wireframePipeline );
 
-	// push the static camera data into the shader data.
-	glm::mat4x4 pushConstant = cam->getProjection() * cam->getView();
-	vkCmdPushConstants( cmdBuf, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
-		0, sizeof( glm::mat4x4 ), &pushConstant );
-	
-	VkDeviceSize offsets[] = { 0 };
-	
-	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
-	vkCmdBindVertexBuffers( cmdBuf, 1, 1, &modelMatrixBuffer.buffer, offsets );
-	vkCmdBindVertexBuffers( cmdBuf, 0, 1, &dynamicVertexBuffer.buffer, offsets );
-	vkCmdBindIndexBuffer( cmdBuf, dynamicIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
-	
-	// draw background 
+	const VulkanTexture* tex = getTexture( "gray" );
+	vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		pipelineLayout, 0, 1, &tex->descriptor, 0, nullptr );
 
-	// draw cells 
+	vkCmdDrawIndexed( cmdBuf, 6, 1, 0, 0, 0 );
+}
+
+void TetRenderer::drawCells( VkCommandBuffer cmdBuf, Board* board )
+{
+	uint32_t currentOffset = dynamicIndexBuffer.offset / sizeof( uint32_t );
+
 	int nEntities = 0;
-	for ( size_t y = 0; y < board_height; y++ )
+	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
+
+	for ( int y = 0; y < board->height; y++ )
 	{
-		for ( size_t x = 0; x < board_width; x++ )
+		for ( int x = 0; x < board->width; x++ )
 		{
 			Cell& c = board->getCell( x, y );
 			if ( c.hasEntity )
 			{
-				SquareMemoryAddr_t memory = allocSquareMemory();
-				setupSquare( memory, nEntities * 6 );
+				SquareMemInfo memory = allocSquareMemory();
+				setupSquare( memory );
 
-				glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
-				*model = glm::mat4x4( 1.f );
-				*model = glm::translate( *model, glm::vec3( (float)x, float( y ), 0.f ) );
+				setupCellModelMatrix( (float)x, (float)y );
 
 				const VulkanTexture* tex = getTexture( TexIndexToTexName( c.textureIndex ) );
 				vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -170,32 +163,68 @@ void TetRenderer::draw()
 		}
 	}
 
-	// draw current block 
+	vkCmdDrawIndexed( cmdBuf, 6 * nEntities, nEntities, currentOffset, 0, 0 );
+}
+
+void TetRenderer::drawCurrentBlock( VkCommandBuffer cmdBuf, Board* board )
+{
+	uint32_t currentOffset = dynamicIndexBuffer.offset / sizeof( uint32_t );
+
+	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
+
 	for ( size_t y = 0; y < 4; y++ )
 	{
 		for ( size_t x = 0; x < 4; x++ )
 		{
 			if ( board->cBlock.getCell( x, y ) == CELL_FILLED )
 			{
-				SquareMemoryAddr_t memory = allocSquareMemory();
-				setupSquare( memory, nEntities * 6 );
-				
+				SquareMemInfo memory = allocSquareMemory();
+				setupSquare( memory );
+
 				glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
 				*model = glm::mat4x4( 1.f );
 				*model = glm::translate( *model, glm::vec3( float( x + board->cBlock.px ),
 					float( y + board->cBlock.py ), 0.f ) );
-				
+
 				const VulkanTexture* tex = getTexture( TexIndexToTexName( 0 ) );
 				vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
 					pipelineLayout, 0, 1, &tex->descriptor, 0, nullptr );
-
-
-				nEntities++;
 			}
 		}
 	}
+
+	vkCmdDrawIndexed( cmdBuf, 6 * 4, 4, currentOffset, 0, 0 );
+}
+
+void TetRenderer::draw()
+{
+	Camera* cam = Camera::instance();	
+	VkCommandBuffer cmdBuf = commandBuffers[currentImageIndex];
+
+	Board* board = Board::instance();
+
+	// set the camera to the center of the board, and back enough to see it all 
+	cam->setPosition( glm::vec3(
+		float( board->width / 2 ),
+		float( board->height / 2 ),
+		(float)board->height / 1.5f )
+	);
+
+	cam->setDirection( glm::vec3( 0.f, 0.f, -1.f ) );
+
+	// push the static camera data into the shader data.
+	glm::mat4x4 pushConstant = cam->getProjection() * cam->getView();
+	vkCmdPushConstants( cmdBuf, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
+		0, sizeof( glm::mat4x4 ), &pushConstant );
 	
-	vkCmdDrawIndexed( cmdBuf, 6, nEntities, 0, 0, 0 );
+	VkDeviceSize offsets[] = { 0 };	
+	vkCmdBindVertexBuffers( cmdBuf, 1, 1, &modelMatrixBuffer.buffer, offsets );
+	vkCmdBindVertexBuffers( cmdBuf, 0, 1, &dynamicVertexBuffer.buffer, offsets );
+	vkCmdBindIndexBuffer( cmdBuf, dynamicIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
+	
+	drawBackground( cmdBuf, board );
+	//drawCells( cmdBuf, board );	
+	drawCurrentBlock( cmdBuf, board );
 	
 	dynamicVertexBuffer.offset = 0;
 	dynamicIndexBuffer.offset = 0;
