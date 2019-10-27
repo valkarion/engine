@@ -109,24 +109,19 @@ std::string TexIndexToTexName( const int index )
 	return texNames[index];
 }
 
-void TetRenderer::setupCellModelMatrix( const float x, const float y )
-{
-	glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
-	*model = glm::mat4x4( 1.f );
-	*model = glm::translate( *model, glm::vec3( (float)x, float( y ), 0.f ) );
-}
-
 void TetRenderer::drawBackground( VkCommandBuffer cmdBuf, Board* board )
 {
-	SquareMemInfo bgMem = allocSquareMemory();
-	setupSquare( bgMem );
+	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
 
+	VkDeviceSize offset = dynamicIndexBuffer.offset;
+
+	setupSquare( allocSquareMemory() );
+
+	vkCmdBindIndexBuffer( cmdBuf, dynamicIndexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32 );
+	
 	glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
-	*model = glm::mat4x4( 1.f );
-	*model = glm::translate( *model, glm::vec3( board->width / 2, board->height / 2, 0.f ) );
-	*model = glm::scale( *model, glm::vec3( board->width, board->height, 0.f ) );
-
-	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, wireframePipeline );
+	*model = glm::translate( glm::mat4x4( 1.f ), glm::vec3( board->width / 2, board->height / 2, -1.f ) );
+	*model = glm::scale( *model, glm::vec3( (float)board->width + 2.5f, (float)board->height + 2.5f, 0.f ) );
 
 	const VulkanTexture* tex = getTexture( "gray" );
 	vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -149,10 +144,14 @@ void TetRenderer::drawCells( VkCommandBuffer cmdBuf, Board* board )
 			Cell& c = board->getCell( x, y );
 			if ( c.hasEntity )
 			{
-				SquareMemInfo memory = allocSquareMemory();
-				setupSquare( memory );
+				setupSquare( allocSquareMemory() );
 
-				setupCellModelMatrix( (float)x, (float)y );
+				glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
+				*model = glm::translate(
+					glm::mat4x4( 1.f ),
+					glm::vec3( float( x + board->cBlock.px ),
+						float( y + board->cBlock.py ), 0.f )
+				);
 
 				const VulkanTexture* tex = getTexture( TexIndexToTexName( c.textureIndex ) );
 				vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -168,32 +167,34 @@ void TetRenderer::drawCells( VkCommandBuffer cmdBuf, Board* board )
 
 void TetRenderer::drawCurrentBlock( VkCommandBuffer cmdBuf, Board* board )
 {
-	uint32_t currentOffset = dynamicIndexBuffer.offset / sizeof( uint32_t );
+	VkDeviceSize offset = dynamicIndexBuffer.offset;
 
 	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
-
+	
 	for ( size_t y = 0; y < 4; y++ )
 	{
 		for ( size_t x = 0; x < 4; x++ )
 		{
 			if ( board->cBlock.getCell( x, y ) == CELL_FILLED )
 			{
-				SquareMemInfo memory = allocSquareMemory();
-				setupSquare( memory );
+				setupSquare( allocSquareMemory() );
 
 				glm::mat4x4* model = ( glm::mat4x4* )modelMatrixBuffer.allocate( sizeof( glm::mat4x4 ) );
-				*model = glm::mat4x4( 1.f );
-				*model = glm::translate( *model, glm::vec3( float( x + board->cBlock.px ),
-					float( y + board->cBlock.py ), 0.f ) );
-
-				const VulkanTexture* tex = getTexture( TexIndexToTexName( 0 ) );
-				vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-					pipelineLayout, 0, 1, &tex->descriptor, 0, nullptr );
+				*model = glm::translate( 
+					glm::mat4x4(1.f), 
+					glm::vec3(	float( x + board->cBlock.px ),
+								float( y + board->cBlock.py ), 0.f ) 
+				);
 			}
 		}
 	}
+	
+	const VulkanTexture* tex = getTexture( TexIndexToTexName( 0 ) );
+	vkCmdBindDescriptorSets( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		pipelineLayout, 0, 1, &tex->descriptor, 0, nullptr );
 
-	vkCmdDrawIndexed( cmdBuf, 6 * 4, 4, currentOffset, 0, 0 );
+	vkCmdBindIndexBuffer( cmdBuf, dynamicIndexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32 );
+	vkCmdDrawIndexed( cmdBuf, 6 * 4, 4, 0, 0, 0 );
 }
 
 void TetRenderer::draw()

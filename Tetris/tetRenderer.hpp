@@ -32,8 +32,6 @@ public:
 
 	VulkanBuffer	dynamicVertexBuffer;
 	
-	void			setupCellModelMatrix( const float x, const float y );
-
 	SquareMemInfo	allocSquareMemory();
 	
 	void			drawBackground( VkCommandBuffer cmdBuf, Board* board );
