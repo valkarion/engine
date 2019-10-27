@@ -1,9 +1,7 @@
 #pragma once
 #include "renderer.hpp"
 #include "debugOverlay.hpp"
-
 #include <glm/glm.hpp>
-#include <tuple>
 
 struct Cell;
 class Board;
@@ -31,14 +29,16 @@ public:
 	TetOverlay		overlay;
 
 	VulkanBuffer	dynamicVertexBuffer;
-	
-	SquareMemInfo	allocSquareMemory();
-	
+		
+	void			drawSingleCell( const VkCommandBuffer cmdBuf,
+		const glm::vec3& position, const VkDescriptorSet dSet,
+		const glm::vec2 scale = glm::vec2( 1.f, 1.f ) );
+
 	void			drawBackground( VkCommandBuffer cmdBuf, Board* board );
 	void			drawCells( VkCommandBuffer cmdBuf, Board* board );
 	void			drawCurrentBlock( VkCommandBuffer cmdBuf, Board* board );
-
-	// sets up the buffer memory of the given square 
+		
+	SquareMemInfo	allocSquareMemory();
 	void			setupSquare( const SquareMemInfo& memory ) const;
 		   
 	void			childInit() override;

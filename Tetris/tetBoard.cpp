@@ -86,6 +86,7 @@ bool Board::trySpawnBlock()
 	block.getCell( 2, 1 ) = CELL_FILLED;
 	block.getCell( 2, 2 ) = CELL_FILLED;
 	block.getCell( 2, 3 ) = CELL_FILLED;
+	block.getCell( 3, 3 ) = CELL_FILLED;
 	
 	if ( !checkBlockCollision( block ) )
 	{
