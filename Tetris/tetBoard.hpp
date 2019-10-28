@@ -7,9 +7,6 @@
 #include <glm/glm.hpp>
 #include "idManager.hpp"
 
-#define CELL_FILLED '0'
-#define CELL_FREE	'1'
-
 struct Cell
 {
 	bool hasEntity	= false;
@@ -51,12 +48,12 @@ struct CurrentBlock
 	int px;
 	int py;
 
-	std::array<char, 16> block;
+	enu_BLOCK_TYPE type;
 
-	char& getCell( const size_t x, const size_t y )
-	{
-		return block[y * 4 + x];
-	}
+	char block[4][4];
+
+	bool isFilled( const int x, const int y );
+	char& getCell( const int x, const int y );
 };
 
 /*
@@ -65,6 +62,8 @@ struct CurrentBlock
 class Board
 {
 	static std::unique_ptr<Board> _instance;
+
+	void setBlockType( CurrentBlock& b, const enu_BLOCK_TYPE type );
 public:
 	uint32_t		width;
 	uint32_t		height;
@@ -90,7 +89,10 @@ public:
 	// when we could not sink the block it will lock it in place 
 	void			lockCurrentBlockInPlace();
 
+	void			destroyFilledRows();
+
 	Cell&			getCell( const int x, const int y );
+	
 	bool			checkBlockCollision( CurrentBlock& b );
 	void			update( const float deltatime );	
 

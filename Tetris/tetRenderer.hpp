@@ -31,18 +31,17 @@ public:
 	VulkanBuffer	dynamicVertexBuffer;
 		
 	void			drawSingleCell( const VkCommandBuffer cmdBuf,
-		const glm::vec3& position, const VkDescriptorSet dSet,
-		const glm::vec2 scale = glm::vec2( 1.f, 1.f ) );
-
-	void			drawBackground( VkCommandBuffer cmdBuf, Board* board );
-	void			drawCells( VkCommandBuffer cmdBuf, Board* board );
-	void			drawCurrentBlock( VkCommandBuffer cmdBuf, Board* board );
-		
+		const VkPipeline pipeline, const VkDescriptorSet dSet,
+		const glm::vec3& position, const glm::vec2 scale = glm::vec2( 1.f, 1.f ) );
+	
 	SquareMemInfo	allocSquareMemory();
 	void			setupSquare( const SquareMemInfo& memory ) const;
 		   
 	void			childInit() override;
 	void			childShutdown() override;
+
+	// stress test and render check
+	void			debugDraw();
 
 	void			drawFrame() override;
 };

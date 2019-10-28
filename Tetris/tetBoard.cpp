@@ -1,10 +1,23 @@
 #include "tetBoard.hpp"
 #include "logger.hpp"
 
+#define CELL_FILLED '0'
+#define CELL_FREE	'1'
+
 std::unique_ptr<Board> Board::_instance = std::make_unique<Board>();
 Board* Board::instance()
 {
 	return _instance.get();
+}
+
+bool CurrentBlock::isFilled( const int x, const int y )
+{
+	return block[y][x] == CELL_FILLED;
+}
+
+char& CurrentBlock::getCell(const int x, const int y)
+{
+	return block[y][x];
 }
 
 void Board::rotateBlock()
@@ -15,9 +28,7 @@ void Board::rotateBlock()
 	}
 
 	// make a temp 
-	CurrentBlock tempBlock;
-	tempBlock.px = cBlock.px;
-	tempBlock.py = cBlock.py;
+	CurrentBlock tempBlock = cBlock;
 
 	// rotate into that temp 
 	for ( size_t y = 0; y < 4; y++ )
@@ -74,23 +85,34 @@ bool Board::trySinkBlock()
 	return false;
 }
 
+void Board::setBlockType( CurrentBlock& b, const enu_BLOCK_TYPE type )
+{
+	b.type = type;
+
+	switch ( type )
+	{
+	default:
+		b.getCell( 2, 0 ) = CELL_FILLED;
+		b.getCell( 2, 1 ) = CELL_FILLED;
+		b.getCell( 2, 2 ) = CELL_FILLED;
+		b.getCell( 2, 3 ) = CELL_FILLED;
+		break;
+	}
+}
+
 bool Board::trySpawnBlock()
 {
-	CurrentBlock block;
+	CurrentBlock b;
+	std::memset( b.block, CELL_FREE, 16 );
+		
+	b.px = width / 2;
+	b.py = 0;
 
-	block.block.fill( CELL_FREE );
-	block.px = width / 2;
-	block.py = 0;
-
-	block.getCell( 2, 0 ) = CELL_FILLED;
-	block.getCell( 2, 1 ) = CELL_FILLED;
-	block.getCell( 2, 2 ) = CELL_FILLED;
-	block.getCell( 2, 3 ) = CELL_FILLED;
-	block.getCell( 3, 3 ) = CELL_FILLED;
+	setBlockType( b, enu_BLOCK_TYPE::I );
 	
-	if ( !checkBlockCollision( block ) )
+	if ( !checkBlockCollision( b ) )
 	{
-		cBlock = block;
+		cBlock = b;
 		return true;
 	}
 
@@ -103,14 +125,18 @@ void Board::lockCurrentBlockInPlace()
 	{
 		for ( size_t x = 0; x < 4; x++ )
 		{
-			char c = cBlock.getCell( x, y );
-			if ( c == CELL_FILLED )
+			if ( cBlock.getCell( x, y ) == CELL_FILLED )
 			{
 				field[cBlock.py + y][cBlock.px + x].hasEntity = true;
-				field[cBlock.py + y][cBlock.px + x].textureIndex = 1;
+				field[cBlock.py + y][cBlock.px + x].textureIndex = (int)cBlock.type;
 			}
 		}
 	}
+}
+
+void Board::destroyFilledRows()
+{
+
 }
 
 Cell& Board::getCell( const int x, const int y )
@@ -163,6 +189,8 @@ void Board::update( const float deltatime )
 		{	
 			// could not move block down 
 			lockCurrentBlockInPlace();
+			
+			destroyFilledRows();
 
 			if ( !trySpawnBlock() )
 			{	

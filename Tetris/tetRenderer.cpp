@@ -9,14 +9,15 @@ const uint32_t vertexCountPerSquare = 4;
 const uint32_t indexCountPerSquare = 6;
 
 void TetRenderer::drawSingleCell( const VkCommandBuffer cmdBuf,
-	const glm::vec3& position, const VkDescriptorSet dSet, const glm::vec2 scale )
+	const VkPipeline pipeline, const VkDescriptorSet dSet,
+	const glm::vec3& position, const glm::vec2 scale )
 {
 	VkDeviceSize modelOffset = modelMatrixBuffer.offset;
 	VkDeviceSize indexOffset = dynamicIndexBuffer.offset;
 
 	setupSquare( allocSquareMemory() );
 
-	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline );
+	vkCmdBindPipeline( cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
 
 	vkCmdBindIndexBuffer( cmdBuf, dynamicIndexBuffer.buffer, indexOffset, VK_INDEX_TYPE_UINT32 );
 	vkCmdBindVertexBuffers( cmdBuf, 1, 1, &modelMatrixBuffer.buffer, &modelOffset );
@@ -33,6 +34,11 @@ void TetRenderer::drawSingleCell( const VkCommandBuffer cmdBuf,
 
 std::string TexIndexToTexName( const int index )
 {
+	if ( index < 0 )
+	{
+		return "gray";
+	}
+
 	static std::array<std::string, (size_t)enu_BLOCK_TYPE::size> texNames = {
 		"orange", "brown", "pink", "yellow", "blue", "green", "red" };
 
@@ -40,6 +46,56 @@ std::string TexIndexToTexName( const int index )
 }
 
 void TetRenderer::draw()
+{
+	VkCommandBuffer cmdBuf = commandBuffers[currentImageIndex];
+
+	Board* board = Board::instance();
+
+	VkDeviceSize vOffset[1] = { 0 };
+	vkCmdBindVertexBuffers( cmdBuf, 0, 1, &dynamicVertexBuffer.buffer, vOffset );
+
+	// draw the board and all fix cells
+	for ( size_t y = 0; y < board->height; y++ )
+	{
+		for ( size_t x = 0; x < board->width; x++ )
+		{
+			VkPipeline pipeline = wireframePipeline;
+			int texIndex = -1;
+			
+			if ( board->getCell( x, y ).hasEntity )
+			{
+				pipeline = graphicsPipeline;
+				texIndex = board->getCell( x, y ).textureIndex;
+			}
+
+			drawSingleCell( cmdBuf, pipeline,
+				getTexture( TexIndexToTexName( texIndex ) )->descriptor,
+				glm::vec3( (float)x, (float)y, 0.f )
+			);
+		}
+	}
+
+	// draw our current block
+	CurrentBlock& cBlock = board->cBlock;
+	int texIndex = (int)cBlock.type;
+
+	for ( size_t y = 0; y < 4; y++ )
+	{
+		for ( size_t x = 0; x < 4; x++ )
+		{
+			if ( cBlock.isFilled( x, y ) )
+			{
+				glm::vec3 p = glm::vec3( cBlock.px + x, cBlock.py + y, 0.f );
+
+				drawSingleCell( cmdBuf, graphicsPipeline,
+					getTexture( TexIndexToTexName( texIndex ) )->descriptor,
+					p );
+			}
+		}
+	}
+}
+
+void TetRenderer::debugDraw()
 {
 	VkCommandBuffer cmdBuf = commandBuffers[currentImageIndex];
 
@@ -52,15 +108,15 @@ void TetRenderer::draw()
 	{
 		for ( size_t x = 0; x < b->width; x++ )
 		{
-			drawSingleCell( 
-				cmdBuf, 
-				glm::vec3( x, y, 0.f ),
-				getTexture( 
-					TexIndexToTexName( 
-						( y * b->width + x ) % (size_t)enu_BLOCK_TYPE::size ) 
-					)->descriptor );				
+			drawSingleCell(
+				cmdBuf, graphicsPipeline,
+				getTexture(
+					TexIndexToTexName(
+					( y * b->width + x ) % (size_t)enu_BLOCK_TYPE::size )
+				)->descriptor,
+				glm::vec3( x, y, 0.f ) );
 		}
-	}	
+	}
 }
 
 SquareMemInfo TetRenderer::allocSquareMemory()
