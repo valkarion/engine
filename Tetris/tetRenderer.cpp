@@ -8,6 +8,48 @@
 const uint32_t vertexCountPerSquare = 4;
 const uint32_t indexCountPerSquare = 6;
 
+void TetOverlay::update( VkCommandBuffer commandBuffer )
+{
+	if ( !display )
+	{
+		return;
+	}
+
+	ImGui::NewFrame();
+
+	ImGui::SetNextWindowSize( ImVec2( 200.f, 300.f ) );
+	ImGui::Begin( "Debug Overlay", nullptr, ImGuiWindowFlags_NoSavedSettings );
+
+	Board* b = Board::instance();
+
+	ImGui::Text( "Score %d", b->score );
+	
+	int bufferSize = b->width * b->height + b->height;
+	std::string buffer;
+	buffer.reserve( bufferSize );
+
+	for ( size_t y = 0; y < b->height; y++ )
+	{
+		for ( size_t x = 0; x < b->width; x++ )
+		{
+			buffer += ( b->getCell( x, y ).hasEntity ) ? '1' : '0';
+		}
+
+		buffer += '\n';
+	}
+
+	ImGui::Text( buffer.c_str() );
+
+	ImGui::End();
+
+	ImGui::Render();
+
+	if ( checkBuffers() )
+	{
+		draw( commandBuffer );
+	}
+}
+
 void TetRenderer::drawSingleCell( const VkCommandBuffer cmdBuf,
 	const VkPipeline pipeline, const VkDescriptorSet dSet,
 	const glm::vec3& position, const glm::vec2 scale )
@@ -70,7 +112,7 @@ void TetRenderer::draw()
 
 			drawSingleCell( cmdBuf, pipeline,
 				getTexture( TexIndexToTexName( texIndex ) )->descriptor,
-				glm::vec3( (float)x, (float)y, 0.f )
+				glm::vec3( (float)x, float( board->height - y ), 0.f )
 			);
 		}
 	}
@@ -85,7 +127,8 @@ void TetRenderer::draw()
 		{
 			if ( cBlock.isFilled( x, y ) )
 			{
-				glm::vec3 p = glm::vec3( cBlock.px + x, cBlock.py + y, 0.f );
+				glm::vec3 p = glm::vec3( cBlock.px + x, 
+					board->height - cBlock.py - y, 0.f );
 
 				drawSingleCell( cmdBuf, graphicsPipeline,
 					getTexture( TexIndexToTexName( texIndex ) )->descriptor,
@@ -160,31 +203,9 @@ void TetRenderer::setupSquare( const SquareMemInfo& memory ) const
 	memory.idxAddr[5] = 0;
 }
 
-void TetOverlay::update( VkCommandBuffer commandBuffer )
-{
-	if ( !display )
-	{
-		return;
-	}
-
-	ImGui::NewFrame();
-
-	ImGui::SetNextWindowSize( ImVec2( 200.f, 100.f ) );
-	ImGui::Begin( "Debug Overlay", nullptr, ImGuiWindowFlags_NoSavedSettings );
-
-	ImGui::End();
-
-	ImGui::Render();
-
-	if ( checkBuffers() )
-	{
-		draw( commandBuffer );
-	}
-}
-
 void TetRenderer::childInit()
 {
-	overlay.display = false;
+	overlay.display = true;
 	overlay.device = &device;
 	overlay.graphicsQueue = graphicsQueue;
 	overlay.renderPass = renderPass;

@@ -54,7 +54,6 @@ void Board::shiftLeft()
 		return;
 	}
 
-	// check if we'de move off the board or there is something on the left 
 	CurrentBlock cB = cBlock;
 	cB.px--;
 	
@@ -70,8 +69,7 @@ void Board::shiftRight()
 	{
 		return;
 	}
-
-	// check if we'de move off the board or there is something on the left 
+ 
 	CurrentBlock cB = cBlock;
 	cB.px++;
 
@@ -153,7 +151,29 @@ void Board::lockCurrentBlockInPlace()
 
 void Board::destroyFilledRows()
 {
+	// move the filled rows to the back of the board
+	auto partitionPoint = std::stable_partition(field.begin(), field.end(),
+		[]( const std::vector<Cell>& row ) -> bool
+		{
+			return std::all_of( row.begin(), row.end(), []( const Cell& cell ) -> bool
+				{
+					return cell.hasEntity;
+				} );
+		} );
 
+	// nothing to destroy
+	if ( partitionPoint == field.begin() )
+	{
+		return;
+	}
+
+	score += partitionPoint - field.begin();
+
+	// clear the filled rows 
+	for ( auto it = field.begin(); it != partitionPoint; it++ )
+	{
+		std::fill( it->begin(), it->end(), Cell() );
+	}
 }
 
 Cell& Board::getCell( const int x, const int y )
@@ -239,8 +259,9 @@ void Board::setAreaSize( const uint32_t width, const uint32_t height )
 
 void Board::initialize()
 {
-	setAreaSize( 20, 50 );
+	setAreaSize( 6, 10 );
 	timeSinceMove = 0.f;
 	forceMoveTime = 0.1f;
+	score = 0;
 	isGameOver = false;
 }

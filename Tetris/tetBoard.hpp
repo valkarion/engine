@@ -9,8 +9,8 @@
 
 struct Cell
 {
-	bool hasEntity	= false;
-	int	 textureIndex;
+	bool hasEntity = false;
+	int	 textureIndex = -1;
 };
 
 enum class enu_BLOCK_TYPE
@@ -72,6 +72,7 @@ public:
 	CurrentBlock	cBlock;
 
 	bool			isGameOver;	
+	int				score;
 	float			timeSinceMove;
 	float			forceMoveTime;
 	
