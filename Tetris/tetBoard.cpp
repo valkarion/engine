@@ -35,8 +35,7 @@ void Board::rotateBlock()
 	{
 		for ( size_t x = 0; x < 4; x++ )
 		{
-			tempBlock.getCell( x, y ) =
-				cBlock.getCell( 3 - y, x );
+			tempBlock.getCell( x, y ) =	cBlock.getCell( 3 - y, x );
 		}
 	}
 
@@ -54,6 +53,15 @@ void Board::shiftLeft()
 	{
 		return;
 	}
+
+	// check if we'de move off the board or there is something on the left 
+	CurrentBlock cB = cBlock;
+	cB.px--;
+	
+	if ( !checkBlockCollision( cB ) )
+	{
+		cBlock = cB;
+	}
 }
 
 void Board::shiftRight()
@@ -61,6 +69,15 @@ void Board::shiftRight()
 	if ( isGameOver )
 	{
 		return;
+	}
+
+	// check if we'de move off the board or there is something on the left 
+	CurrentBlock cB = cBlock;
+	cB.px++;
+
+	if ( !checkBlockCollision( cB ) )
+	{
+		cBlock = cB;
 	}
 }
 
@@ -154,11 +171,16 @@ bool Board::checkBlockCollision( CurrentBlock& b )
 			char c = b.getCell( x, y );
 			if ( c == CELL_FILLED )
 			{
-				size_t target_x = b.px + x;
-				size_t target_y = b.py + y + 1;
-
+				int target_x = b.px + x;
+				int target_y = b.py + y + 1;
+				
 				if ( target_y >= height )
 				{ // are we on the last row?
+					return true;
+				}
+				else if ( target_x < 0 || target_y < 0 || 
+					target_x >= width || target_y >= height )
+				{ // we are looking for a cell off the board
 					return true;
 				}
 				else if ( field[target_y][target_x].hasEntity )
