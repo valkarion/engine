@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_SUITE( EntityManagerTests )
 
 BOOST_AUTO_TEST_CASE( component_registration )
 {
-	EntityManager* em = EntityManager::instance();//(1)
+	EntityManager* em = EntityManager::instance(); //(1)
 	em->registerComponent<TransformComponent>();
 	em->registerComponent<MeshComponent>();
 }

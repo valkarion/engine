@@ -277,6 +277,7 @@
     <ClInclude Include="libs\stb_image.h" />
     <ClInclude Include="logger.hpp" />
     <ClInclude Include="luaStateController.hpp" />
+    <ClInclude Include="persistenceSystem.hpp" />
     <ClInclude Include="physicsSystem.hpp" />
     <ClInclude Include="playerController.hpp" />
     <ClInclude Include="renderer.hpp" />

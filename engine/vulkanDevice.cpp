@@ -4,7 +4,7 @@
 #include "logger.hpp"
 #include <set>
 
-void VulkanDevice::findQueueFamilies( VkPhysicalDevice device )
+void VulkanDevice::findQueueFamilies( VkPhysicalDevice device, VkSurfaceKHR surface )
 {
 	uint32_t queueFamilyCount;
 	vkGetPhysicalDeviceQueueFamilyProperties( device,
@@ -61,14 +61,15 @@ bool VulkanDevice::checkForSupportedExtensions( VkPhysicalDevice device )
 	return requiredExtensions.empty();
 }
 
-bool VulkanDevice::isPhysicalDeviceSuitable( VkPhysicalDevice device, VulkanSwapchain& swapchain )
+bool VulkanDevice::isPhysicalDeviceSuitable( VkPhysicalDevice device, 
+	VulkanSwapchain& swapchain, VkSurfaceKHR surface )
 {
 	bool queues = false;
 	bool extensions = false;
 	bool swapChain = false;
 	bool anisotropy = false;
 
-	findQueueFamilies( device );
+	findQueueFamilies( device, surface );
 	queues = queueFamilies.isValid();
 
 	extensions = checkForSupportedExtensions( device );
@@ -82,7 +83,7 @@ bool VulkanDevice::isPhysicalDeviceSuitable( VkPhysicalDevice device, VulkanSwap
 	return queues && extensions && swapChain && anisotropy;
 }
 
-VkResult VulkanDevice::createVkPhysicalDevice( VulkanSwapchain& swapchain )
+VkResult VulkanDevice::createVkPhysicalDevice( VulkanSwapchain& swapchain, VkSurfaceKHR surface )
 {
 	VkResult res;
 
@@ -102,7 +103,7 @@ VkResult VulkanDevice::createVkPhysicalDevice( VulkanSwapchain& swapchain )
 	bool foundValid = false;
 	for ( auto& it : devices )
 	{
-		if ( isPhysicalDeviceSuitable( it, swapchain ) )
+		if ( isPhysicalDeviceSuitable( it, swapchain, surface ) )
 		{
 			physicalDevice = it;
 			foundValid = true;
@@ -207,9 +208,9 @@ void VulkanDevice::destroyOneTimeCommandBuffer( VkCommandBuffer buffer, VkQueue 
 	vkFreeCommandBuffers( logicalDevice, commandPool, 1, &buffer );
 }
 
-void VulkanDevice::init( VulkanSwapchain& swapchain )
+void VulkanDevice::init( VulkanSwapchain& swapchain, VkSurfaceKHR surface )
 {
-	createVkPhysicalDevice( swapchain );
+	createVkPhysicalDevice( swapchain, surface );
 	createVkLogicalDevice();
 	createCommandPool();
 }

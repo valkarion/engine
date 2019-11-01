@@ -1,8 +1,25 @@
 #include "tetBoard.hpp"
 #include "logger.hpp"
+#include "persistenceSystem.hpp"
+
+#include <random>
 
 #define CELL_FILLED '0'
 #define CELL_FREE	'1'
+
+// non-intrusive serialization
+// intrusive version in .hpp file
+namespace boost 
+{ 
+	namespace serialization 
+	{
+		template <class Archive>
+		void serialize( Archive& arc, Cell& cell, const unsigned int version )
+		{
+			arc & cell.hasEntity & cell.textureIndex;
+		}
+	}
+}
 
 std::unique_ptr<Board> Board::_instance = std::make_unique<Board>();
 Board* Board::instance()
@@ -106,6 +123,48 @@ void Board::setBlockType( CurrentBlock& b, const enu_BLOCK_TYPE type )
 
 	switch ( type )
 	{
+	case enu_BLOCK_TYPE::I:
+		b.getCell( 2, 0 ) = CELL_FILLED;
+		b.getCell( 2, 1 ) = CELL_FILLED;
+		b.getCell( 2, 2 ) = CELL_FILLED;
+		b.getCell( 2, 3 ) = CELL_FILLED;
+		break;
+	case enu_BLOCK_TYPE::J:
+		b.getCell( 1, 0 ) = CELL_FILLED;
+		b.getCell( 1, 1 ) = CELL_FILLED;
+		b.getCell( 1, 2 ) = CELL_FILLED;
+		b.getCell( 0, 2 ) = CELL_FILLED;
+		break;
+	case enu_BLOCK_TYPE::L:
+		b.getCell( 1, 0 ) = CELL_FILLED;
+		b.getCell( 1, 1 ) = CELL_FILLED;
+		b.getCell( 1, 2 ) = CELL_FILLED;
+		b.getCell( 2, 2 ) = CELL_FILLED;
+		break;
+	case enu_BLOCK_TYPE::O:
+		b.getCell( 1, 1 ) = CELL_FILLED;
+		b.getCell( 1, 2 ) = CELL_FILLED;
+		b.getCell( 2, 1 ) = CELL_FILLED;
+		b.getCell( 2, 2 ) = CELL_FILLED;
+		break;
+	case enu_BLOCK_TYPE::S:
+		b.getCell( 2, 0 ) = CELL_FILLED;
+		b.getCell( 1, 1 ) = CELL_FILLED;
+		b.getCell( 2, 1 ) = CELL_FILLED;
+		b.getCell( 1, 2 ) = CELL_FILLED;
+		break;
+	case enu_BLOCK_TYPE::T:
+		b.getCell( 1, 0 ) = CELL_FILLED;
+		b.getCell( 0, 1 ) = CELL_FILLED;
+		b.getCell( 1, 1 ) = CELL_FILLED;
+		b.getCell( 2, 1 ) = CELL_FILLED;
+		break;
+	case enu_BLOCK_TYPE::Z:
+		b.getCell( 1, 0 ) = CELL_FILLED;
+		b.getCell( 1, 1 ) = CELL_FILLED;
+		b.getCell( 2, 1 ) = CELL_FILLED;
+		b.getCell( 2, 2 ) = CELL_FILLED;
+		break;
 	default:
 		b.getCell( 2, 0 ) = CELL_FILLED;
 		b.getCell( 2, 1 ) = CELL_FILLED;
@@ -123,7 +182,12 @@ bool Board::trySpawnBlock()
 	b.px = width / 2;
 	b.py = 0;
 
-	setBlockType( b, enu_BLOCK_TYPE::I );
+	std::random_device rd;
+	std::mt19937 rng( rd() );
+	std::uniform_int_distribution dis( 0, (int)enu_BLOCK_TYPE::size - 1 );
+	enu_BLOCK_TYPE type = (enu_BLOCK_TYPE)dis( rng );
+
+	setBlockType( b, type );
 	
 	if ( !checkBlockCollision( b ) )
 	{
@@ -151,7 +215,7 @@ void Board::lockCurrentBlockInPlace()
 
 void Board::destroyFilledRows()
 {
-	// move the filled rows to the back of the board
+	// move the filled rows to the front of the board
 	auto partitionPoint = std::stable_partition(field.begin(), field.end(),
 		[]( const std::vector<Cell>& row ) -> bool
 		{
@@ -264,4 +328,14 @@ void Board::initialize()
 	forceMoveTime = 0.1f;
 	score = 0;
 	isGameOver = false;
+}
+
+void Board::save()
+{
+	PersistenceSystem::save<Board>( *this, "tetris.save" );
+}
+
+void Board::load()
+{
+	PersistenceSystem::load<Board>( *this, "tetris.save" );
 }

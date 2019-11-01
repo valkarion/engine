@@ -16,7 +16,9 @@ void SetupLuaStuff( sol::state& state )
 		"moveLeft", &Board::shiftLeft,
 		"moveRight", &Board::shiftRight,
 		"rotate", &Board::rotateBlock,
-		"moveDown", &Board::shiftDown );
+		"moveDown", &Board::shiftDown,
+		"save", &Board::save,
+		"load", &Board::load );
 }
 
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )

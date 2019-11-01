@@ -25,16 +25,15 @@ struct QueueFamilyIndicies
 
 class VulkanDevice
 {
-	void				findQueueFamilies( VkPhysicalDevice );
+	void				findQueueFamilies( VkPhysicalDevice, VkSurfaceKHR surface );
 	bool				checkForSupportedExtensions( VkPhysicalDevice device );
-	bool				isPhysicalDeviceSuitable( VkPhysicalDevice device, VulkanSwapchain& swapchain );
-	VkResult			createVkPhysicalDevice( VulkanSwapchain& swapchain );
+	bool				isPhysicalDeviceSuitable( VkPhysicalDevice device, VulkanSwapchain& swapchain, VkSurfaceKHR surface );
+	VkResult			createVkPhysicalDevice( VulkanSwapchain& swapchain, VkSurfaceKHR surface );
 	VkResult			createVkLogicalDevice();
 
 public:
 // depdendencies 
 	VkInstance			instance;
-	VkSurfaceKHR		surface;
 
 // the videocard 
 	VkPhysicalDevice	physicalDevice;
@@ -49,6 +48,6 @@ public:
 	VkCommandBuffer		createOneTimeCommandBuffer();
 	void				destroyOneTimeCommandBuffer( VkCommandBuffer buffer, VkQueue poolQueue );
 
-	void init( VulkanSwapchain& swapchain );
+	void init( VulkanSwapchain& swapchain, VkSurfaceKHR surface );
 	void shutdown();
 };

@@ -17,29 +17,48 @@ void TetOverlay::update( VkCommandBuffer commandBuffer )
 
 	ImGui::NewFrame();
 
-	ImGui::SetNextWindowSize( ImVec2( 200.f, 300.f ) );
+	ImGui::SetNextWindowSize( ImVec2( 150.f, 400.f ) );
 	ImGui::Begin( "Debug Overlay", nullptr, ImGuiWindowFlags_NoSavedSettings );
 
 	Board* b = Board::instance();
 
 	ImGui::Text( "Score %d", b->score );
-	
-	int bufferSize = b->width * b->height + b->height;
-	std::string buffer;
-	buffer.reserve( bufferSize );
 
-	for ( size_t y = 0; y < b->height; y++ )
+	if ( b->isGameOver )
 	{
-		for ( size_t x = 0; x < b->width; x++ )
+		ImGui::NewLine();
+		ImGui::Text( "GAME OVER" );
+	}
+	else
+	{
+		ImGui::NewLine();
+		ImGui::Text( "up: rotate " );
+		ImGui::Text( "down: sink" );
+		ImGui::Text( "left: move left" );
+		ImGui::Text( "right: move right" );
+		ImGui::NewLine();
+
+		ImGui::Text( "f5: save" );
+		ImGui::Text( "f6: load" );
+		ImGui::NewLine();
+
+		int bufferSize = b->width * b->height + b->height;
+		std::string buffer;
+		buffer.reserve( bufferSize );
+
+		for ( size_t y = 0; y < b->height; y++ )
 		{
-			buffer += ( b->getCell( x, y ).hasEntity ) ? '1' : '0';
+			for ( size_t x = 0; x < b->width; x++ )
+			{
+				buffer += ( b->getCell( x, y ).hasEntity ) ? '1' : '0';
+			}
+
+			buffer += '\n';
 		}
 
-		buffer += '\n';
+		ImGui::Text( buffer.c_str() );
 	}
-
-	ImGui::Text( buffer.c_str() );
-
+	
 	ImGui::End();
 
 	ImGui::Render();

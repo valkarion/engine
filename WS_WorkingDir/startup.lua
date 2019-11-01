@@ -9,8 +9,8 @@ LoadAllModels()
 local player 	= CreateEntity()
 local tc 		= AddTransformComponent( player ) 
 local rbc 		= AddRigidbodyComponent( player )
-local mc		= AddMeshComponent( player ) 
-mc.meshName 	= "nullmesh"
+-- local mc		= AddMeshComponent( player ) 
+-- mc.meshName 	= "nullmesh"
 
 -- Setup Controller 
 GetPlayerController():setEntity( player ) 

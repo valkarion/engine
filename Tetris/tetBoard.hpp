@@ -7,10 +7,21 @@
 #include <glm/glm.hpp>
 #include "idManager.hpp"
 
-struct Cell
+#include <boost/serialization/vector.hpp>
+
+class Cell
 {
+public:
 	bool hasEntity = false;
 	int	 textureIndex = -1;
+
+	// intrusive serialization
+	// non-intrusive version in the .cpp file
+	//template <class Archive>
+	//void serialize( Archive& arc, const unsigned int version )
+	//{
+	//	arc & hasEntity & textureIndex;
+	//}
 };
 
 enum class enu_BLOCK_TYPE
@@ -23,11 +34,13 @@ enum class enu_BLOCK_TYPE
 	T,  //  *
 		// ***
 
-	S,	//  **
-		// **
-
-	Z,  // **
+	S,	//   *
 		//  **
+		//  *
+
+	Z,  //  *
+		//  **
+		//   *
 
 	J,	// *
 		// ***
@@ -54,6 +67,14 @@ struct CurrentBlock
 
 	bool isFilled( const int x, const int y );
 	char& getCell( const int x, const int y );
+
+	template <class Archive>
+	void serialize( Archive& arc, const unsigned int version )
+	{
+		arc & px & py 
+			& type 
+			& block;
+	}
 };
 
 /*
@@ -100,5 +121,16 @@ public:
 	void			setAreaSize( const uint32_t width, const uint32_t height );
 	void			initialize();
 
+	void			save();
+	void			load();
+	
 	static Board*	instance();
+	template <class Archive>
+	void serialize( Archive& arc, const unsigned int version )
+	{
+		arc & width & height
+			& field	& cBlock
+			& isGameOver & score
+			& timeSinceMove & forceMoveTime;
+	}
 };

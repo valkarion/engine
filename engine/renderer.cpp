@@ -1025,8 +1025,7 @@ void Renderer::init()
 	VKCHECK( createSurface() );
 
 	device.instance = vkInstance;
-	device.surface = surface;
-	device.init( swapchain );
+	device.init( swapchain, surface );
 	
 	vkGetDeviceQueue( device.logicalDevice, device.queueFamilies.graphics.value(), 0, &graphicsQueue );
 	vkGetDeviceQueue( device.logicalDevice, device.queueFamilies.presentation.value(), 0, &presentQueue );
