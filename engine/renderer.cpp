@@ -22,11 +22,12 @@
 
 #include "libs/imgui.h"
 
-#define UNIFORM_BUFFER_SIZE_KB	2048
-#define VERTEX_BUFFER_SIZE_MB	128
-#define INDEX_BUFFER_SIZE_MB	128
-#define STAGING_BUFFER_SIZE_MB	128
-#define MAX_DESCRIPTORS			256	// each texture has it's own descriptor
+#define UNIFORM_BUFFER_SIZE_KB		2048
+#define VERTEX_BUFFER_SIZE_MB		128
+#define INDEX_BUFFER_SIZE_MB		128
+#define MODEL_MATRIX_BUFFER_SIZE_MB	128
+#define STAGING_BUFFER_SIZE_MB		128
+#define MAX_DESCRIPTORS				256	// each texture has it's own descriptor
 
 std::unique_ptr<Renderer> Renderer::_instance = nullptr;
 
@@ -671,9 +672,10 @@ VkResult Renderer::createUniformBuffers()
 
 VkResult Renderer::createTransformBuffer()
 {
-	VkDeviceSize bufferSize = VERTEX_BUFFER_SIZE_MB * 1024 * 1024;
+	VkDeviceSize bufferSize = MODEL_MATRIX_BUFFER_SIZE_MB * 1024 * 1024;
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT 
+		| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
 	return CreateBuffer( bufferSize, flags, memProps, modelMatrixBuffer, device );
 }
@@ -750,11 +752,11 @@ VkResult Renderer::createDescriptorPool()
 VkResult Renderer::createDescriptorSetLayout()
 {
 // UBO 
-	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-	uboLayoutBinding.binding = 0;
-	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	VkDescriptorSetLayoutBinding layoutBinding = {};
+	layoutBinding.binding = 0;
+	layoutBinding.descriptorCount = 1;
+	layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 // Textures
 	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
@@ -766,7 +768,7 @@ VkResult Renderer::createDescriptorSetLayout()
 	VkDescriptorSetLayoutCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	createInfo.bindingCount = 1;
-	createInfo.pBindings = &uboLayoutBinding;
+	createInfo.pBindings = &layoutBinding;
 		
 	VKCHECK( vkCreateDescriptorSetLayout( device.logicalDevice, &createInfo, nullptr, &uboLayout ) );
 
@@ -1025,7 +1027,7 @@ void Renderer::init()
 	VKCHECK( createSurface() );
 
 	device.instance = vkInstance;
-	device.init( swapchain, surface );
+	device.initialize( swapchain, surface );
 	
 	vkGetDeviceQueue( device.logicalDevice, device.queueFamilies.graphics.value(), 0, &graphicsQueue );
 	vkGetDeviceQueue( device.logicalDevice, device.queueFamilies.presentation.value(), 0, &presentQueue );

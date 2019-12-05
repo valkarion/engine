@@ -17,11 +17,11 @@ public:
 
 	// intrusive serialization
 	// non-intrusive version in the .cpp file
-	//template <class Archive>
-	//void serialize( Archive& arc, const unsigned int version )
-	//{
-	//	arc & hasEntity & textureIndex;
-	//}
+	// template <class Archive>
+	// void serialize( Archive& arc, const unsigned int version )
+	// {
+	// 	arc & hasEntity & textureIndex;
+	// }
 };
 
 enum class enu_BLOCK_TYPE

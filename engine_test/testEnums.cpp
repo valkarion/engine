@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_CASE( enum_to_string ) // (3)
 	std::string expected = "rossz_ertek";
 	std::string generated = enums::enu_TEST_toString( enu_TEST::val2 );
 
-	BOOST_TEST( expected == generated ); // (4)
+	BOOST_TEST( expected != generated ); // (4)
 }
 
 BOOST_AUTO_TEST_CASE( string_to_enum )

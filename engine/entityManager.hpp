@@ -55,7 +55,7 @@ public:
 	}
 	template<typename T> T*	get( E_ID id )
 	{
-		return get<T>( virtualIds.at( id ) );
+		return isIdValid( id ) ? get<T>( virtualIds.at( id ) ) : nullptr;
 	}
 
 	E_ID addEntity();
@@ -64,8 +64,11 @@ public:
 	template <typename T> void registerComponent()
 	{
 		static_assert( std::is_base_of<Component, T>::value, "EntityManager::registerComponent: type must be a derived class of Component." );
-		componentMap[&typeid(T)] = std::vector<std::unique_ptr<Component>>();
+		componentMap[&typeid( T )] = std::vector<std::unique_ptr<Component>>();
+		componentMap[&typeid( T )].resize( virtualIds.size() );
 	}
+
+	bool isIdValid( E_ID id ) const;
 
 	void removeEntity( E_ID id, bool freeId = true );
 

@@ -3,6 +3,7 @@
 #include <map>
 #include <list>
 #include <memory>
+#include <string>
 
 class CVar;
 

@@ -48,6 +48,6 @@ public:
 	VkCommandBuffer		createOneTimeCommandBuffer();
 	void				destroyOneTimeCommandBuffer( VkCommandBuffer buffer, VkQueue poolQueue );
 
-	void init( VulkanSwapchain& swapchain, VkSurfaceKHR surface );
+	void initialize( VulkanSwapchain& swapchain, VkSurfaceKHR surface );
 	void shutdown();
 };

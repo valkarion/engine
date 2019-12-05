@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 #include <boost/serialization/serialization.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 #include <fstream>
 
 /*
@@ -20,7 +20,7 @@ public:
 			return false;
 		}
 
-		boost::archive::text_oarchive oa( file );
+		boost::archive::binary_oarchive oa( file );
 		oa << who;
 
 		return true;
@@ -35,7 +35,7 @@ public:
 			return false;
 		}
 
-		boost::archive::text_iarchive ia( file );
+		boost::archive::binary_iarchive ia( file );
 		ia >> who;
 
 		return true;

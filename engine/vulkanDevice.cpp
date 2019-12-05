@@ -208,7 +208,7 @@ void VulkanDevice::destroyOneTimeCommandBuffer( VkCommandBuffer buffer, VkQueue 
 	vkFreeCommandBuffers( logicalDevice, commandPool, 1, &buffer );
 }
 
-void VulkanDevice::init( VulkanSwapchain& swapchain, VkSurfaceKHR surface )
+void VulkanDevice::initialize( VulkanSwapchain& swapchain, VkSurfaceKHR surface )
 {
 	createVkPhysicalDevice( swapchain, surface );
 	createVkLogicalDevice();

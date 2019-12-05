@@ -31,55 +31,83 @@ glm::vec3 CalcEulerAngles( glm::vec3 orientation )
 	return glm::vec3( x, y, z );
 }
 
-void PlayerController::setPosition( glm::vec3 position )
+bool PlayerController::setPosition( glm::vec3 position )
 {
 	if ( transform )
 	{
 		transform->position = position;
+
+		return true;
 	}
+
+	return false;
 }
 
-void PlayerController::setFacingDirection( glm::vec3 direction )
+bool PlayerController::setFacingDirection( glm::vec3 direction )
 {
 	if ( transform )
 	{
 		transform->facingDirection = glm::vec3( direction.x, direction.y, direction.z );
+
+		return true;
 	}
+
+	return false;
 }
 
-void PlayerController::displace( glm::vec3 movement )
+bool PlayerController::displace( glm::vec3 movement )
 {
 	if ( transform )
 	{
 		transform->position += movement;
+
+		return true;
 	}
+
+	return false;
 }
 
 void PlayerController::setEntity( const E_ID id )
-{
-	attachedEntity = id;
-	transform = EntityManager::instance()->get<TransformComponent>( id );
+{	
+	if ( EntityManager::instance()->isIdValid( id ) )
+	{
+		attachedEntity = id;
+		transform = EntityManager::instance()->get<TransformComponent>( id );
+	}
+	else
+	{
+		attachedEntity = UNSET_ID;
+		transform = nullptr;
+	}
 }
 
-void PlayerController::forward()
+bool PlayerController::forward()
 {
 	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
 	if ( tc )
 	{
 		tc->impulseForces += tc->facingDirection * moveSpeed;
+
+		return true;
 	}
+
+	return false;
 }
 
-void PlayerController::backward()
+bool PlayerController::backward()
 {
 	TransformComponent* tc = EntityManager::instance()->get<TransformComponent>( attachedEntity );
 	if ( tc )
 	{
 		tc->impulseForces -= tc->facingDirection * moveSpeed;
+
+		return true;
 	}
+
+	return false;
 }
 
-void PlayerController::strafeLeft()
+bool PlayerController::strafeLeft()
 {
 	if ( transform )
 	{
@@ -87,10 +115,14 @@ void PlayerController::strafeLeft()
 			Camera::instance()->getUp() );
 
 		transform->impulseForces -= glm::normalize( strafe ) * moveSpeed;
+
+		return true;
 	}
+
+	return false;
 }
 
-void PlayerController::strafeRight()
+bool PlayerController::strafeRight()
 {	
 	if ( transform )
 	{
@@ -98,11 +130,15 @@ void PlayerController::strafeRight()
 			Camera::instance()->getUp() );
 
 		transform->impulseForces += glm::normalize( strafe ) * moveSpeed;
+
+		return true;
 	}
+
+	return false;
 }
 
 // todo: EVERYTHING in here
-void PlayerController::turn( glm::vec2 delta )
+bool PlayerController::turn( glm::vec2 delta )
 {
 	if ( transform )
 	{
@@ -133,10 +169,14 @@ void PlayerController::turn( glm::vec2 delta )
 
 			transform->rotation.y = rot.y;
 		}
+
+		return true;
 	}
+
+	return false;
 }
 
-void PlayerController::jump()
+bool PlayerController::jump()
 {
 	if ( transform )
 	{
@@ -144,8 +184,11 @@ void PlayerController::jump()
 		if ( rbc && std::abs( rbc->velocity.y ) < 0.001f )
 		{
 			transform->impulseForces += glm::vec3( 0.f, 60.f, 0.f );
+			return true;
 		}
 	}
+
+	return false;
 }
 
 E_ID PlayerController::getPlayerId()

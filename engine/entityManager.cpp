@@ -44,6 +44,10 @@ E_ID EntityManager::addEntity( const E_ID existingId )
 	return existingId;
 };
 
+bool EntityManager::isIdValid( E_ID id ) const
+{
+	return virtualIds.count( id ) != 0;
+}
 
 void EntityManager::removeEntity( E_ID id, bool freeId )
 {

@@ -19,17 +19,17 @@ public:
 	E_ID getPlayerId();
 	
 // magical instant functions
-	void setPosition( glm::vec3 position );
-	void setFacingDirection( glm::vec3 direction );
-	void displace( glm::vec3 movement );
+	bool setPosition( glm::vec3 position );
+	bool setFacingDirection( glm::vec3 direction );
+	bool displace( glm::vec3 movement );
 
 // delta functions
-	void forward();
-	void backward();
-	void strafeLeft();
-	void strafeRight();
-	void turn( glm::vec2 delta );
-	void jump();
+	bool forward();
+	bool backward();
+	bool strafeLeft();
+	bool strafeRight();
+	bool turn( glm::vec2 delta );
+	bool jump();
 
 	static PlayerController* instance();
 };
