@@ -136,6 +136,7 @@
     <ClCompile Include="testLua.cpp" />
     <ClCompile Include="testMain.cpp" />
     <ClCompile Include="testPlayerController.cpp" />
+    <ClCompile Include="testTaskScheduler.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

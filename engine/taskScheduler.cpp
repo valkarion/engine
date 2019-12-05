@@ -72,7 +72,7 @@ void TaskScheduler::initialize( const size_t nThreads )
 	taskQueues = new TaskQueue_t[nThreads];
 	for( size_t i = 0; i < nThreads; i++ )
 	{
-		threads.emplace_back( std::thread( [&]() { threadFn( i ); } ) );
+		threads.emplace_back( std::thread( [&, i]() { threadFn( i ); } ) );
 		++runningThreads;
 	}
 };

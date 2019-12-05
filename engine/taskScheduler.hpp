@@ -44,7 +44,7 @@ struct PartitionedTaskSet
 class TaskScheduler
 {
 	using TaskQueue_t = boost::lockfree::queue<PartitionedTaskSet,
-		boost::lockfree::fixed_sized<false>,
+		boost::lockfree::fixed_sized<true>,
 		boost::lockfree::capacity<64>>;
 
 	bool					isShuttingDown{ false };
